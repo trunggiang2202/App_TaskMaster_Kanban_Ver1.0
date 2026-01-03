@@ -291,7 +291,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto pr-6 -mr-6 custom-scrollbar space-y-4">
+            <div className="flex-1 overflow-y-auto pr-6 -mr-6 py-2 custom-scrollbar space-y-4">
               <FormField
                 control={form.control}
                 name="title"
@@ -321,7 +321,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               
               <div className="space-y-2">
                 <FormLabel>Bắt đầu</FormLabel>
-                <div className="space-y-2 border p-3 rounded-md">
+                <div className="border p-3 rounded-md">
                     <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
                       <FormField
                         control={form.control}
@@ -375,7 +375,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
               <div className="space-y-2">
                 <FormLabel>Kết thúc</FormLabel>
-                <div className="space-y-2 border p-3 rounded-md">
+                <div className="border p-3 rounded-md">
                     <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
                       <FormField
                         control={form.control}
