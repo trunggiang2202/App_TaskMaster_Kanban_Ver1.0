@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Paperclip, Download, Clock } from 'lucide-react';
+import { Paperclip, Download } from 'lucide-react';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
@@ -126,18 +126,12 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
 
   return (
     <div className="space-y-3">
-      <div className="space-y-1 text-xs">
-          <p className="text-foreground">{formattedStart}</p>
-          <p className="text-foreground">{formattedEnd}</p>
-      </div>
-      <div className="space-y-2">
-        <div className="flex justify-between items-center text-xs">
-            <span className={`flex items-center gap-1 font-semibold ${getTimeLeftColor()}`}>
-              <Clock size={12} /> Thời gian còn lại: {timeLeft}
-            </span>
+        <div className="space-y-1 text-xs">
+            <p className="text-foreground">{formattedStart}</p>
+            <p className="text-foreground">{formattedEnd}</p>
+            <p className={`font-semibold ${getTimeLeftColor()}`}>Thời gian còn lại: {timeLeft}</p>
         </div>
         <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
-      </div>
     </div>
   );
 }
