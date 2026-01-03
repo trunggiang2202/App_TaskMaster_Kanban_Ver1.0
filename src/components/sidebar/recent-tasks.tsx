@@ -6,10 +6,9 @@ import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ListChecks, Clock, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Checkbox } from '@/components/ui/checkbox';
 
 function SubtasksDisplay({ subtasks }: { subtasks: Subtask[] }) {
   if (subtasks.length === 0) {
@@ -26,18 +25,16 @@ function SubtasksDisplay({ subtasks }: { subtasks: Subtask[] }) {
           {subtasks.map(subtask => (
             <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
               <div className="flex items-center space-x-2">
-                 <Checkbox
-                    id={`sidebar-subtask-${subtask.id}`}
-                    checked={subtask.completed}
-                    className="border-sidebar-foreground/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    disabled
-                  />
-                <label
-                  htmlFor={`sidebar-subtask-${subtask.id}`}
+                 {subtask.completed ? (
+                    <Check className="h-3 w-3 text-emerald-400" />
+                  ) : (
+                    <Circle className="h-3 w-3 text-sidebar-foreground/60" />
+                  )}
+                <span
                   className={`flex-1 text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
                 >
                   {subtask.title}
-                </label>
+                </span>
               </div>
                {subtask.description && (
                 <p className="text-xs text-sidebar-foreground/60 pl-6">{subtask.description}</p>
@@ -141,9 +138,8 @@ function TaskProgress({ task }: { task: Task }) {
     <div className="space-y-2">
       <div>
         <div className="flex justify-between items-center text-xs mb-1">
-          <span className="flex items-center gap-1.5 text-sidebar-foreground/80"><Clock size={12} /> Deadline</span>
-          <span className={`font-semibold ${getTimeLeftColor()}`}>
-            {timeLeft}
+          <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
+            <Clock size={12} /> {timeLeft}
           </span>
         </div>
         <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={getProgressColor()} />

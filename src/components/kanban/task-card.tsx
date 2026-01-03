@@ -4,11 +4,10 @@ import { useState, useEffect } from 'react';
 import type { Task, Subtask, Status } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, ListChecks, Clock, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Calendar, ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface TaskCardProps {
@@ -82,9 +81,9 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
     setIsDoneDisabled(progress < 100);
   }, [task.subtasks]);
 
-  const handleSubtaskChange = (subtaskId: string, completed: boolean) => {
+  const handleSubtaskToggle = (subtaskId: string) => {
     const updatedSubtasks = task.subtasks.map(st =>
-      st.id === subtaskId ? { ...st, completed } : st
+      st.id === subtaskId ? { ...st, completed: !st.completed } : st
     );
     onUpdateTask({ ...task, subtasks: updatedSubtasks });
   };
@@ -141,8 +140,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
         <div className="space-y-3">
           <div>
             <div className="flex justify-between items-center mb-1 text-xs">
-              <span className="flex items-center gap-1.5 text-muted-foreground"><Clock size={14} /> Tiến độ</span>
-              <span className={`font-semibold ${getTimeLeftColor()}`}>{timeLeft}</span>
+              <span className="flex items-center gap-1.5 text-muted-foreground"><Clock size={14} /> {timeLeft}</span>
             </div>
             <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
           </div>
@@ -167,19 +165,20 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (
                   <div key={subtask.id} className="flex flex-col space-y-2 p-2 rounded-md bg-muted/50">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`subtask-${subtask.id}`}
-                        checked={subtask.completed}
-                        onCheckedChange={(checked) => handleSubtaskChange(subtask.id, !!checked)}
-                        disabled={task.status === 'Done'}
-                      />
-                      <label
-                        htmlFor={`subtask-${subtask.id}`}
+                    <div 
+                      className="flex items-center space-x-2 cursor-pointer"
+                      onClick={() => handleSubtaskToggle(subtask.id)}
+                    >
+                      {subtask.completed ? (
+                        <Check className="h-4 w-4 text-emerald-500" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span
                         className={`flex-1 text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}
                       >
                         {subtask.title}
-                      </label>
+                      </span>
                     </div>
                      {subtask.description && (
                       <p className="text-xs text-muted-foreground pl-6">{subtask.description}</p>
