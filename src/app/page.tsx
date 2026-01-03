@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { initialTasks } from '@/lib/data';
 import type { Task } from '@/lib/types';
-import { SidebarProvider, Sidebar, SidebarRail, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
 import Header from '@/components/layout/header';
 import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
@@ -15,7 +15,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 type FilterType = 'all' | 'today';
 
 export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>(() => initialTasks.map(t => ({...t, startDate: new Date(t.startDate), endDate: new Date(t.endDate), createdAt: new Date(t.createdAt) })));
+  const [tasks, setTasks] = useState<Task[]>(() => initialTasks.map(t => {
+    const task: Task = {...t, createdAt: new Date(t.createdAt) };
+    if (t.startDate) task.startDate = new Date(t.startDate);
+    if (t.endDate) task.endDate = new Date(t.endDate);
+    task.subtasks = t.subtasks.map(st => {
+        const subtask = {...st};
+        if (st.startDate) subtask.startDate = new Date(st.startDate);
+        if (st.endDate) subtask.endDate = new Date(st.endDate);
+        return subtask;
+    });
+    return task;
+  }));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
@@ -60,7 +71,7 @@ export default function Home() {
   };
 
   const filteredTasksForSidebar = tasks.filter(task => {
-    if (activeFilter === 'today') {
+    if (activeFilter === 'today' && task.endDate) {
       return isToday(task.endDate);
     }
     return true;
@@ -69,7 +80,6 @@ export default function Home() {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarRail />
         <SidebarHeader className="p-4">
           <h2 className="text-2xl font-bold text-sidebar-foreground font-headline">TaskMaster</h2>
         </SidebarHeader>
@@ -78,7 +88,7 @@ export default function Home() {
             <SidebarMenuItem>
               <SidebarMenuButton onClick={() => handleOpenDialog()} className="w-full">
                 <Plus />
-                <span>New Task</span>
+                <span>Nhiệm vụ mới</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

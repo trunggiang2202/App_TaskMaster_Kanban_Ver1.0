@@ -20,9 +20,8 @@ import {
 } from "@/components/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_WIDTH_STORAGE_KEY = "sidebar_width";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "26rem"
+const SIDEBAR_WIDTH = "22rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
@@ -70,14 +69,6 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
-    const [width, setWidth] = React.useState(SIDEBAR_WIDTH);
-
-    React.useEffect(() => {
-        const savedWidth = localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
-        if (savedWidth) {
-            setWidth(savedWidth);
-        }
-    }, []);
 
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
@@ -117,33 +108,6 @@ const SidebarProvider = React.forwardRef<
 
     const state = open ? "expanded" : "collapsed"
 
-    const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        
-        const handleMouseMove = (e: MouseEvent) => {
-            const minWidth = 288; // 18rem
-            const maxWidth = 640; // 40rem
-            let newWidth = e.clientX;
-
-            if (newWidth < minWidth) {
-                newWidth = minWidth;
-            } else if (newWidth > maxWidth) {
-                newWidth = maxWidth;
-            }
-            
-            setWidth(`${newWidth}px`);
-        };
-
-        const handleMouseUp = () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-            localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, width);
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    };
-
     const contextValue = React.useMemo<SidebarContext>(
       () => ({
         state,
@@ -163,7 +127,7 @@ const SidebarProvider = React.forwardRef<
           <div
             style={
               {
-                "--sidebar-width": width,
+                "--sidebar-width": SIDEBAR_WIDTH,
                 "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
                 ...style,
               } as React.CSSProperties
@@ -175,12 +139,7 @@ const SidebarProvider = React.forwardRef<
             ref={ref}
             {...props}
           >
-            {React.Children.map(children, (child) => {
-                 if (React.isValidElement(child) && (child.type as any).displayName === 'Sidebar') {
-                    return React.cloneElement(child, { handleMouseDown } as any);
-                }
-                return child;
-            })}
+            {children}
           </div>
         </TooltipProvider>
       </SidebarContext.Provider>
@@ -195,7 +154,6 @@ const Sidebar = React.forwardRef<
     side?: "left" | "right"
     variant?: "sidebar" | "floating" | "inset"
     collapsible?: "offcanvas" | "icon" | "none"
-    handleMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void
   }
 >(
   (
@@ -205,7 +163,6 @@ const Sidebar = React.forwardRef<
       collapsible = "offcanvas",
       className,
       children,
-      handleMouseDown,
       ...props
     },
     ref
@@ -283,15 +240,7 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
-             {React.Children.map(children, (child) => {
-                 if (React.isValidElement(child) && (child.type as any).displayName === 'SidebarRail') {
-                    return React.cloneElement(child, { onMouseDown: handleMouseDown } as any);
-                }
-                if (React.isValidElement(child)) {
-                    return React.cloneElement(child);
-                }
-                return child;
-            })}
+            {children}
           </div>
         </div>
       </div>
@@ -328,10 +277,8 @@ SidebarTrigger.displayName = "SidebarTrigger"
 
 const SidebarRail = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & {
-    onMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void
-  }
->(({ className, onMouseDown, ...props }, ref) => {
+  React.ComponentProps<"button">
+>(({ className, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -341,12 +288,9 @@ const SidebarRail = React.forwardRef<
       aria-label="Toggle Sidebar"
       tabIndex={-1}
       onClick={toggleSidebar}
-      onMouseDown={onMouseDown}
       title="Toggle Sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
-        "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
-        "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
+        "absolute inset-y-0 z-20 hidden w-2 -translate-x-1/2 cursor-w-resize transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-px hover:after:bg-sidebar-border group-data-[side=left]:-right-2 group-data-[side=right]:-left-2 sm:flex",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
         "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
         "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
