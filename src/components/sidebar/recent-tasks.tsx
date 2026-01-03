@@ -266,7 +266,7 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask }: RecentTasks
           <div 
             key={task.id}
             onClick={() => onSelectTask(task.id)}
-            className={`p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors ${selectedTaskId === task.id ? 'bg-sidebar-primary/20' : 'bg-sidebar-accent'}`}
+            className={`p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors ${selectedTaskId === task.id ? 'bg-sidebar-accent/50' : 'bg-sidebar-accent'}`}
           >
             <div className="flex justify-between items-start">
               <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
