@@ -55,15 +55,14 @@ function TaskProgress({ task }: { task: Task }) {
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
       
       let result = '';
       if (days > 0) result += `${days}d `;
       if (hours > 0 || days > 0) result += `${hours}h `;
       if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
-      result += `${seconds}s`;
       
-      return result.trim() === '' ? '0s' : result.trim();
+      if (result.trim() === '') return 'dưới 1 phút';
+      return result.trim();
     }
 
     const updateTimes = () => {
@@ -98,8 +97,8 @@ function TaskProgress({ task }: { task: Task }) {
     return 'text-sidebar-foreground/80';
   };
 
-  const formattedStartDate = format(task.startDate, 'dd/MM/yyyy', { locale: vi });
-  const formattedEndDate = format(task.endDate, 'dd/MM/yyyy', { locale: vi });
+  const formattedStartDate = format(task.startDate, 'p, dd/MM/yyyy', { locale: vi });
+  const formattedEndDate = format(task.endDate, 'p, dd/MM/yyyy', { locale: vi });
   
   return (
     <div className="space-y-2">
