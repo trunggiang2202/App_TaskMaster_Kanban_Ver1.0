@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { format, isAfter, isBefore, isToday, startOfDay } from 'date-fns';
-import { Calendar, Clock, Edit, FileText, ListChecks, LoaderCircle, Paperclip, Trash2, Circle, Check, Download, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, Edit, ListChecks, LoaderCircle, Paperclip, Trash2, Circle, Check, Download, AlertTriangle } from 'lucide-react';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
   <a 
@@ -166,11 +166,10 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
 
       {/* Description */}
       <div className="p-4 rounded-md border bg-muted/20 space-y-3">
-        <div className="flex items-center gap-2 font-semibold">
-          <FileText className="h-5 w-5" />
+        <div className="flex items-center font-semibold">
           <h2 className="text-lg">Mô tả</h2>
         </div>
-        <p className="text-muted-foreground leading-relaxed pl-7">
+        <p className="text-muted-foreground leading-relaxed">
           {task.description || 'Không có mô tả cho nhiệm vụ này.'}
         </p>
       </div>
