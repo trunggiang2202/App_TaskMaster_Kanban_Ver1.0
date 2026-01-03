@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, ListChecks, Clock, MoreHorizontal } from 'lucide-react';
+import { Calendar, ListChecks, Clock, MoreHorizontal, Timer } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 
 interface TaskCardProps {
@@ -21,6 +21,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
   const [timeProgress, setTimeProgress] = useState(0);
   const [subtaskProgress, setSubtaskProgress] = useState(0);
   const [isDoneDisabled, setIsDoneDisabled] = useState(true);
+  const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
     const calculateTimeProgress = () => {
@@ -33,12 +34,41 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
       return Math.min(Math.max(percentage, 0), 100);
     };
 
+    const calculateTimeLeft = () => {
+      if (task.status === 'Done') {
+        return 'Đã hoàn thành';
+      }
+
+      const now = new Date().getTime();
+      const end = task.endDate.getTime();
+      const distance = end - now;
+
+      if (distance < 0) {
+        return 'Đã quá hạn';
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      
+      let result = '';
+      if (days > 0) result += `${days}d `;
+      if (hours > 0 || days > 0) result += `${hours}h `;
+      if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+      result += `${seconds}s`;
+      
+      return result.trim() + ' còn lại';
+    }
+
     setTimeProgress(calculateTimeProgress());
+    setTimeLeft(calculateTimeLeft());
 
     if (task.status !== 'Done') {
       const interval = setInterval(() => {
         setTimeProgress(calculateTimeProgress());
-      }, 1000); // Update every second for real-time effect
+        setTimeLeft(calculateTimeLeft());
+      }, 1000);
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
@@ -73,6 +103,13 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
     }
     return 'bg-emerald-500'; // Green
   };
+  
+  const getTimeLeftColor = () => {
+    if (task.status === 'Done') return 'text-emerald-500';
+    if (isOverdue) return 'text-destructive';
+    if (isWarning) return 'text-amber-500';
+    return 'text-muted-foreground';
+  };
 
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow bg-card">
@@ -96,12 +133,23 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
           <p className="text-sm text-muted-foreground">{task.description}</p>
         )}
         
-        <div>
-          <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Clock size={14} /> Deadline</span>
-            <span className={isOverdue ? "text-destructive font-medium" : ""}>{formatDistanceToNow(task.endDate, { addSuffix: true })}</span>
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5"><Clock size={14} /> Tiến độ</span>
+              <span className={isOverdue ? "text-destructive font-medium" : ""}>{formatDistanceToNow(task.endDate, { addSuffix: true })}</span>
+            </div>
+            <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
           </div>
-          <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
+          
+          <div>
+            <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5"><Timer size={14} /> Thời gian còn lại</span>
+            </div>
+            <div className={`text-sm font-semibold ${getTimeLeftColor()}`}>
+              {timeLeft}
+            </div>
+          </div>
         </div>
         
         {task.subtasks.length > 0 && (
@@ -145,7 +193,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
       <CardFooter className="flex justify-between items-center">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar size={14} />
-          <span>{format(task.endDate, 'MMM d, yyyy')}</span>
+          <span>Hạn chót: {format(task.endDate, 'MMM d, yyyy')}</span>
         </div>
       </CardFooter>
     </Card>
