@@ -37,16 +37,6 @@ const subtaskSchema = z.object({
   endDate: z.string().optional(),
   endTime: z.string().optional(),
   attachments: z.array(attachmentSchema).optional(),
-}).refine(data => {
-    // If there is a title, then all date/time fields are required
-    if (data.title && data.title.trim() !== '') {
-        return !!data.startDate && !!data.startTime && !!data.endDate && !!data.endTime;
-    }
-    // If there's no title, we don't enforce the other fields
-    return true;
-}, {
-    message: "Deadline là bắt buộc nếu công việc có tiêu đề.",
-    path: ["endDate"], // Show the error under one of the fields
 });
 
 const taskSchema = z.object({
