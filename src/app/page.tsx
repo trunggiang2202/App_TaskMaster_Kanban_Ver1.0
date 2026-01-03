@@ -117,17 +117,13 @@ export default function Home() {
   const selectedTask = tasks.find(task => task.id === selectedTaskId);
 
   const todaysSubtaskCount = tasks.reduce((count, task) => {
-    const today = startOfDay(new Date());
-    const todaySubtasks = task.subtasks.filter(st => {
-      if (!st.startDate || !st.endDate || st.completed) return false;
-      
-      const stStartDate = startOfDay(st.startDate);
-      const stEndDate = startOfDay(st.endDate);
-      
-      return isToday(stStartDate) || isToday(stEndDate) || (isBefore(stStartDate, today) && isAfter(stEndDate, today));
-    });
-    return count + todaySubtasks.length;
+    const now = new Date();
+    const inProgressSubtasks = task.subtasks.filter(st => 
+      !st.completed && st.startDate && isAfter(now, st.startDate)
+    );
+    return count + inProgressSubtasks.length;
   }, 0);
+
 
   return (
     <SidebarProvider>

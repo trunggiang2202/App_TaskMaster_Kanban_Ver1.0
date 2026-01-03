@@ -96,27 +96,12 @@ function TaskProgress({ task }: { task: Task }) {
 }
 
 const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
-    const today = startOfDay(new Date());
-
-    const isSubtaskForToday = (st: Task['subtasks'][0]) => {
-        const stStartDate = st.startDate ? startOfDay(st.startDate) : null;
-        const stEndDate = st.endDate ? startOfDay(st.endDate) : null;
-        if (stStartDate && stEndDate) {
-            return isToday(stStartDate) || isToday(stEndDate) || (isBefore(stStartDate, today) && isAfter(stEndDate, today));
-        }
-        if (stStartDate) return isToday(stStartDate);
-        if (stEndDate) return isToday(stEndDate);
-        return false;
-    };
+    const now = new Date();
     
-    const todaySubtasks = task.subtasks.filter(isSubtaskForToday);
-    const completedTodaySubtasks = todaySubtasks.filter(st => st.completed).length;
-    const totalTodaySubtasks = todaySubtasks.length;
-    const uncompletedTodaySubtasks = totalTodaySubtasks - completedTodaySubtasks;
-
-    if (totalTodaySubtasks === 0) {
-        return null;
-    }
+    // "In Progress" subtasks are today's tasks
+    const todaySubtasks = task.subtasks.filter(st => !st.completed && st.startDate && isAfter(now, st.startDate));
+    
+    const uncompletedTodaySubtasks = todaySubtasks.length;
 
     if (uncompletedTodaySubtasks === 0) {
         return (
