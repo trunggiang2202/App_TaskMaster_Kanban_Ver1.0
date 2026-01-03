@@ -59,7 +59,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
             className="flex flex-col"
         >
             <div className="flex items-start gap-3">
-                 <div className={`h-5 w-5 mt-0.5 shrink-0 ${isClickable ? 'cursor-pointer' : ''}`} onClick={handleToggle}>
+                 <div className={`h-5 w-5 mt-0.5 shrink-0 ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}`} onClick={handleToggle}>
                     {renderIcon()}
                 </div>
                 <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
@@ -125,6 +125,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
       if (stStartDate && isAfter(stStartDate, today)) {
           categories['Chưa làm'].push(st);
       } else {
+          // If start date is today or in the past, it's "In Progress"
           categories['Đang làm'].push(st);
       }
     });
@@ -197,7 +198,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                                   onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
                                   onTitleClick={() => handleSubtaskClick(st)}
                                   isClickable={column.isClickable}
-                                  isInProgress={column.title === 'Đang làm'}
+                                  isInProgress={column.title === 'Đang làm' && !st.completed}
                               />
                              </CardContent>
                           </Card>
