@@ -20,19 +20,27 @@ import type { Task, Subtask } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 
 const taskSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters long.'),
+  title: z.string().min(3, 'Tiêu đề phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Định dạng ngày phải là YYYY-MM-DD"),
+  startDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Định dạng ngày phải là YYYY-MM-DD"),
+  endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(z.object({
-    title: z.string().min(1, "Subtask title can't be empty."),
+    title: z.string().min(1, "Tiêu đề công việc phụ không được để trống."),
   })).optional(),
 }).refine(data => {
-    const startDateTime = new Date(`${data.startDate}T${data.startTime}`);
-    const endDateTime = new Date(`${data.endDate}T${data.endTime}`);
-    return endDateTime > startDateTime;
+    try {
+      const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+      const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+      
+      const startDateTime = new Date(startYear, startMonth - 1, startDay, ...data.startTime.split(':').map(Number));
+      const endDateTime = new Date(endYear, endMonth - 1, endDay, ...data.endTime.split(':').map(Number));
+      
+      return endDateTime > startDateTime;
+    } catch (e) {
+      return false;
+    }
 }, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"],
@@ -78,8 +86,13 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
       completed: false,
     })) : [];
 
-    const startDate = new Date(`${data.startDate}T${data.startTime}`);
-    const endDate = new Date(`${data.endDate}T${data.endTime}`);
+    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+    const [startHour, startMinute] = data.startTime.split(':').map(Number);
+    const startDate = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
+    
+    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+    const [endHour, endMinute] = data.endTime.split(':').map(Number);
+    const endDate = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
 
     const newTask: Task = {
       id: crypto.randomUUID(),
@@ -142,9 +155,9 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                     name="startDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ngày (YYYY-MM-DD)</FormLabel>
+                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                          <FormControl>
-                            <Input placeholder="2024-12-31" {...field} />
+                            <Input placeholder="31-12-2024" {...field} />
                           </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -174,9 +187,9 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                     name="endDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ngày (YYYY-MM-DD)</FormLabel>
+                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                          <FormControl>
-                            <Input placeholder="2024-12-31" {...field} />
+                            <Input placeholder="31-12-2024" {...field} />
                           </FormControl>
                         <FormMessage />
                       </FormItem>
