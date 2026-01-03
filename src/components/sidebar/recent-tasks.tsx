@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check, ChevronDown, LoaderCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isAfter, startOfDay } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function SubtaskTimeProgress({ subtask }: { subtask: Subtask }) {
@@ -178,6 +178,18 @@ function TaskProgress({ task }: { task: Task }) {
     if (isWarning) return 'text-amber-500';
     return 'text-sidebar-foreground/80';
   };
+  
+  const getSubtaskStatus = (subtask: Subtask): 'Chưa làm' | 'Đang làm' | 'Xong' => {
+      if (subtask.completed) {
+        return 'Xong';
+      }
+      const today = startOfDay(new Date());
+      const stStartDate = subtask.startDate ? startOfDay(subtask.startDate) : null;
+      if (stStartDate && isAfter(stStartDate, today)) {
+          return 'Chưa làm';
+      }
+      return 'Đang làm';
+  };
 
   return (
     <div className="space-y-2">
@@ -212,18 +224,22 @@ function TaskProgress({ task }: { task: Task }) {
               </div>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => {
+                  const status = getSubtaskStatus(subtask);
+                  const isInProgress = status === 'Đang làm';
                   return (
                     <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
-                      <div 
-                        className="flex items-start space-x-2"
-                      >
-                        {subtask.completed ? (
-                           <div className="h-3 w-3 mt-0.5 flex items-center justify-center bg-primary rounded-full shrink-0">
-                                <Check className="h-2 w-2 text-primary-foreground" />
-                            </div>
-                        ) : (
-                          <Circle className="h-3 w-3 mt-0.5 text-sidebar-foreground/60 shrink-0" />
-                        )}
+                      <div className="flex items-start space-x-2">
+                          <div className="h-3 w-3 mt-0.5 shrink-0 flex items-center justify-center">
+                            {subtask.completed ? (
+                               <div className="h-3 w-3 flex items-center justify-center bg-primary rounded-full">
+                                    <Check className="h-2 w-2 text-primary-foreground" />
+                                </div>
+                            ) : isInProgress ? (
+                              <LoaderCircle className="h-3 w-3 text-amber-400 animate-spin" />
+                            ) : (
+                                <div className="w-3 h-3" />
+                            )}
+                          </div>
                         <div className="flex-1">
                           <span
                             className={`text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
