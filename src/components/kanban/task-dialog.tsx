@@ -21,10 +21,12 @@ import type { Task, Subtask, Attachment } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import Image from 'next/image';
 
 const attachmentSchema = z.object({
   name: z.string(),
   url: z.string(),
+  type: z.enum(['image', 'file']).optional(),
 });
 
 const subtaskSchema = z.object({
@@ -175,9 +177,20 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any, index: number) => {
       const file = e.target.files?.[0];
       if (file) {
-          const newAttachment = { name: file.name, url: URL.createObjectURL(file) };
-          const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
-          form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
+          const isImage = file.type.startsWith('image/');
+          if (isImage) {
+            const reader = new FileReader();
+            reader.onload = (readEvent) => {
+                const newAttachment = { name: file.name, url: readEvent.target?.result as string, type: 'image' as const };
+                const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
+                form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            const newAttachment = { name: file.name, url: URL.createObjectURL(file), type: 'file' as const };
+            const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
+            form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
+          }
       }
   };
 
@@ -352,16 +365,27 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                         onChange={(e) => handleFileChange(e, subtaskField, index)}
                                                     />
                                                 </FormControl>
-                                                <div className="space-y-2 mt-2">
+                                                <div className="mt-2 grid grid-cols-3 gap-2">
                                                     {subtaskAttachments.map((attachment, attachmentIndex) => (
-                                                        <div key={attachmentIndex} className="flex items-center justify-between text-sm p-2 bg-background/50 rounded-md">
-                                                            <span className="truncate">{attachment.name}</span>
-                                                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
-                                                              const current = form.getValues(`subtasks.${index}.attachments`) || [];
-                                                              form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex));
-                                                            }}>
-                                                                <X className="h-4 w-4" />
-                                                            </Button>
+                                                        <div key={attachmentIndex} className="relative group">
+                                                          {attachment.type === 'image' ? (
+                                                            <Image src={attachment.url} alt={attachment.name} width={100} height={100} className="w-full h-24 object-cover rounded-md" />
+                                                          ) : (
+                                                            <div className="w-full h-24 bg-muted rounded-md flex items-center justify-center p-2">
+                                                              <p className="text-xs text-center text-muted-foreground truncate">{attachment.name}</p>
+                                                            </div>
+                                                          )}
+                                                          <Button 
+                                                              type="button" 
+                                                              variant="destructive" 
+                                                              size="icon" 
+                                                              className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" 
+                                                              onClick={() => {
+                                                                  const current = form.getValues(`subtasks.${index}.attachments`) || [];
+                                                                  form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex));
+                                                              }}>
+                                                              <X className="h-4 w-4" />
+                                                          </Button>
                                                         </div>
                                                     ))}
                                                 </div>

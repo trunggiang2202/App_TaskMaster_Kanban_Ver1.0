@@ -3,6 +3,7 @@ export type Status = 'To Do' | 'In Progress' | 'Done';
 export interface Attachment {
   name: string;
   url: string;
+  type?: 'image' | 'file';
 }
 
 export interface Subtask {

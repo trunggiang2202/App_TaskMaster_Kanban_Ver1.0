@@ -9,19 +9,36 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Paperclip, Download } from 'lucide-react';
+import Image from 'next/image';
 
-const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
-    <a 
-      href={attachment.url} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted/80 transition-colors text-sm"
-    >
-      <Paperclip className="h-4 w-4 text-muted-foreground" />
-      <span className="flex-1 truncate text-foreground">{attachment.name}</span>
-      <Download className="h-4 w-4 text-muted-foreground" />
-    </a>
-  );
+const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
+    if (attachment.type === 'image') {
+        return (
+            <a 
+                href={attachment.url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="block relative"
+            >
+                <Image src={attachment.url} alt={attachment.name} width={400} height={300} className="w-full h-auto object-cover rounded-md" />
+            </a>
+        );
+    }
+    
+    return (
+      <a 
+        href={attachment.url} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        download={attachment.name}
+        className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted/80 transition-colors text-sm"
+      >
+        <Paperclip className="h-4 w-4 text-muted-foreground" />
+        <span className="flex-1 truncate text-foreground">{attachment.name}</span>
+        <Download className="h-4 w-4 text-muted-foreground" />
+      </a>
+    );
+};
 
 interface SubtaskDetailDialogProps {
   subtask: Subtask | null;
