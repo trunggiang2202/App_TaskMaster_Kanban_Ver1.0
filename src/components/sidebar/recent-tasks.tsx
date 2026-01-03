@@ -83,8 +83,8 @@ function TaskProgress({ task }: { task: Task }) {
     return 'text-sidebar-foreground/80';
   };
 
-  const formattedStartDate = format(task.startDate, 'dd/MM/yyyy HH:mm', { locale: vi });
-  const formattedEndDate = format(task.endDate, 'dd/MM/yyyy HH:mm', { locale: vi });
+  const formattedStartDate = format(task.startDate, 'dd/MM/yyyy', { locale: vi });
+  const formattedEndDate = format(task.endDate, 'dd/MM/yyyy', { locale: vi });
   
   return (
     <div className="space-y-2">

@@ -122,8 +122,8 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     return 'text-muted-foreground';
   };
 
-  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'dd/MM/yyyy HH:mm', { locale: vi })}` : '';
-  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yyyy HH:mm', { locale: vi })}` : '';
+  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'dd/MM/yyyy', { locale: vi })}` : '';
+  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yyyy', { locale: vi })}` : '';
 
   return (
     <div className="space-y-3">
@@ -196,5 +196,3 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
     </Dialog>
   );
 }
-
-    
