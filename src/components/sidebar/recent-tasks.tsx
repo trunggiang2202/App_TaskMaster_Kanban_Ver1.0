@@ -215,9 +215,7 @@ function TaskProgress({ task, onSubtaskToggle }: { task: Task, onSubtaskToggle: 
                         className="flex items-start space-x-2 cursor-pointer"
                         onClick={() => onSubtaskToggle(subtask.id)}
                       >
-                        {subtask.completed ? (
-                          <Check className="h-3 w-3 mt-0.5 text-emerald-400 shrink-0" />
-                        ) : isSubtaskInProgress ? (
+                        {isSubtaskInProgress ? (
                           <LoaderCircle className="h-3 w-3 mt-0.5 text-amber-400 shrink-0 animate-spin" />
                         ) : (
                           <Circle className="h-3 w-3 mt-0.5 text-sidebar-foreground/60 shrink-0" />

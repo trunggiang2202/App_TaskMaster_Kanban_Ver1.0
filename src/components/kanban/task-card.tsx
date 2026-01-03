@@ -258,9 +258,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
                         className="flex items-start space-x-2 cursor-pointer"
                         onClick={() => handleSubtaskToggle(subtask.id)}
                       >
-                        {subtask.completed ? (
-                          <Check className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
-                        ) : isSubtaskInProgress ? (
+                        {isSubtaskInProgress ? (
                           <LoaderCircle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0 animate-spin" />
                         ) : (
                           <Circle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
