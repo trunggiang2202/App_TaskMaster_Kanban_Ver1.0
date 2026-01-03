@@ -172,110 +172,111 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nhiệm vụ</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ví dụ: Hoàn thành báo cáo dự án" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="space-y-2 border p-3 rounded-md">
-              <h3 className="text-sm font-medium">Bắt đầu</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                       <FormControl>
-                          <Input placeholder="31-12-2024" {...field} />
-                        </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Giờ (HH:MM)</FormLabel>
-                       <FormControl>
-                          <Input placeholder="09:00" {...field} />
-                        </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
+            <div className="space-y-4 pr-6 -mr-6 overflow-y-auto max-h-[calc(80vh-150px)]">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nhiệm vụ</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ví dụ: Hoàn thành báo cáo dự án" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="space-y-2 border p-3 rounded-md">
+                <h3 className="text-sm font-medium">Bắt đầu</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="31-12-2024" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Giờ (HH:MM)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="09:00" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2 border p-3 rounded-md">
-              <h3 className="text-sm font-medium">Kết thúc</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                       <FormControl>
-                          <Input placeholder="31-12-2024" {...field} />
-                        </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Giờ (HH:MM)</FormLabel>
-                      <FormControl>
-                          <Input placeholder="17:00" {...field} />
-                        </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="space-y-2 border p-3 rounded-md">
+                <h3 className="text-sm font-medium">Kết thúc</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="31-12-2024" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Giờ (HH:MM)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="17:00" {...field} />
+                          </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-            </div>
 
-            <Separator />
-            
-            <div>
-              <FormLabel>Công việc</FormLabel>
-              <div className="mt-2 max-h-64 overflow-y-auto">
-                 <div className="space-y-2 pr-2">
-                   <Accordion type="multiple" className="w-full space-y-2">
-                    {fields.map((field, index) => (
-                      <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
-                         <AccordionItem value={`item-${index}`} className="w-full border-b-0">
-                           <div className="flex items-center gap-2 w-full">
-                             <FormField
+              <Separator />
+              
+              <div>
+                <FormLabel>Công việc</FormLabel>
+                <div className="mt-2 max-h-64 overflow-y-auto">
+                  <div className="space-y-2 pr-2">
+                    <Accordion type="multiple" className="w-full space-y-2">
+                      {fields.map((field, index) => (
+                        <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
+                          <AccordionItem value={`item-${index}`} className="w-full border-b-0">
+                            <div className="flex items-center gap-2 w-full">
+                              <FormField
                                 control={form.control}
                                 name={`subtasks.${index}.title`}
                                 render={({ field }) => (
@@ -290,108 +291,109 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormMessage className="pl-3" />
                                   </FormItem>
                                 )}
-                              />
-                              <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                                 <Settings2 className="h-4 w-4" />
-                              </AccordionTrigger>
-                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                           </div>
-                          <AccordionContent className="px-3 pt-2">
-                             <div className="space-y-4">
-                              <FormField
-                                control={form.control}
-                                name={`subtasks.${index}.description`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                     <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
-                                    <FormControl>
-                                      <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <div className="space-y-2">
-                                  <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <FormField
-                                      control={form.control}
-                                      name={`subtasks.${index}.startDate`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <Input placeholder="DD-MM-YYYY" {...field} />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                     <FormField
-                                      control={form.control}
-                                      name={`subtasks.${index}.startTime`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <Input placeholder="HH:MM" {...field} />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                </div>
+                                />
+                                <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                                  <Settings2 className="h-4 w-4" />
+                                </AccordionTrigger>
+                                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </div>
+                            <AccordionContent className="px-3 pt-2">
+                              <div className="space-y-4">
+                                <FormField
+                                  control={form.control}
+                                  name={`subtasks.${index}.description`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
+                                      <FormControl>
+                                        <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                                 <div className="space-y-2">
-                                  <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
-                                  <div className="grid grid-cols-2 gap-4">
-                                     <FormField
-                                      control={form.control}
-                                      name={`subtasks.${index}.endDate`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <Input placeholder="DD-MM-YYYY" {...field} />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                     <FormField
-                                      control={form.control}
-                                      name={`subtasks.${index}.endTime`}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormControl>
-                                            <Input placeholder="HH:MM" {...field} />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
+                                    <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <FormField
+                                        control={form.control}
+                                        name={`subtasks.${index}.startDate`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormControl>
+                                              <Input placeholder="DD-MM-YYYY" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                      <FormField
+                                        control={form.control}
+                                        name={`subtasks.${index}.startTime`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormControl>
+                                              <Input placeholder="HH:MM" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </div>
                                   </div>
-                                </div>
-                             </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </div>
-                    ))}
-                   </Accordion>
-                 </div>
+                                  <div className="space-y-2">
+                                    <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <FormField
+                                        control={form.control}
+                                        name={`subtasks.${index}.endDate`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormControl>
+                                              <Input placeholder="DD-MM-YYYY" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                      <FormField
+                                        control={form.control}
+                                        name={`subtasks.${index}.endTime`}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormControl>
+                                              <Input placeholder="HH:MM" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </div>
+                                  </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </div>
+                      ))}
+                    </Accordion>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '' })}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Thêm Công việc
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '' })}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Thêm Công việc
-              </Button>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
               <Button type="submit">{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
             </DialogFooter>
