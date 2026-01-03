@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check, ChevronDown } from 'lucide-react';
+import { Calendar, ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check, ChevronDown, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface TaskCardProps {
@@ -250,31 +250,36 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
-                {task.subtasks.map(subtask => (
-                  <div key={subtask.id} className="flex flex-col space-y-2 p-2 rounded-md bg-muted/50">
-                    <div 
-                      className="flex items-start space-x-2 cursor-pointer"
-                      onClick={() => handleSubtaskToggle(subtask.id)}
-                    >
-                      {subtask.completed ? (
-                        <Check className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
-                      ) : (
-                        <Circle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                      )}
-                      <div className="flex-1">
-                        <span
-                          className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}
-                        >
-                          {subtask.title}
-                        </span>
-                        {subtask.description && (
-                          <p className="text-xs text-muted-foreground">{subtask.description}</p>
+                {task.subtasks.map(subtask => {
+                  const isSubtaskInProgress = task.status === 'In Progress' && !subtask.completed;
+                  return (
+                    <div key={subtask.id} className="flex flex-col space-y-2 p-2 rounded-md bg-muted/50">
+                      <div 
+                        className="flex items-start space-x-2 cursor-pointer"
+                        onClick={() => handleSubtaskToggle(subtask.id)}
+                      >
+                        {subtask.completed ? (
+                          <Check className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                        ) : isSubtaskInProgress ? (
+                          <LoaderCircle className="h-4 w-4 mt-0.5 text-amber-500 shrink-0 animate-spin" />
+                        ) : (
+                          <Circle className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
                         )}
+                        <div className="flex-1">
+                          <span
+                            className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}
+                          >
+                            {subtask.title}
+                          </span>
+                          {subtask.description && (
+                            <p className="text-xs text-muted-foreground">{subtask.description}</p>
+                          )}
+                        </div>
                       </div>
+                      <SubtaskTimeProgress subtask={subtask} />
                     </div>
-                    <SubtaskTimeProgress subtask={subtask} />
-                  </div>
-                ))}
+                  )
+                })}
               </AccordionContent>
             </AccordionItem>
           </Accordion>

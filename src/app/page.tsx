@@ -96,6 +96,7 @@ export default function Home() {
             tasks={filteredTasksForSidebar} 
             onEditTask={handleOpenDialog}
             onDeleteTask={deleteTask}
+            onUpdateTask={updateTask}
           />
         </SidebarContent>
       </Sidebar>

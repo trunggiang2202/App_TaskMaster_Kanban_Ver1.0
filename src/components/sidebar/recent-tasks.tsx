@@ -6,7 +6,7 @@ import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check, ChevronDown } from 'lucide-react';
+import { ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check, ChevronDown, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -96,7 +96,7 @@ function SubtaskTimeProgress({ subtask }: { subtask: Subtask }) {
   );
 }
 
-function TaskProgress({ task }: { task: Task }) {
+function TaskProgress({ task, onSubtaskToggle }: { task: Task, onSubtaskToggle: (subtaskId: string) => void }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
   const [subtaskProgress, setSubtaskProgress] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState('');
@@ -207,28 +207,36 @@ function TaskProgress({ task }: { task: Task }) {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
-                {task.subtasks.map(subtask => (
-                  <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
-                    <div className="flex items-start space-x-2">
-                      {subtask.completed ? (
+                {task.subtasks.map(subtask => {
+                  const isSubtaskInProgress = task.status === 'In Progress' && !subtask.completed;
+                  return (
+                    <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
+                      <div 
+                        className="flex items-start space-x-2 cursor-pointer"
+                        onClick={() => onSubtaskToggle(subtask.id)}
+                      >
+                        {subtask.completed ? (
                           <Check className="h-3 w-3 mt-0.5 text-emerald-400 shrink-0" />
+                        ) : isSubtaskInProgress ? (
+                          <LoaderCircle className="h-3 w-3 mt-0.5 text-amber-400 shrink-0 animate-spin" />
                         ) : (
                           <Circle className="h-3 w-3 mt-0.5 text-sidebar-foreground/60 shrink-0" />
                         )}
-                      <div className="flex-1">
-                        <span
-                          className={`text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
-                        >
-                          {subtask.title}
-                        </span>
-                        {subtask.description && (
-                          <p className="text-xs text-sidebar-foreground/60">{subtask.description}</p>
-                        )}
+                        <div className="flex-1">
+                          <span
+                            className={`text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
+                          >
+                            {subtask.title}
+                          </span>
+                          {subtask.description && (
+                            <p className="text-xs text-sidebar-foreground/60">{subtask.description}</p>
+                          )}
+                        </div>
                       </div>
+                      <SubtaskTimeProgress subtask={subtask} />
                     </div>
-                    <SubtaskTimeProgress subtask={subtask} />
-                  </div>
-                ))}
+                  )
+                })}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -242,13 +250,25 @@ interface RecentTasksProps {
   tasks: Task[];
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
+  onUpdateTask: (task: Task) => void;
 }
 
 
-export function RecentTasks({ tasks, onEditTask, onDeleteTask }: RecentTasksProps) {
+export function RecentTasks({ tasks, onEditTask, onDeleteTask, onUpdateTask }: RecentTasksProps) {
   const recentTasks = [...tasks]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
+
+  const handleSubtaskToggle = (taskId: string, subtaskId: string) => {
+    const taskToUpdate = tasks.find(t => t.id === taskId);
+    if (!taskToUpdate) return;
+
+    const updatedSubtasks = taskToUpdate.subtasks.map(st =>
+      st.id === subtaskId ? { ...st, completed: !st.completed } : st
+    );
+    onUpdateTask({ ...taskToUpdate, subtasks: updatedSubtasks });
+  };
+
 
   return (
     <SidebarGroup>
@@ -276,7 +296,10 @@ export function RecentTasks({ tasks, onEditTask, onDeleteTask }: RecentTasksProp
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <TaskProgress task={task} />
+            <TaskProgress 
+              task={task} 
+              onSubtaskToggle={(subtaskId) => handleSubtaskToggle(task.id, subtaskId)} 
+            />
           </div>
         ))}
          {recentTasks.length === 0 && (
