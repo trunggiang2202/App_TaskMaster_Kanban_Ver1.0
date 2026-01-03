@@ -75,6 +75,22 @@ export default function Home() {
       prevTasks.map(task => (task.id === taskId ? { ...task, status } : task))
     );
   };
+  
+  const handleSubtaskToggle = (taskId: string, subtaskId: string) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task => {
+        if (task.id === taskId) {
+          const updatedSubtasks = task.subtasks.map(subtask =>
+            subtask.id === subtaskId
+              ? { ...subtask, completed: !subtask.completed }
+              : subtask
+          );
+          return { ...task, subtasks: updatedSubtasks };
+        }
+        return task;
+      })
+    );
+  };
 
   const filteredTasksForSidebar = tasks.filter(task => {
     if (activeFilter === 'today') {
@@ -133,6 +149,7 @@ export default function Home() {
                 onUpdateTask={updateTask}
                 onDeleteTask={deleteTask}
                 onEditTask={handleOpenDialog}
+                onSubtaskToggle={handleSubtaskToggle}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">

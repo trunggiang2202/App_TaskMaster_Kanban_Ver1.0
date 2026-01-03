@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { Task, Subtask, Status, Attachment } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { format, isAfter, isBefore, isToday, startOfDay } from 'date-fns';
@@ -79,11 +79,12 @@ interface TaskDetailProps {
   onUpdateTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
+  onSubtaskToggle: (taskId: string, subtaskId: string) => void;
 }
 
 type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong' | 'Trễ';
 
-export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTask }: TaskDetailProps) {
+export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTask, onSubtaskToggle }: TaskDetailProps) {
   const [formattedRange, setFormattedRange] = React.useState('');
 
   React.useEffect(() => {
@@ -93,10 +94,6 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
       setFormattedRange(`${start} - ${end}`);
     }
   }, [task]);
-
-  const handleSubtaskToggle = (subtaskId: string) => {
-    // This function is disabled as per user request
-  };
   
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
@@ -219,7 +216,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                             <SubtaskItem 
                                 subtask={st}
                                 taskStatus={task.status}
-                                onToggle={handleSubtaskToggle}
+                                onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
                             />
                            </CardContent>
                         </Card>
