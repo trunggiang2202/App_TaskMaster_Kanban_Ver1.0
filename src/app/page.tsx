@@ -10,11 +10,15 @@ import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
+import { isToday } from 'date-fns';
+
+type FilterType = 'all' | 'today';
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks.map(t => ({...t, startDate: new Date(t.startDate), endDate: new Date(t.endDate), createdAt: new Date(t.createdAt) })));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const handleOpenDialog = (task?: Task) => {
     setTaskToEdit(task);
@@ -55,6 +59,13 @@ export default function Home() {
     );
   };
 
+  const filteredTasks = tasks.filter(task => {
+    if (activeFilter === 'today') {
+      return isToday(task.endDate);
+    }
+    return true;
+  });
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -81,9 +92,9 @@ export default function Home() {
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col h-screen bg-background">
-          <Header />
+          <Header activeFilter={activeFilter} onFilterChange={setActiveFilter} />
           <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            <KanbanBoard tasks={tasks} onUpdateTask={updateTask} onTaskStatusChange={handleTaskStatusChange} onEditTask={handleOpenDialog} />
+            <KanbanBoard tasks={filteredTasks} onUpdateTask={updateTask} onTaskStatusChange={handleTaskStatusChange} onEditTask={handleOpenDialog} />
           </main>
         </div>
       </SidebarInset>
