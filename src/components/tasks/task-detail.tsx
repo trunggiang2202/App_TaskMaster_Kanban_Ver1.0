@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { format, isAfter, isBefore, isToday, startOfDay } from 'date-fns';
-import { Calendar, Clock, Edit, ListChecks, LoaderCircle, Paperclip, Trash2, Circle, Check, Download } from 'lucide-react';
+import { Calendar, Edit, ListChecks, Trash2, Circle, Check, Download, Paperclip } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
@@ -28,11 +28,13 @@ interface SubtaskItemProps {
     onToggle: (subtaskId: string) => void;
     onTitleClick: () => void;
     isClickable: boolean;
+    borderColorClass: string;
 }
 
-const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable }) => {
-    const handleToggle = () => {
+const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, borderColorClass }) => {
+    const handleToggle = (e: React.MouseEvent) => {
         if (isClickable) {
+            e.stopPropagation();
             onToggle(subtask.id);
         }
     };
@@ -40,24 +42,24 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     return (
         <div 
             key={subtask.id} 
-            className="flex flex-col p-3 rounded-md bg-muted/50 cursor-pointer"
+            className="flex flex-col cursor-pointer"
             onClick={onTitleClick}
         >
             <div className="flex items-start gap-3">
-                 {subtask.completed ? (
-                    <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); handleToggle(); }}>
-                        <Check className="h-3 w-3 text-primary-foreground" />
+                 {isClickable ? (
+                    <div className="h-5 w-5 mt-0.5 shrink-0 cursor-pointer" onClick={handleToggle}>
+                        {subtask.completed ? (
+                             <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full">
+                                <Check className="h-3 w-3 text-primary-foreground" />
+                            </div>
+                        ) : (
+                            <Circle className="h-5 w-5 text-muted-foreground" />
+                        )}
                     </div>
                 ) : (
-                    isClickable ? (
-                        <div className="h-5 w-5 mt-0.5 shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); handleToggle(); }}>
-                          <Circle className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                    ) : (
-                        <div className="h-5 w-5 mt-0.5 shrink-0">
-                           <div className="w-5 h-5" />
-                        </div>
-                    )
+                    <div className="h-5 w-5 mt-0.5 shrink-0">
+                       <div className="w-5 h-5" />
+                    </div>
                 )}
                 <div className="flex-1">
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
@@ -130,28 +132,27 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
   }, [task.subtasks]);
 
 
-  const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean, titleColor: string }[] = [
-    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-sky-500' },
-    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500' },
-    { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-emerald-500' },
+  const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; borderColor: string; bgColor: string; }[] = [
+    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-sky-500', borderColor: 'border-sky-500', bgColor: 'bg-sky-500/5' },
+    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500', borderColor: 'border-amber-500', bgColor: 'bg-amber-500/5' },
+    { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-emerald-500', borderColor: 'border-emerald-500', bgColor: 'bg-emerald-500/5' },
   ];
 
   return (
     <>
       <div className="p-6 lg:p-8 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold font-headline tracking-tight">{task.title}</h1>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Chỉnh sửa
-            </Button>
-            <Button variant="destructive" size="sm" onClick={() => onDeleteTask(task.id)}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Xóa
-            </Button>
-          </div>
+            <h1 className="text-3xl font-bold font-headline tracking-tight">{task.title}</h1>
+            <div className="flex items-center gap-2 flex-shrink-0">
+                <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Chỉnh sửa
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => onDeleteTask(task.id)}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Xóa
+                </Button>
+            </div>
         </div>
 
         {/* Date Range */}
@@ -164,12 +165,12 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
 
         {/* Description */}
         <div className="p-4 rounded-md border bg-muted/20 space-y-3">
-          <div className="flex items-center font-semibold">
-            <h2 className="text-lg">Mô tả</h2>
-          </div>
-          <p className="text-muted-foreground leading-relaxed">
-            {task.description || 'Không có mô tả cho nhiệm vụ này.'}
-          </p>
+            <div className="flex items-center font-semibold">
+                <h2 className="text-lg">Mô tả</h2>
+            </div>
+            <p className="text-muted-foreground leading-relaxed">
+                {task.description || 'Không có mô tả cho nhiệm vụ này.'}
+            </p>
         </div>
         
         {/* Subtasks */}
@@ -187,16 +188,17 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className={`font-semibold text-sm ${column.titleColor}`}>{column.title} ({column.subtasks.length})</h3>
                     </div>
-                    <div className="bg-muted/30 rounded-lg p-2 space-y-2 min-h-24">
+                    <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
                       {column.subtasks.length > 0 ? (
                         column.subtasks.map(st => (
-                          <Card key={st.id} className="bg-background shadow-sm">
-                             <CardContent className="p-0">
+                          <Card key={st.id} className={`bg-background shadow-sm border-l-4 ${column.borderColor}`}>
+                             <CardContent className="p-3">
                               <SubtaskItem 
                                   subtask={st}
                                   onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
                                   onTitleClick={() => handleSubtaskClick(st)}
                                   isClickable={column.isClickable}
+                                  borderColorClass={column.borderColor}
                               />
                              </CardContent>
                           </Card>
