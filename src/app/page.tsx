@@ -37,11 +37,7 @@ export default function Home() {
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
   useEffect(() => {
-    const sessionWelcomed = sessionStorage.getItem('welcome_shown');
-    if (!sessionWelcomed) {
-      setShowWelcomeDialog(true);
-      sessionStorage.setItem('welcome_shown', 'true');
-    }
+    setShowWelcomeDialog(true);
   }, []);
 
   const handleOpenDialog = (task?: Task) => {
