@@ -9,6 +9,11 @@ import { buttonVariants } from "@/components/ui/button"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
+const formatWeekdayName = (day: Date) => {
+  const weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  return weekdays[day.getDay()];
+};
+
 function Calendar({
   className,
   classNames,
@@ -57,6 +62,8 @@ function Calendar({
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
       }}
+      weekStartsOn={1}
+      formatters={{ formatWeekdayName }}
       {...props}
     />
   )
