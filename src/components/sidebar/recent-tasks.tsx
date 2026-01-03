@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { ListChecks, Clock } from 'lucide-react';
+import { ListChecks, Clock, Timer } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface RecentTasksProps {
@@ -14,6 +14,7 @@ interface RecentTasksProps {
 function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(0);
   const [subtaskProgress, setSubtaskProgress] = React.useState(0);
+  const [timeLeft, setTimeLeft] = React.useState('');
   
   React.useEffect(() => {
     const calculateTimeProgress = () => {
@@ -26,12 +27,41 @@ function TaskProgress({ task }: { task: Task }) {
       return Math.min(Math.max(percentage, 0), 100);
     };
 
+    const calculateTimeLeft = () => {
+      if (task.status === 'Done') {
+        return 'Đã hoàn thành';
+      }
+
+      const now = new Date().getTime();
+      const end = new Date(task.endDate).getTime();
+      const distance = end - now;
+
+      if (distance < 0) {
+        return 'Đã quá hạn';
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      
+      let result = '';
+      if (days > 0) result += `${days}d `;
+      if (hours > 0 || days > 0) result += `${hours}h `;
+      if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+      result += `${seconds}s`;
+      
+      return result.trim() + ' còn lại';
+    }
+
     setTimeProgress(calculateTimeProgress());
+    setTimeLeft(calculateTimeLeft());
     
     if (task.status !== 'Done') {
       const interval = setInterval(() => {
         setTimeProgress(calculateTimeProgress());
-      }, 1000); // Update every second for real-time effect
+        setTimeLeft(calculateTimeLeft());
+      }, 1000);
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
@@ -55,6 +85,13 @@ function TaskProgress({ task }: { task: Task }) {
     return 'bg-emerald-500'; // Green
   };
 
+  const getTimeLeftColor = () => {
+    if (task.status === 'Done') return 'text-emerald-500';
+    if (isOverdue) return 'text-destructive';
+    if (isWarning) return 'text-amber-500';
+    return 'text-sidebar-foreground/80';
+  };
+
   return (
     <div className="space-y-3">
       <div className="space-y-1">
@@ -65,6 +102,15 @@ function TaskProgress({ task }: { task: Task }) {
           </span>
         </div>
         <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={getProgressColor()} />
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
+          <span className="flex items-center gap-1.5"><Timer size={12} /> Thời gian còn lại</span>
+        </div>
+        <div className={`text-xs font-semibold ${getTimeLeftColor()}`}>
+          {timeLeft}
+        </div>
       </div>
       
       {task.subtasks.length > 0 && (
