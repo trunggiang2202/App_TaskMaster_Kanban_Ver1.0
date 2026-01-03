@@ -43,6 +43,24 @@ const subtaskSchema = z.object({
   attachments: z.array(attachmentSchema).optional(),
 });
 
+const convertTo24Hour = (time: string, period: 'AM' | 'PM') => {
+    let [hours, minutes] = time.split(':').map(Number);
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
+const parseDateTime = (dateStr: string, timeStr: string, period: 'AM' | 'PM') => {
+    try {
+        const time24 = convertTo24Hour(timeStr, period);
+        const [day, month, year] = dateStr.split('-').map(Number);
+        const [hour, minute] = time24.split(':').map(Number);
+        return new Date(year, month - 1, day, hour, minute);
+    } catch {
+        return null;
+    }
+};
+
 const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
@@ -54,29 +72,9 @@ const taskSchema = z.object({
   endPeriod: z.enum(['AM', 'PM']),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
-    const convertTo24Hour = (time: string, period: 'AM' | 'PM') => {
-        let [hours, minutes] = time.split(':').map(Number);
-        if (period === 'PM' && hours < 12) hours += 12;
-        if (period === 'AM' && hours === 12) hours = 0;
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-    };
-
-    try {
-      const startTime24 = convertTo24Hour(data.startTime, data.startPeriod);
-      const endTime24 = convertTo24Hour(data.endTime, data.endPeriod);
-
-      const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-      const [startHour, startMinute] = startTime24.split(':').map(Number);
-      const startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
-      
-      const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-      const [endHour, endMinute] = endTime24.split(':').map(Number);
-      const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
-      
-      return endDateTime > startDateTime;
-    } catch (e) {
-      return false;
-    }
+    const startDateTime = parseDateTime(data.startDate, data.startTime, data.startPeriod);
+    const endDateTime = parseDateTime(data.endDate, data.endTime, data.endPeriod);
+    return endDateTime && startDateTime && endDateTime > startDateTime;
 }, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"],
@@ -87,37 +85,44 @@ const taskSchema = z.object({
         if (!subtask.startDate || !subtask.startTime || !subtask.startPeriod || !subtask.endDate || !subtask.endTime || !subtask.endPeriod) {
           return false; // Invalid if a subtask with a title is missing any deadline field
         }
-        try {
-            const convertTo24Hour = (time: string, period: 'AM' | 'PM') => {
-                let [hours, minutes] = time.split(':').map(Number);
-                if (period === 'PM' && hours < 12) hours += 12;
-                if (period === 'AM' && hours === 12) hours = 0;
-                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-            };
-            const startTime24 = convertTo24Hour(subtask.startTime, subtask.startPeriod);
-            const endTime24 = convertTo24Hour(subtask.endTime, subtask.endPeriod);
-
-          const [startDay, startMonth, startYear] = subtask.startDate.split('-').map(Number);
-          const [startHour, startMinute] = startTime24.split(':').map(Number);
-          const startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
-          
-          const [endDay, endMonth, endYear] = subtask.endDate.split('-').map(Number);
-          const [endHour, endMinute] = endTime24.split(':').map(Number);
-          const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
-          
-          if (endDateTime <= startDateTime) {
+        const startSubtaskTime = parseDateTime(subtask.startDate, subtask.startTime, subtask.startPeriod);
+        const endSubtaskTime = parseDateTime(subtask.endDate, subtask.endTime, subtask.endPeriod);
+        if (!startSubtaskTime || !endSubtaskTime || endSubtaskTime <= startSubtaskTime) {
             return false; // Subtask end time must be after start time
-          }
-        } catch (e) {
-          return false; // Date parsing failed
         }
       }
     }
   }
   return true;
 }, {
-  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ/AM-PM bắt đầu và kết thúc).",
+  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ/AM-PM bắt đầu và kết thúc, và thời gian kết thúc phải sau thời gian bắt đầu).",
   path: ["subtasks"],
+}).refine(data => {
+    const taskStartDateTime = parseDateTime(data.startDate, data.startTime, data.startPeriod);
+    const taskEndDateTime = parseDateTime(data.endDate, data.endTime, data.endPeriod);
+
+    if (!taskStartDateTime || !taskEndDateTime || !data.subtasks) {
+        return true; // Cannot validate if parent dates are invalid or no subtasks
+    }
+
+    for (const subtask of data.subtasks) {
+        if (subtask.title && subtask.title.trim() !== '' && subtask.startDate && subtask.startTime && subtask.startPeriod && subtask.endDate && subtask.endTime && subtask.endPeriod) {
+            const subtaskStartDateTime = parseDateTime(subtask.startDate, subtask.startTime, subtask.startPeriod);
+            const subtaskEndDateTime = parseDateTime(subtask.endDate, subtask.endTime, subtask.endPeriod);
+
+            if (!subtaskStartDateTime || !subtaskEndDateTime) {
+                continue; // Already handled by previous refine
+            }
+
+            if (subtaskStartDateTime < taskStartDateTime || subtaskEndDateTime > taskEndDateTime) {
+                return false; // Subtask deadline is outside parent task's deadline
+            }
+        }
+    }
+    return true;
+}, {
+    message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
+    path: ["subtasks"],
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -210,15 +215,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
   const parseDate = (dateStr?: string, timeStr?: string, period?: 'AM' | 'PM'): Date | undefined => {
     if (!dateStr || !timeStr || !period) return undefined;
-    try {
-      const [day, month, year] = dateStr.split('-').map(Number);
-      let [hour, minute] = timeStr.split(':').map(Number);
-      if (period === 'PM' && hour < 12) hour += 12;
-      if (period === 'AM' && hour === 12) hour = 0;
-      return new Date(year, month - 1, day, hour, minute);
-    } catch {
-      return undefined;
-    }
+    const dt = parseDateTime(dateStr, timeStr, period);
+    return dt ?? undefined;
   };
 
   function handleSubmit(data: TaskFormData) {
