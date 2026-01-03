@@ -5,7 +5,7 @@ import type { Task } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock } from 'lucide-react';
-import { isToday, startOfDay } from 'date-fns';
+import { isToday, startOfDay, isBefore, isAfter } from 'date-fns';
 
 function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
