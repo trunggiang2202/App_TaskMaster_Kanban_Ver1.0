@@ -24,11 +24,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 const subtaskSchema = z.object({
   title: z.string().min(1, "Tiêu đề công việc không được để trống."),
-  description: z.string().optional(),
-  startDate: z.string().optional(),
-  startTime: z.string().optional(),
-  endDate: z.string().optional(),
-  endTime: z.string().optional(),
 });
 
 const taskSchema = z.object({
@@ -56,36 +51,6 @@ const taskSchema = z.object({
 }, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"],
-}).refine(data => {
-  if (!data.subtasks) return true;
-  
-  try {
-    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const [startHour, startMinute] = data.startTime.split(':').map(Number);
-    const parentStartDate = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
-
-    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-    const [endHour, endMinute] = data.endTime.split(':').map(Number);
-    const parentEndDate = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
-
-    return data.subtasks.every(st => {
-      if (!st.startDate || !st.startTime || !st.endDate || !st.endTime) return true;
-        const [subStartDay, subStartMonth, subStartYear] = st.startDate.split('-').map(Number);
-        const [subStartHour, subStartMinute] = st.startTime.split(':').map(Number);
-        const subStartDate = new Date(subStartYear, subStartMonth - 1, subStartDay, subStartHour, subStartMinute);
-
-        const [subEndDay, subEndMonth, subEndYear] = st.endDate.split('-').map(Number);
-        const [subEndHour, subEndMinute] = st.endTime.split(':').map(Number);
-        const subEndDate = new Date(subEndYear, subEndMonth - 1, subEndDay, subEndHour, subEndMinute);
-        
-        return subStartDate >= parentStartDate && subEndDate <= parentEndDate && subEndDate > subStartDate;
-    });
-  } catch (e) {
-    return false;
-  }
-}, {
-  message: "Thời gian của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha và hợp lệ.",
-  path: ["subtasks"],
 });
 
 
@@ -128,11 +93,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         endTime: format(taskToEdit.endDate, 'HH:mm'),
         subtasks: taskToEdit.subtasks.map(st => ({
           title: st.title,
-          description: st.description || '',
-          startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
-          startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
-          endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
-          endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
         })),
       });
     } else {
@@ -146,7 +106,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         subtasks: [],
       });
     }
-  }, [taskToEdit]);
+  }, [taskToEdit, form.reset]);
 
   function handleSubmit(data: TaskFormData) {
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
@@ -158,25 +118,10 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     const endDate = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
 
     const newSubtasks: Subtask[] = data.subtasks ? data.subtasks.map((st, index) => {
-        let subStartDate, subEndDate;
-        if (st.startDate && st.startTime) {
-            const [subStartDay, subStartMonth, subStartYear] = st.startDate.split('-').map(Number);
-            const [subStartHour, subStartMinute] = st.startTime.split(':').map(Number);
-            subStartDate = new Date(subStartYear, subStartMonth - 1, subStartDay, subStartHour, subStartMinute);
-        }
-        if (st.endDate && st.endTime) {
-            const [subEndDay, subEndMonth, subEndYear] = st.endDate.split('-').map(Number);
-            const [subEndHour, subEndMinute] = st.endTime.split(':').map(Number);
-            subEndDate = new Date(subEndYear, subEndMonth - 1, subEndDay, subEndHour, subEndMinute);
-        }
-
         return {
           id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
           title: st.title,
-          description: st.description,
           completed: taskToEdit?.subtasks[index]?.completed || false,
-          startDate: subStartDate,
-          endDate: subEndDate,
         };
     }) : [];
 
@@ -231,69 +176,67 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               )}
             />
             
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium mb-2">Bắt đầu</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="startDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                         <FormControl>
-                            <Input placeholder="31-12-2024" {...field} />
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giờ (HH:MM)</FormLabel>
-                         <FormControl>
-                            <Input placeholder="09:00" {...field} />
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Bắt đầu</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                       <FormControl>
+                          <Input placeholder="31-12-2024" {...field} />
+                        </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Giờ (HH:MM)</FormLabel>
+                       <FormControl>
+                          <Input placeholder="09:00" {...field} />
+                        </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
+            </div>
 
-              <div>
-                <h3 className="text-sm font-medium mb-2">Kết thúc</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="endDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                         <FormControl>
-                            <Input placeholder="31-12-2024" {...field} />
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="endTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giờ (HH:MM)</FormLabel>
-                        <FormControl>
-                            <Input placeholder="17:00" {...field} />
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Kết thúc</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                       <FormControl>
+                          <Input placeholder="31-12-2024" {...field} />
+                        </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Giờ (HH:MM)</FormLabel>
+                      <FormControl>
+                          <Input placeholder="17:00" {...field} />
+                        </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
 
@@ -303,100 +246,27 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               <FormLabel>Công việc</FormLabel>
               <div className="space-y-2 mt-2 max-h-48 overflow-y-auto pr-2">
                 {fields.map((field, index) => (
-                  <Accordion key={field.id} type="single" collapsible className="w-full bg-muted/50 rounded-md px-2">
-                     <AccordionItem value={`item-${index}`} className="border-b-0">
-                        <div className="flex items-center gap-2">
-                           <AccordionTrigger className="flex-grow py-0">
-                            <FormField
-                              control={form.control}
-                              name={`subtasks.${index}.title`}
-                              render={({ field }) => (
-                                <FormItem className="flex-grow">
-                                  <FormControl>
-                                    <Input 
-                                      placeholder={`Công việc ${index + 1}`} 
-                                      {...field} 
-                                      className="border-none bg-transparent shadow-none focus-visible:ring-0" 
-                                    />
-                                  </FormControl>
-                                  <FormMessage className="pl-3" />
-                                </FormItem>
-                              )}
+                  <div key={field.id} className="flex items-center gap-2 bg-muted/50 rounded-md p-1 pr-2">
+                    <FormField
+                      control={form.control}
+                      name={`subtasks.${index}.title`}
+                      render={({ field }) => (
+                        <FormItem className="flex-grow">
+                          <FormControl>
+                            <Input 
+                              placeholder={`Công việc ${index + 1}`} 
+                              {...field} 
+                              className="border-none bg-transparent shadow-none focus-visible:ring-0" 
                             />
-                           </AccordionTrigger>
-                           <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                             <Trash2 className="h-4 w-4 text-destructive" />
-                           </Button>
-                        </div>
-                        <AccordionContent>
-                           <div className="space-y-4 p-2">
-                              <FormField
-                                control={form.control}
-                                name={`subtasks.${index}.description`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Mô tả công việc (Tùy chọn)</FormLabel>
-                                    <FormControl>
-                                      <Textarea placeholder="Thêm chi tiết về công việc con..." {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                               <div>
-                                <h4 className="text-xs font-medium mb-2">Bắt đầu công việc</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.startDate`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.startTime`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl><Input placeholder="HH:MM" {...field} /></FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                               </div>
-                               <div>
-                                <h4 className="text-xs font-medium mb-2">Kết thúc công việc</h4>
-                                 <div className="grid grid-cols-2 gap-4">
-                                  <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.endDate`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl><Input placeholder="DD-MM-YYYY" {...field} /></FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.endTime`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl><Input placeholder="HH:MM" {...field} /></FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                 </div>
-                               </div>
-                           </div>
-                        </AccordionContent>
-                     </AccordionItem>
-                  </Accordion>
+                          </FormControl>
+                          <FormMessage className="pl-3" />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 ))}
               </div>
               <Button
