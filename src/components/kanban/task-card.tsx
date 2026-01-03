@@ -199,6 +199,9 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
                         {subtask.title}
                       </label>
                     </div>
+                     {subtask.description && (
+                      <p className="text-xs text-muted-foreground pl-6">{subtask.description}</p>
+                    )}
                     {subtask.startDate && subtask.endDate && (
                       <div className="text-xs text-muted-foreground pl-6">
                         Deadline: {format(subtask.startDate, 'dd/MM HH:mm')} - {format(subtask.endDate, 'dd/MM HH:mm')}

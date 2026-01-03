@@ -3,6 +3,7 @@ export type Status = 'To Do' | 'In Progress' | 'Done';
 export interface Subtask {
   id: string;
   title: string;
+  description?: string;
   completed: boolean;
   startDate?: Date;
   endDate?: Date;

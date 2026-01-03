@@ -24,6 +24,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 const subtaskSchema = z.object({
   title: z.string().min(1, "Tiêu đề công việc không được để trống."),
+  description: z.string().optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
   endDate: z.string().optional(),
@@ -35,7 +36,7 @@ const taskSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
-  endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
+  endDate: z.string().regex(/^\d{2}-\d{2}-\d{4} I want to add a description field for each subtask. It is not required.$/, "Định dạng ngày phải là DD-MM-YYYY"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
@@ -97,6 +98,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         endTime: format(taskToEdit.endDate, 'HH:mm'),
         subtasks: taskToEdit.subtasks.map(st => ({
           title: st.title,
+          description: st.description || '',
           startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
           startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
           endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
@@ -140,6 +142,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         return {
           id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
           title: st.title,
+          description: st.description,
           completed: taskToEdit?.subtasks[index]?.completed || false,
           startDate: subtaskStartDate,
           endDate: subtaskEndDate,
@@ -197,7 +200,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               )}
             />
             
-            <div className="space-y-2">
+            <div className="space-y-2 border p-3 rounded-md">
               <h3 className="text-sm font-medium">Bắt đầu</h3>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
@@ -229,7 +232,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 border p-3 rounded-md">
               <h3 className="text-sm font-medium">Kết thúc</h3>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
@@ -354,6 +357,19 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   />
                                 </div>
                               </div>
+                              <FormField
+                                control={form.control}
+                                name={`subtasks.${index}.description`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                     <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
+                                    <FormControl>
+                                      <Textarea placeholder="Thêm chi tiết cho công việc con..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
                            </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -366,7 +382,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                 variant="outline"
                 size="sm"
                 className="mt-2"
-                onClick={() => append({ title: "", startDate: '', startTime: '', endDate: '', endTime: '' })}
+                onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '' })}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm Công việc
