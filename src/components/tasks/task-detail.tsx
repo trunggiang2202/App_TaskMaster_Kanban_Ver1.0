@@ -130,10 +130,10 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
   }, [task.subtasks]);
 
 
-  const kanbanColumns: { title: SubtaskStatus, icon: React.ReactNode, subtasks: Subtask[], isClickable: boolean }[] = [
-    { title: 'Chưa làm', icon: <Clock className="h-4 w-4 text-sky-500" />, subtasks: categorizedSubtasks['Chưa làm'], isClickable: false },
-    { title: 'Đang làm', icon: <LoaderCircle className="h-4 w-4 text-amber-500 animate-spin" />, subtasks: categorizedSubtasks['Đang làm'], isClickable: true },
-    { title: 'Xong', icon: <Check className="h-4 w-4 text-emerald-500" />, subtasks: categorizedSubtasks['Xong'], isClickable: true },
+  const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean, titleColor: string }[] = [
+    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-sky-500' },
+    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500' },
+    { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-emerald-500' },
   ];
 
   return (
@@ -185,8 +185,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                 {kanbanColumns.map(column => (
                   <div key={column.title} className="flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
-                      {column.icon}
-                      <h3 className="font-semibold text-sm">{column.title} ({column.subtasks.length})</h3>
+                      <h3 className={`font-semibold text-sm ${column.titleColor}`}>{column.title} ({column.subtasks.length})</h3>
                     </div>
                     <div className="bg-muted/30 rounded-lg p-2 space-y-2 min-h-24">
                       {column.subtasks.length > 0 ? (
