@@ -150,7 +150,7 @@ export default function Home() {
                   Tất cả ({uncompletedTasksCount})
                 </TabsTrigger>
                 <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
-                  Hôm nay ({todaysTasks.length})
+                  Hôm nay ({todaysSubtaskCount})
                 </TabsTrigger>
               </TabsList>
             </Tabs>
