@@ -125,7 +125,7 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
   const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yy, HH:mm')}` : '';
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="space-y-1 text-xs">
           <p className="text-foreground">{formattedStart}</p>
           <p className="text-foreground">{formattedEnd}</p>
@@ -133,7 +133,7 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
       <div className="space-y-2">
         <div className="flex justify-between items-center text-xs">
             <span className={`flex items-center gap-1 font-semibold ${getTimeLeftColor()}`}>
-              <Clock size={12} /> {timeLeft}
+              <Clock size={12} /> Thời gian còn lại: {timeLeft}
             </span>
         </div>
         <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
@@ -176,7 +176,7 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
             {(subtask.startDate && subtask.endDate) && (
               <div className="space-y-2">
                   <h3 className="text-sm font-medium text-muted-foreground">Deadline</h3>
-                  <div className="p-3 rounded-md border bg-muted/20 space-y-3">
+                  <div className="p-3 rounded-md border bg-muted/20">
                       <SubtaskTimeProgress subtask={subtask} />
                   </div>
               </div>
