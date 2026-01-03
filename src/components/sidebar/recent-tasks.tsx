@@ -5,6 +5,7 @@ import type { Task } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock } from 'lucide-react';
+import { isToday, startOfDay } from 'date-fns';
 
 function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
@@ -58,7 +59,7 @@ function TaskProgress({ task }: { task: Task }) {
     updateTimes();
     
     if (task.status !== 'Done') {
-      const interval = setInterval(updateTimes, 1000); // Update every second
+      const interval = setInterval(updateTimes, 1000);
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
@@ -94,15 +95,37 @@ function TaskProgress({ task }: { task: Task }) {
   );
 }
 
+const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
+    const todaySubtasksCount = task.subtasks.filter(st => {
+        if (st.completed) return false;
+        const today = startOfDay(new Date());
+        const stStartDate = st.startDate ? startOfDay(st.startDate) : null;
+        const stEndDate = st.endDate ? startOfDay(st.endDate) : null;
+
+        return (stStartDate && isToday(stStartDate)) || (stEndDate && isToday(stEndDate));
+    }).length;
+
+    if (todaySubtasksCount === 0) {
+        return null;
+    }
+
+    return (
+        <div className="text-xs text-sidebar-foreground/70 mt-1">
+            {todaySubtasksCount} công việc hôm nay
+        </div>
+    );
+};
+
 
 interface RecentTasksProps {
   tasks: Task[];
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
+  activeFilter: 'all' | 'today';
 }
 
 
-export function RecentTasks({ tasks, selectedTaskId, onSelectTask }: RecentTasksProps) {
+export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter }: RecentTasksProps) {
   const recentTasks = [...tasks]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -121,6 +144,7 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask }: RecentTasks
             <TaskProgress 
               task={task} 
             />
+            {activeFilter === 'today' && <TodaySubtasksInfo task={task} />}
           </div>
         ))}
          {recentTasks.length === 0 && (

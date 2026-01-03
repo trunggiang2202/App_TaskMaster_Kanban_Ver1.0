@@ -135,6 +135,7 @@ export default function Home() {
             tasks={filteredTasksForSidebar} 
             selectedTaskId={selectedTaskId}
             onSelectTask={setSelectedTaskId}
+            activeFilter={activeFilter}
           />
         </SidebarContent>
       </Sidebar>
