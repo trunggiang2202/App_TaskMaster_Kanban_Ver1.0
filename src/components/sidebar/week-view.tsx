@@ -79,7 +79,7 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
       </div>
       {!isCurrentWeek && (
         <div className="mt-2 px-2">
-            <Button variant="outline" size="sm" className="w-full" onClick={onGoToToday}>
+            <Button variant="ghost" size="sm" className="w-full bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 hover:text-sidebar-primary-foreground" onClick={onGoToToday}>
                 Quay về hôm nay
             </Button>
         </div>
