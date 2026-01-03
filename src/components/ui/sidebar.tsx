@@ -121,8 +121,17 @@ const SidebarProvider = React.forwardRef<
         e.preventDefault();
         
         const handleMouseMove = (e: MouseEvent) => {
-            const newWidth = `${e.clientX}px`;
-            setWidth(newWidth);
+            const minWidth = 288; // 18rem
+            const maxWidth = 640; // 40rem
+            let newWidth = e.clientX;
+
+            if (newWidth < minWidth) {
+                newWidth = minWidth;
+            } else if (newWidth > maxWidth) {
+                newWidth = maxWidth;
+            }
+            
+            setWidth(`${newWidth}px`);
         };
 
         const handleMouseUp = () => {
@@ -795,5 +804,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
-    
