@@ -150,10 +150,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <Badge className={`${statusConfig[task.status].color} hover:${statusConfig[task.status].color} text-white`}>
-            {statusConfig[task.status].label}
-          </Badge>
+        <div className="flex items-center justify-end mb-2">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
               <Edit className="h-4 w-4 mr-2" />
