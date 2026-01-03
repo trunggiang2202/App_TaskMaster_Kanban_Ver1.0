@@ -112,18 +112,9 @@ interface TaskDetailProps {
 type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong';
 
 export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTask, onSubtaskToggle }: TaskDetailProps) {
-  const [formattedRange, setFormattedRange] = React.useState('');
   const [selectedSubtask, setSelectedSubtask] = React.useState<Subtask | null>(null);
   const [isSubtaskDetailOpen, setIsSubtaskDetailOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    if (task) {
-      const start = format(task.startDate, 'dd/MM/yyyy, HH:mm', { locale: vi });
-      const end = format(task.endDate, 'dd/MM/yyyy, HH:mm', { locale: vi });
-      setFormattedRange(`${start} - ${end}`);
-    }
-  }, [task]);
-  
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
   const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : (task.status === 'Done' ? 100 : 0);
@@ -203,13 +194,6 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                 <p className="text-muted-foreground leading-relaxed">
                     {task.description || 'Không có mô tả cho nhiệm vụ này.'}
                 </p>
-            </div>
-            <div className="p-4 rounded-md border bg-muted/20">
-                <h2 className="text-lg font-semibold mb-2">Deadline</h2>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="h-5 w-5" />
-                    <span>{formattedRange}</span>
-                </div>
             </div>
         </div>
 
