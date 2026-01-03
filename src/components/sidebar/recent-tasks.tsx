@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock } from 'lucide-react';
+import { Clock, CheckCircle2 } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter } from 'date-fns';
 
 function TaskProgress({ task }: { task: Task }) {
@@ -96,28 +96,40 @@ function TaskProgress({ task }: { task: Task }) {
 }
 
 const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
-    const todaySubtasksCount = task.subtasks.filter(st => {
-        if (st.completed) return false;
-        const today = startOfDay(new Date());
+    const today = startOfDay(new Date());
+
+    const isSubtaskForToday = (st: Task['subtasks'][0]) => {
         const stStartDate = st.startDate ? startOfDay(st.startDate) : null;
         const stEndDate = st.endDate ? startOfDay(st.endDate) : null;
-        
         if (stStartDate && stEndDate) {
             return isToday(stStartDate) || isToday(stEndDate) || (isBefore(stStartDate, today) && isAfter(stEndDate, today));
         }
         if (stStartDate) return isToday(stStartDate);
         if (stEndDate) return isToday(stEndDate);
-
         return false;
-    }).length;
+    };
+    
+    const todaySubtasks = task.subtasks.filter(isSubtaskForToday);
+    const completedTodaySubtasks = todaySubtasks.filter(st => st.completed).length;
+    const totalTodaySubtasks = todaySubtasks.length;
+    const uncompletedTodaySubtasks = totalTodaySubtasks - completedTodaySubtasks;
 
-    if (todaySubtasksCount === 0) {
+    if (totalTodaySubtasks === 0) {
         return null;
+    }
+
+    if (uncompletedTodaySubtasks === 0) {
+        return (
+            <div className="text-xs text-emerald-500 flex items-center gap-1 mt-1 font-semibold">
+                <CheckCircle2 size={14} />
+                Công việc hôm nay đã xong
+            </div>
+        );
     }
 
     return (
         <div className="text-xs text-sidebar-foreground/70 mt-1">
-            {todaySubtasksCount} công việc hôm nay
+            {uncompletedTodaySubtasks} công việc hôm nay
         </div>
     );
 };
