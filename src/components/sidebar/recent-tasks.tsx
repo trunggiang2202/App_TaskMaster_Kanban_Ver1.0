@@ -101,8 +101,14 @@ const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
         const today = startOfDay(new Date());
         const stStartDate = st.startDate ? startOfDay(st.startDate) : null;
         const stEndDate = st.endDate ? startOfDay(st.endDate) : null;
+        
+        if (stStartDate && stEndDate) {
+            return isToday(stStartDate) || isToday(stEndDate) || (isBefore(stStartDate, today) && isAfter(stEndDate, today));
+        }
+        if (stStartDate) return isToday(stStartDate);
+        if (stEndDate) return isToday(stEndDate);
 
-        return (stStartDate && isToday(stStartDate)) || (stEndDate && isToday(stEndDate));
+        return false;
     }).length;
 
     if (todaySubtasksCount === 0) {
