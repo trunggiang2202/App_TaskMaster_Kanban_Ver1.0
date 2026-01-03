@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { initialTasks } from '@/lib/data';
 import type { Task } from '@/lib/types';
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import Header from '@/components/layout/header';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
@@ -141,8 +140,10 @@ export default function Home() {
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col h-screen bg-background">
-          <Header />
-          <main className="flex-1 overflow-y-auto">
+          <div className="absolute top-3 left-3 z-20">
+            <SidebarTrigger className="md:hidden" />
+          </div>
+          <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
             {selectedTask ? (
               <TaskDetail 
                 task={selectedTask} 
