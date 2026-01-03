@@ -96,14 +96,12 @@ function TaskProgress({ task }: { task: Task }) {
             <span>Kết thúc: {formattedEndDate}</span>
           </div>
         </div>
-      <div>
-        <div className="flex justify-between items-center mb-1 text-xs">
+        <div className="flex justify-between items-center text-xs">
           <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
             <Clock size={12} /> Thời gian còn lại: {timeLeft}
           </span>
         </div>
         <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={getProgressColor()} />
-      </div>
     </div>
   );
 }
