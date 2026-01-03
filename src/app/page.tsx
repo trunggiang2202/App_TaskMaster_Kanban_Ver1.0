@@ -10,7 +10,9 @@ import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isToday } from 'date-fns';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TaskDetail from '@/components/tasks/task-detail';
+import { ListChecks } from 'lucide-react';
 
 type FilterType = 'all' | 'today';
 
@@ -30,6 +32,7 @@ export default function Home() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(tasks[0]?.id || null);
 
   const handleOpenDialog = (task?: Task) => {
     setTaskToEdit(task);
@@ -56,6 +59,9 @@ export default function Home() {
   
   const deleteTask = (taskId: string) => {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
+    }
   };
 
   const updateTask = (updatedTask: Task) => {
@@ -76,6 +82,8 @@ export default function Home() {
     }
     return true;
   });
+
+  const selectedTask = tasks.find(task => task.id === selectedTaskId);
 
   return (
     <SidebarProvider>
@@ -103,17 +111,29 @@ export default function Home() {
           </div>
           <RecentTasks 
             tasks={filteredTasksForSidebar} 
-            onEditTask={handleOpenDialog}
-            onDeleteTask={deleteTask}
-            onUpdateTask={updateTask}
+            selectedTaskId={selectedTaskId}
+            onSelectTask={setSelectedTaskId}
           />
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col h-screen bg-background">
           <Header />
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            
+          <main className="flex-1 overflow-y-auto">
+            {selectedTask ? (
+              <TaskDetail 
+                task={selectedTask} 
+                onUpdateTask={updateTask}
+                onDeleteTask={deleteTask}
+                onEditTask={handleOpenDialog}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <ListChecks className="w-16 h-16 mb-4" />
+                <h2 className="text-xl font-semibold">Chọn một nhiệm vụ</h2>
+                <p>Chọn một nhiệm vụ từ danh sách bên trái để xem chi tiết.</p>
+              </div>
+            )}
           </main>
         </div>
       </SidebarInset>

@@ -195,16 +195,18 @@ function TaskProgress({ task }: { task: Task }) {
             <AccordionItem value="subtasks" className="border-b-0">
               <div className="w-full space-y-1">
                 <div className="flex items-center">
-                  <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline flex-1 p-0 flex items-center">
-                      <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 w-full">
-                          <div className="flex items-center gap-1.5">
-                            <ListChecks size={12} /> 
-                            <span>Nhiệm vụ</span>
-                            <ChevronDown className="accordion-chevron h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200" />
-                          </div>
-                          <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
-                      </div>
-                  </AccordionTrigger>
+                   <div className="flex items-center flex-1">
+                    <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline flex-1 p-0 flex items-center">
+                        <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 w-full">
+                            <div className="flex items-center gap-1.5">
+                              <ListChecks size={12} /> 
+                              <span>Nhiệm vụ</span>
+                              <ChevronDown className="accordion-chevron h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200" />
+                            </div>
+                            <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
+                        </div>
+                    </AccordionTrigger>
+                  </div>
                 </div>
                 <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />
               </div>
@@ -218,6 +220,10 @@ function TaskProgress({ task }: { task: Task }) {
                       >
                         {isSubtaskInProgress ? (
                           <LoaderCircle className="h-3 w-3 mt-0.5 text-amber-400 shrink-0 animate-spin" />
+                        ) : subtask.completed ? (
+                           <div className="h-3 w-3 mt-0.5 flex items-center justify-center bg-primary rounded-full shrink-0">
+                                <Check className="h-2 w-2 text-primary-foreground" />
+                            </div>
                         ) : (
                           <Circle className="h-3 w-3 mt-0.5 text-sidebar-foreground/60 shrink-0" />
                         )}
@@ -247,51 +253,26 @@ function TaskProgress({ task }: { task: Task }) {
 
 interface RecentTasksProps {
   tasks: Task[];
-  onEditTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
-  onUpdateTask: (task: Task) => void;
+  selectedTaskId: string | null;
+  onSelectTask: (taskId: string) => void;
 }
 
 
-export function RecentTasks({ tasks, onEditTask, onDeleteTask, onUpdateTask }: RecentTasksProps) {
+export function RecentTasks({ tasks, selectedTaskId, onSelectTask }: RecentTasksProps) {
   const recentTasks = [...tasks]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-  const handleSubtaskToggle = (taskId: string, subtaskId: string) => {
-    const taskToUpdate = tasks.find(t => t.id === taskId);
-    if (!taskToUpdate) return;
-
-    const updatedSubtasks = taskToUpdate.subtasks.map(st =>
-      st.id === subtaskId ? { ...st, completed: !st.completed } : st
-    );
-    onUpdateTask({ ...taskToUpdate, subtasks: updatedSubtasks });
-  };
-
 
   return (
     <SidebarGroup>
       <div className="space-y-3 px-2">
         {recentTasks.map(task => (
-          <div key={task.id} className="p-2.5 rounded-lg bg-sidebar-accent/50 space-y-2 relative group">
+          <div 
+            key={task.id}
+            onClick={() => onSelectTask(task.id)}
+            className={`p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors ${selectedTaskId === task.id ? 'bg-sidebar-primary/20' : 'bg-sidebar-accent'}`}
+          >
             <div className="flex justify-between items-start">
               <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => onEditTask(task)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    <span>Chỉnh sửa</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDeleteTask(task.id)} className="text-destructive">
-                     <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Xóa</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
             <TaskProgress 
               task={task} 
