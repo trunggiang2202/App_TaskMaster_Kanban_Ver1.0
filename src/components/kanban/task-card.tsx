@@ -54,15 +54,13 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
       
       let result = '';
       if (days > 0) result += `${days}d `;
       if (hours > 0 || days > 0) result += `${hours}h `;
-      if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
-      result += `${seconds}s`;
+      if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m`;
       
-      return result.trim() + ' còn lại';
+      return result.trim() === '' ? '0m còn lại' : result.trim() + ' còn lại';
     }
 
     setTimeProgress(calculateTimeProgress());
@@ -72,7 +70,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
       const interval = setInterval(() => {
         setTimeProgress(calculateTimeProgress());
         setTimeLeft(calculateTimeLeft());
-      }, 1000);
+      }, 60000); // Update every minute
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
@@ -156,10 +154,8 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
             <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
           </div>
           
-          <div>
-            <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Timer size={14} /> Thời gian còn lại</span>
-            </div>
+          <div className="flex justify-between items-center">
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Timer size={14} /> Thời gian còn lại</span>
             <div className={`text-sm font-semibold ${getTimeLeftColor()}`}>
               {timeLeft}
             </div>
