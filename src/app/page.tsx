@@ -98,21 +98,23 @@ export default function Home() {
     );
   };
 
-  const filteredTasksForSidebar = tasks.filter(task => {
-    if (activeFilter === 'today') {
-      const today = startOfDay(new Date());
-      const startDate = task.startDate ? startOfDay(task.startDate) : null;
-      const endDate = task.endDate ? startOfDay(task.endDate) : null;
+  const isTaskForToday = (task: Task) => {
+    const today = startOfDay(new Date());
+    const startDate = task.startDate ? startOfDay(task.startDate) : null;
+    const endDate = task.endDate ? startOfDay(task.endDate) : null;
 
-      if (!startDate || !endDate) return false;
+    if (!startDate || !endDate) return false;
 
-      return (
-        task.status !== 'Done' &&
-        (isToday(startDate) || isToday(endDate) || (isBefore(startDate, today) && isAfter(endDate, today)))
-      );
-    }
-    return true;
-  });
+    return (
+      task.status !== 'Done' &&
+      (isToday(startDate) || isToday(endDate) || (isBefore(startDate, today) && isAfter(endDate, today)))
+    );
+  };
+
+  const todaysTasks = tasks.filter(isTaskForToday);
+  const uncompletedTasksCount = tasks.filter(task => task.status !== 'Done').length;
+
+  const filteredTasksForSidebar = activeFilter === 'today' ? todaysTasks : tasks;
 
   const selectedTask = tasks.find(task => task.id === selectedTaskId);
 
@@ -144,8 +146,12 @@ export default function Home() {
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-sidebar-accent/60">
-                <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">Tất cả</TabsTrigger>
-                <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">Hôm nay</TabsTrigger>
+                <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
+                  Tất cả ({uncompletedTasksCount})
+                </TabsTrigger>
+                <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
+                  Hôm nay ({todaysTasks.length})
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
