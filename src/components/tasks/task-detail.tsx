@@ -160,18 +160,17 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-4 rounded-md border bg-muted/20">
+                <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                    {task.description || 'Không có mô tả cho nhiệm vụ này.'}
+                </p>
+            </div>
+            <div className="p-4 rounded-md border bg-muted/20">
                 <h2 className="text-lg font-semibold mb-2">Deadline</h2>
                 <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="h-5 w-5" />
                     <span>{formattedRange}</span>
                 </div>
-            </div>
-
-            <div className="p-4 rounded-md border bg-muted/20">
-                <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                    {task.description || 'Không có mô tả cho nhiệm vụ này.'}
-                </p>
             </div>
         </div>
 
