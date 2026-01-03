@@ -130,7 +130,7 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
             <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedStart}</p>
             <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedEnd}</p>
             <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
-                <Clock className="h-4 w-4" /> {timeLeft}
+                <Clock className="h-4 w-4" /> Thời gian còn lại: {timeLeft}
             </p>
         </div>
         <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
