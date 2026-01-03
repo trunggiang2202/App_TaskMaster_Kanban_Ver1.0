@@ -61,6 +61,8 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
     defaultValues: {
       title: '',
       description: '',
+      startDate: '',
+      endDate: '',
       startTime: '09:00',
       endTime: '17:00',
       subtasks: [],
