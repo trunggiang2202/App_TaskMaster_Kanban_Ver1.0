@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { format, isAfter, startOfDay } from 'date-fns';
-import { Calendar, Edit, ListChecks, Trash2, Circle, Check, Download, Paperclip, LoaderCircle } from 'lucide-react';
+import { Calendar, Edit, Trash2, Circle, Check, Download, Paperclip, LoaderCircle } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
@@ -181,7 +181,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {kanbanColumns.map(column => (
                   <div key={column.title} className="flex flex-col">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center justify-center gap-2 mb-2">
                       <h3 className={`font-semibold text-sm ${column.titleColor}`}>{column.title} ({column.subtasks.length})</h3>
                     </div>
                     <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
