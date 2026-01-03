@@ -121,16 +121,19 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     return 'text-muted-foreground';
   };
 
+  const formattedRange = subtask.startDate && subtask.endDate
+    ? `${format(subtask.startDate, 'dd/MM/yy, HH:mm')} - ${format(subtask.endDate, 'dd/MM/yy, HH:mm')}`
+    : 'Không có thông tin.';
+
   return (
     <div className="space-y-2">
-      <div>
-        <div className="flex justify-between items-center mb-1 text-xs">
-          <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
+      <div className="flex justify-between items-center text-xs">
+          <p className="text-foreground">{formattedRange}</p>
+          <span className={`flex items-center gap-1 font-semibold ${getTimeLeftColor()}`}>
             <Clock size={12} /> {timeLeft}
           </span>
-        </div>
-        <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
       </div>
+      <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
     </div>
   );
 }
@@ -145,11 +148,6 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
   if (!subtask) {
     return null;
   }
-
-  const formattedRange = subtask.startDate && subtask.endDate
-    ? `${format(subtask.startDate, 'dd/MM/yy, HH:mm')} - ${format(subtask.endDate, 'dd/MM/yy, HH:mm')}`
-    : 'Không có thông tin.';
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -175,7 +173,6 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
               <div className="space-y-2">
                   <h3 className="text-sm font-medium text-muted-foreground">Deadline</h3>
                   <div className="p-3 rounded-md border bg-muted/20 space-y-3">
-                      <p className="text-sm text-foreground">{formattedRange}</p>
                       <SubtaskTimeProgress subtask={subtask} />
                   </div>
               </div>
