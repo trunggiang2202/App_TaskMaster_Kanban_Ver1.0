@@ -166,7 +166,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="subtasks" className="border-b-0">
               <AccordionTrigger className="text-sm py-1 hover:no-underline -ml-2">
-                View Subtasks
+                Xem Công việc
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (

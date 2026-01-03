@@ -247,7 +247,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                 onClick={() => append({ title: "" })}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Thêm công việc
+                Thêm Công việc
               </Button>
             </div>
 
