@@ -30,13 +30,23 @@ const attachmentSchema = z.object({
 });
 
 const subtaskSchema = z.object({
-  title: z.string().min(1, "Tiêu đề công việc không được để trống."),
+  title: z.string(),
   description: z.string().optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
   attachments: z.array(attachmentSchema).optional(),
+}).refine(data => {
+    // If there is a title, then all date/time fields are required
+    if (data.title && data.title.trim() !== '') {
+        return !!data.startDate && !!data.startTime && !!data.endDate && !!data.endTime;
+    }
+    // If there's no title, we don't enforce the other fields
+    return true;
+}, {
+    message: "Deadline là bắt buộc nếu công việc có tiêu đề.",
+    path: ["endDate"], // Show the error under one of the fields
 });
 
 const taskSchema = z.object({
@@ -64,8 +74,33 @@ const taskSchema = z.object({
 }, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"],
+}).refine(data => {
+  if (data.subtasks) {
+    for (const subtask of data.subtasks) {
+      if (subtask.title && subtask.startDate && subtask.endDate && subtask.startTime && subtask.endTime) {
+        try {
+          const [startDay, startMonth, startYear] = subtask.startDate.split('-').map(Number);
+          const [startHour, startMinute] = subtask.startTime.split(':').map(Number);
+          const startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
+          
+          const [endDay, endMonth, endYear] = subtask.endDate.split('-').map(Number);
+          const [endHour, endMinute] = subtask.endTime.split(':').map(Number);
+          const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
+          
+          if (endDateTime <= startDateTime) {
+            return false;
+          }
+        } catch (e) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}, {
+  message: "Deadline của công việc không hợp lệ.",
+  path: ["subtasks"],
 });
-
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
@@ -90,6 +125,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       endTime: '17:00',
       subtasks: [],
     },
+    mode: 'onChange', // Validate on change to disable/enable button
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -127,7 +163,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         subtasks: [],
       });
     }
-  }, [taskToEdit, form]);
+  }, [taskToEdit, form, isOpen]);
 
   const parseDate = (dateStr?: string, timeStr?: string): Date | undefined => {
     if (!dateStr || !timeStr) return undefined;
@@ -147,7 +183,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     if (!taskStartDate || !taskEndDate) return;
 
 
-    const newSubtasks: Subtask[] = data.subtasks ? data.subtasks.map((st, index) => {
+    const newSubtasks: Subtask[] = data.subtasks ? data.subtasks
+      .filter(st => st.title && st.title.trim() !== '') // Only include subtasks with a title
+      .map((st, index) => {
         const subtaskStartDate = parseDate(st.startDate, st.startTime);
         const subtaskEndDate = parseDate(st.endDate, st.endTime);
         return {
@@ -195,7 +233,12 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        form.clearErrors();
+      }
+      onOpenChange(open);
+    }}>
       <DialogContent className="sm:max-w-[625px] flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
@@ -317,7 +360,18 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                         <FormControl>
                                           <Input 
                                             placeholder={`Công việc ${index + 1}`} 
-                                            {...field} 
+                                            {...field}
+                                            onChange={(e) => {
+                                              field.onChange(e);
+                                              // If title is cleared, also clear deadline to avoid validation error
+                                              if (e.target.value.trim() === '') {
+                                                form.setValue(`subtasks.${index}.startDate`, '');
+                                                form.setValue(`subtasks.${index}.startTime`, '');
+                                                form.setValue(`subtasks.${index}.endDate`, '');
+                                                form.setValue(`subtasks.${index}.endTime`, '');
+                                                form.clearErrors(`subtasks.${index}`);
+                                              }
+                                            }}
                                             className="border-none bg-transparent shadow-none focus-visible:ring-0" 
                                           />
                                         </FormControl>
@@ -473,7 +527,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
             <DialogFooter className="pt-4 mt-auto">
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="submit">{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+              <Button type="submit" disabled={!form.formState.isValid}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
             </DialogFooter>
           </form>
         </Form>
