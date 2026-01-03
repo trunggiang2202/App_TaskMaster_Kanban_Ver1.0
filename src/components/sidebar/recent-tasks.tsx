@@ -96,7 +96,7 @@ function SubtaskTimeProgress({ subtask }: { subtask: Subtask }) {
   );
 }
 
-function TaskProgress({ task, onSubtaskToggle }: { task: Task, onSubtaskToggle: (subtaskId: string) => void }) {
+function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
   const [subtaskProgress, setSubtaskProgress] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState('');
@@ -194,16 +194,18 @@ function TaskProgress({ task, onSubtaskToggle }: { task: Task, onSubtaskToggle: 
         <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="subtasks" className="border-b-0">
               <div className="w-full space-y-1">
-                <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline w-full p-0 flex items-center">
-                    <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 w-full">
-                        <div className="flex items-center gap-1.5">
-                          <ListChecks size={12} /> 
-                          <span>Nhiệm vụ</span>
-                          <ChevronDown className="accordion-chevron h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200" />
-                        </div>
-                        <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
-                    </div>
-                </AccordionTrigger>
+                <div className="flex items-center">
+                  <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline flex-1 p-0 flex items-center">
+                      <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 w-full">
+                          <div className="flex items-center gap-1.5">
+                            <ListChecks size={12} /> 
+                            <span>Nhiệm vụ</span>
+                            <ChevronDown className="accordion-chevron h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200" />
+                          </div>
+                          <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
+                      </div>
+                  </AccordionTrigger>
+                </div>
                 <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />
               </div>
               <AccordionContent className="pt-2 space-y-2">
@@ -212,13 +214,10 @@ function TaskProgress({ task, onSubtaskToggle }: { task: Task, onSubtaskToggle: 
                   return (
                     <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
                       <div 
-                        className="flex items-start space-x-2 cursor-pointer"
-                        onClick={() => onSubtaskToggle(subtask.id)}
+                        className="flex items-start space-x-2"
                       >
                         {isSubtaskInProgress ? (
                           <LoaderCircle className="h-3 w-3 mt-0.5 text-amber-400 shrink-0 animate-spin" />
-                        ) : subtask.completed ? (
-                          <Circle className="h-3 w-3 mt-0.5 text-sidebar-foreground/60 shrink-0" />
                         ) : (
                           <Circle className="h-3 w-3 mt-0.5 text-sidebar-foreground/60 shrink-0" />
                         )}
@@ -296,7 +295,6 @@ export function RecentTasks({ tasks, onEditTask, onDeleteTask, onUpdateTask }: R
             </div>
             <TaskProgress 
               task={task} 
-              onSubtaskToggle={(subtaskId) => handleSubtaskToggle(task.id, subtaskId)} 
             />
           </div>
         ))}
