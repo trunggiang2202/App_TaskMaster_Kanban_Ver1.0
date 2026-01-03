@@ -158,7 +158,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
         
         <Separator />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
             <div className="p-4 rounded-md border bg-muted/20">
                 <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
                 <p className="text-muted-foreground leading-relaxed">
@@ -176,7 +176,9 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
 
         {totalSubtasks > 0 && (
           <div className="p-4 rounded-md border bg-muted/20 space-y-4">
-            <h2 className="text-lg font-semibold">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
+            </div>
             <div className="space-y-4">
               <Progress value={subtaskProgress} className="h-2" />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
