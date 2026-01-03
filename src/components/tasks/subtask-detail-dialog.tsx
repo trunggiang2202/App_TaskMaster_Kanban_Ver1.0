@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Paperclip, Download } from 'lucide-react';
+import { Paperclip, Download, Calendar, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
@@ -121,15 +121,17 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     return 'text-muted-foreground';
   };
 
-  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'dd/MM/yy, HH:mm')}` : '';
-  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yy, HH:mm')}` : '';
+  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'dd/MM/yyyy HH:mm')}` : '';
+  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yyyy HH:mm')}` : '';
 
   return (
     <div className="space-y-3">
-        <div className="space-y-1 text-xs">
-            <p className="text-foreground">{formattedStart}</p>
-            <p className="text-foreground">{formattedEnd}</p>
-            <p className={`font-semibold ${getTimeLeftColor()}`}>Thời gian còn lại: {timeLeft}</p>
+        <div className="space-y-1 text-sm text-foreground">
+            <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedStart}</p>
+            <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedEnd}</p>
+            <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
+                <Clock className="h-4 w-4" /> {timeLeft}
+            </p>
         </div>
         <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
     </div>
