@@ -126,9 +126,9 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-x-4 text-xs">
+      <div className="space-y-1 text-xs">
           <p className="text-foreground">{formattedStart}</p>
-          <p className="text-foreground text-right">{formattedEnd}</p>
+          <p className="text-foreground">{formattedEnd}</p>
       </div>
       <div className="space-y-2">
         <div className="flex justify-between items-center text-xs">
