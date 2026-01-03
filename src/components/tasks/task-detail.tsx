@@ -32,9 +32,16 @@ const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) =>
 interface SubtaskItemProps {
     subtask: Subtask;
     onToggle: (subtaskId: string) => void;
+    isClickable: boolean;
 }
 
-const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle }) => {
+const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, isClickable }) => {
+    const handleToggle = () => {
+        if (isClickable) {
+            onToggle(subtask.id);
+        }
+    };
+
     return (
         <div 
             key={subtask.id} 
@@ -44,13 +51,19 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle }) => {
                 className="flex items-start gap-3"
             >
                 {subtask.completed ? (
-                    <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full shrink-0 cursor-pointer" onClick={() => onToggle(subtask.id)}>
+                    <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full shrink-0 cursor-pointer" onClick={handleToggle}>
                         <Check className="h-3 w-3 text-primary-foreground" />
                     </div>
                 ) : (
-                    <div className="h-5 w-5 mt-0.5 shrink-0 cursor-pointer" onClick={() => onToggle(subtask.id)}>
-                      <Circle className="h-5 w-5 text-muted-foreground" />
-                    </div>
+                    isClickable ? (
+                        <div className="h-5 w-5 mt-0.5 shrink-0 cursor-pointer" onClick={handleToggle}>
+                          <Circle className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                    ) : (
+                        <div className="h-5 w-5 mt-0.5 shrink-0">
+                           <div className="h-5 w-5" />
+                        </div>
+                    )
                 )}
                 <div className="flex-1">
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
@@ -126,11 +139,11 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
   }, [task.subtasks]);
 
 
-  const kanbanColumns: { title: SubtaskStatus, icon: React.ReactNode, subtasks: Subtask[] }[] = [
-    { title: 'Chưa làm', icon: <Clock className="h-4 w-4 text-sky-500" />, subtasks: categorizedSubtasks['Chưa làm'] },
-    { title: 'Đang làm', icon: <LoaderCircle className="h-4 w-4 text-amber-500 animate-spin" />, subtasks: categorizedSubtasks['Đang làm'] },
-    { title: 'Trễ', icon: <AlertTriangle className="h-4 w-4 text-destructive" />, subtasks: categorizedSubtasks['Trễ'] },
-    { title: 'Xong', icon: <Check className="h-4 w-4 text-emerald-500" />, subtasks: categorizedSubtasks['Xong'] },
+  const kanbanColumns: { title: SubtaskStatus, icon: React.ReactNode, subtasks: Subtask[], isClickable: boolean }[] = [
+    { title: 'Chưa làm', icon: <Clock className="h-4 w-4 text-sky-500" />, subtasks: categorizedSubtasks['Chưa làm'], isClickable: false },
+    { title: 'Đang làm', icon: <LoaderCircle className="h-4 w-4 text-amber-500 animate-spin" />, subtasks: categorizedSubtasks['Đang làm'], isClickable: true },
+    { title: 'Trễ', icon: <AlertTriangle className="h-4 w-4 text-destructive" />, subtasks: categorizedSubtasks['Trễ'], isClickable: true },
+    { title: 'Xong', icon: <Check className="h-4 w-4 text-emerald-500" />, subtasks: categorizedSubtasks['Xong'], isClickable: false },
   ];
 
   return (
@@ -211,6 +224,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                             <SubtaskItem 
                                 subtask={st}
                                 onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
+                                isClickable={column.isClickable}
                             />
                            </CardContent>
                         </Card>
