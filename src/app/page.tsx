@@ -5,7 +5,6 @@ import { initialTasks } from '@/lib/data';
 import type { Task } from '@/lib/types';
 import { SidebarProvider, Sidebar, SidebarRail, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
 import Header from '@/components/layout/header';
-import KanbanBoard from '@/components/kanban/kanban-board';
 import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
@@ -104,7 +103,7 @@ export default function Home() {
         <div className="flex flex-col h-screen bg-background">
           <Header />
           <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            <KanbanBoard tasks={tasks} onUpdateTask={updateTask} onTaskStatusChange={handleTaskStatusChange} onEditTask={handleOpenDialog} />
+            
           </main>
         </div>
       </SidebarInset>
