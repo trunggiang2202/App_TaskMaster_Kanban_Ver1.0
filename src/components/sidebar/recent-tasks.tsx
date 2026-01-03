@@ -93,9 +93,9 @@ function TaskProgress({ task }: { task: Task }) {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-1">
-        <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
+    <div className="space-y-2">
+      <div>
+        <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 mb-1">
           <span className="flex items-center gap-1.5"><Clock size={12} /> Deadline</span>
           <span className={isOverdue ? "text-destructive font-medium" : ""}>
             {formatDistanceToNow(new Date(task.endDate), { addSuffix: true })}
@@ -105,17 +105,15 @@ function TaskProgress({ task }: { task: Task }) {
       </div>
 
       <div className="space-y-1">
-        <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
-          <span className="flex items-center gap-1.5"><Timer size={12} /> Thời gian còn lại</span>
-        </div>
+        <span className="flex items-center gap-1.5 text-xs text-sidebar-foreground/80"><Timer size={12} /> Thời gian còn lại</span>
         <div className={`text-xs font-semibold ${getTimeLeftColor()}`}>
           {timeLeft}
         </div>
       </div>
       
       {task.subtasks.length > 0 && (
-        <div className="space-y-1">
-          <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
+        <div>
+          <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 mb-1">
             <span className="flex items-center gap-1.5"><ListChecks size={12} /> Công việc</span>
             <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
           </div>
@@ -136,9 +134,9 @@ export function RecentTasks({ tasks }: RecentTasksProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Công việc đã thêm</SidebarGroupLabel>
-      <div className="space-y-4 p-2">
+      <div className="space-y-3 px-2">
         {recentTasks.map(task => (
-          <div key={task.id} className="p-3 rounded-lg bg-sidebar-accent/50 space-y-2">
+          <div key={task.id} className="p-2.5 rounded-lg bg-sidebar-accent/50 space-y-2">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{task.title}</p>
             <TaskProgress task={task} />
           </div>
