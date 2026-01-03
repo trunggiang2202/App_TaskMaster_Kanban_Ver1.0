@@ -139,14 +139,15 @@ function TaskProgress({ task }: { task: Task }) {
       return result.trim() === '' ? '0m' : result.trim();
     }
 
-    setTimeProgress(calculateTimeProgress());
-    setTimeLeft(calculateTimeLeft());
-    
-    if (task.status !== 'Done') {
-      const interval = setInterval(() => {
+    const updateTimes = () => {
         setTimeProgress(calculateTimeProgress());
         setTimeLeft(calculateTimeLeft());
-      }, 60000); // Update every minute
+    };
+    
+    updateTimes();
+    
+    if (task.status !== 'Done') {
+      const interval = setInterval(updateTimes, 60000); // Update every minute
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);

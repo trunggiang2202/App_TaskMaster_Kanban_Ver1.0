@@ -147,14 +147,15 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
       return result.trim() === '' ? '0m' : result.trim();
     }
 
-    setTimeProgress(calculateTimeProgress());
-    setTimeLeft(calculateTimeLeft());
-
-    if (task.status !== 'Done') {
-      const interval = setInterval(() => {
+    const updateTimes = () => {
         setTimeProgress(calculateTimeProgress());
         setTimeLeft(calculateTimeLeft());
-      }, 60000); // Update every minute
+    };
+
+    updateTimes();
+
+    if (task.status !== 'Done') {
+      const interval = setInterval(updateTimes, 60000); // Update every minute
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
@@ -162,10 +163,10 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
   useEffect(() => {
     const completedSubtasks = task.subtasks.filter(st => st.completed).length;
     const totalSubtasks = task.subtasks.length;
-    const progress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 100;
+    const progress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : (task.status === 'Done' ? 100 : 0);
     setSubtaskProgress(progress);
-    setIsDoneDisabled(progress < 100);
-  }, [task.subtasks]);
+    setIsDoneDisabled(progress < 100 && totalSubtasks > 0);
+  }, [task.subtasks, task.status]);
 
   const handleSubtaskToggle = (subtaskId: string) => {
     const updatedSubtasks = task.subtasks.map(st =>
