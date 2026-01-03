@@ -12,10 +12,14 @@ export const initialTasks: Task[] = [
     createdAt: new Date(new Date().setDate(new Date().getDate() - 10)),
     startDate: new Date(new Date().setDate(new Date().getDate() - 10)),
     endDate: new Date(new Date().setDate(new Date().getDate() + 20)),
+    attachments: [
+        { name: 'Campaign-Brief-Q3.pdf', url: '#' },
+        { name: 'Marketing-Assets.zip', url: '#' },
+    ],
     subtasks: [
       { id: 'sub-1-1', title: 'Draft campaign brief', completed: true },
       { id: 'sub-1-2', title: 'Design visual assets', completed: true },
-      { id: 'sub-1-3', title: 'Develop ad copy', completed: false },
+      { id: 'sub-1-3', title: 'Develop ad copy', completed: false, attachments: [{ name: 'Ad-Copy-Draft.docx', url: '#' }] },
       { id: 'sub-1-4', title: 'Setup tracking and analytics', completed: false },
     ],
   },

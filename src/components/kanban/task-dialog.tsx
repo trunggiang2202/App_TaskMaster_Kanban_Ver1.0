@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,11 +16,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Plus, Trash2, Settings2 } from 'lucide-react';
-import type { Task, Subtask } from '@/lib/types';
+import { Plus, Trash2, Settings2, Paperclip, X } from 'lucide-react';
+import type { Task, Subtask, Attachment } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
+const attachmentSchema = z.object({
+  name: z.string(),
+  url: z.string(),
+});
 
 const subtaskSchema = z.object({
   title: z.string().min(1, "Tiêu đề công việc không được để trống."),
@@ -29,6 +34,7 @@ const subtaskSchema = z.object({
   startTime: z.string().optional(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
+  attachments: z.array(attachmentSchema).optional(),
 });
 
 const taskSchema = z.object({
@@ -39,6 +45,7 @@ const taskSchema = z.object({
   endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(subtaskSchema).optional(),
+  attachments: z.array(attachmentSchema).optional(),
 }).refine(data => {
     try {
       const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
@@ -69,6 +76,9 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskDialogProps) {
+  const taskAttachmentRef = useRef<HTMLInputElement>(null);
+  const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -79,12 +89,18 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       startTime: '09:00',
       endTime: '17:00',
       subtasks: [],
+      attachments: [],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "subtasks",
+  });
+
+  const { fields: taskAttachments, append: appendTaskAttachment, remove: removeTaskAttachment } = useFieldArray({
+    control: form.control,
+    name: "attachments"
   });
   
   useEffect(() => {
@@ -96,6 +112,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         startTime: format(taskToEdit.startDate, 'HH:mm'),
         endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
         endTime: format(taskToEdit.endDate, 'HH:mm'),
+        attachments: taskToEdit.attachments || [],
         subtasks: taskToEdit.subtasks.map(st => ({
           title: st.title,
           description: st.description || '',
@@ -103,6 +120,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
           endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
           endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
+          attachments: st.attachments || [],
         })),
       });
     } else {
@@ -114,9 +132,10 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         startTime: '09:00',
         endTime: '17:00',
         subtasks: [],
+        attachments: [],
       });
     }
-  }, [taskToEdit, form.reset]);
+  }, [taskToEdit, form]);
 
   const parseDate = (dateStr?: string, timeStr?: string): Date | undefined => {
     if (!dateStr || !timeStr) return undefined;
@@ -146,6 +165,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           completed: taskToEdit?.subtasks[index]?.completed || false,
           startDate: subtaskStartDate,
           endDate: subtaskEndDate,
+          attachments: st.attachments,
         };
     }) : [];
 
@@ -158,9 +178,23 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       startDate: taskStartDate,
       endDate: taskEndDate,
       subtasks: newSubtasks,
+      attachments: data.attachments,
     };
     onSubmit(task);
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any, isSubtask: boolean, index?: number) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          const newAttachment = { name: file.name, url: URL.createObjectURL(file) };
+          if (isSubtask && index !== undefined) {
+              const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
+              form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
+          } else {
+              appendTaskAttachment(newAttachment);
+          }
+      }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -173,7 +207,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
-            <div className="space-y-4 pr-6 -mr-6 overflow-y-auto max-h-[calc(80vh-150px)]">
+            <div className="space-y-4 pr-6 -mr-6 overflow-y-auto max-h-[calc(80vh-200px)] custom-scrollbar">
               <FormField
                 control={form.control}
                 name="title"
@@ -200,6 +234,39 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                   </FormItem>
                 )}
               />
+               <FormField
+                  control={form.control}
+                  name="attachments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tệp đính kèm (Nhiệm vụ)</FormLabel>
+                       <Button type="button" variant="outline" size="sm" onClick={() => taskAttachmentRef.current?.click()}>
+                          <Paperclip className="mr-2 h-4 w-4" />
+                          Đính kèm tệp
+                      </Button>
+                      <FormControl>
+                          <Input 
+                            type="file" 
+                            className="hidden" 
+                            ref={taskAttachmentRef}
+                            onChange={(e) => handleFileChange(e, field, false)}
+                          />
+                      </FormControl>
+                      <div className="space-y-2 mt-2">
+                        {taskAttachments.map((attachment, index) => (
+                          <div key={attachment.id} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-md">
+                            <span className="truncate">{attachment.name}</span>
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeTaskAttachment(index)}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
               
               <div className="space-y-2 border p-3 rounded-md">
                 <h3 className="text-sm font-medium">Bắt đầu</h3>
@@ -272,111 +339,148 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                 <div className="mt-2 max-h-64 overflow-y-auto">
                   <div className="space-y-2 pr-2">
                     <Accordion type="multiple" className="w-full space-y-2">
-                      {fields.map((field, index) => (
-                        <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
-                          <AccordionItem value={`item-${index}`} className="w-full border-b-0">
-                            <div className="flex items-center gap-2 w-full">
-                              <FormField
-                                control={form.control}
-                                name={`subtasks.${index}.title`}
-                                render={({ field }) => (
-                                  <FormItem className="flex-grow">
-                                    <FormControl>
-                                      <Input 
-                                        placeholder={`Công việc ${index + 1}`} 
-                                        {...field} 
-                                        className="border-none bg-transparent shadow-none focus-visible:ring-0" 
-                                      />
-                                    </FormControl>
-                                    <FormMessage className="pl-3" />
-                                  </FormItem>
-                                )}
-                                />
-                                <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                                  <Settings2 className="h-4 w-4" />
-                                </AccordionTrigger>
-                                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
+                      {fields.map((field, index) => {
+                          const subtaskAttachments = form.watch(`subtasks.${index}.attachments`) || [];
+                          return (
+                            <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
+                              <AccordionItem value={`item-${index}`} className="w-full border-b-0">
+                                <div className="flex items-center gap-2 w-full">
+                                  <FormField
+                                    control={form.control}
+                                    name={`subtasks.${index}.title`}
+                                    render={({ field }) => (
+                                      <FormItem className="flex-grow">
+                                        <FormControl>
+                                          <Input 
+                                            placeholder={`Công việc ${index + 1}`} 
+                                            {...field} 
+                                            className="border-none bg-transparent shadow-none focus-visible:ring-0" 
+                                          />
+                                        </FormControl>
+                                        <FormMessage className="pl-3" />
+                                      </FormItem>
+                                    )}
+                                    />
+                                    <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                                      <Settings2 className="h-4 w-4" />
+                                    </AccordionTrigger>
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </div>
+                                <AccordionContent className="px-3 pt-2">
+                                  <div className="space-y-4">
+                                    <FormField
+                                      control={form.control}
+                                      name={`subtasks.${index}.description`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
+                                          <FormControl>
+                                            <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name={`subtasks.${index}.attachments`}
+                                        render={({ field: subtaskField }) => (
+                                            <FormItem>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()}>
+                                                    <Paperclip className="mr-2 h-4 w-4" />
+                                                    Đính kèm tệp
+                                                </Button>
+                                                <FormControl>
+                                                    <Input
+                                                        type="file"
+                                                        className="hidden"
+                                                        ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
+                                                        onChange={(e) => handleFileChange(e, subtaskField, true, index)}
+                                                    />
+                                                </FormControl>
+                                                <div className="space-y-2 mt-2">
+                                                    {subtaskAttachments.map((attachment, attachmentIndex) => (
+                                                        <div key={attachmentIndex} className="flex items-center justify-between text-sm p-2 bg-background/50 rounded-md">
+                                                            <span className="truncate">{attachment.name}</span>
+                                                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                                                              const current = form.getValues(`subtasks.${index}.attachments`) || [];
+                                                              form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex));
+                                                            }}>
+                                                                <X className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <div className="space-y-2">
+                                        <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <FormField
+                                            control={form.control}
+                                            name={`subtasks.${index}.startDate`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormControl>
+                                                  <Input placeholder="DD-MM-YYYY" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                          <FormField
+                                            control={form.control}
+                                            name={`subtasks.${index}.startTime`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormControl>
+                                                  <Input placeholder="HH:MM" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <FormField
+                                            control={form.control}
+                                            name={`subtasks.${index}.endDate`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormControl>
+                                                  <Input placeholder="DD-MM-YYYY" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                          <FormField
+                                            control={form.control}
+                                            name={`subtasks.${index}.endTime`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <FormControl>
+                                                  <Input placeholder="HH:MM" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                        </div>
+                                      </div>
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
                             </div>
-                            <AccordionContent className="px-3 pt-2">
-                              <div className="space-y-4">
-                                <FormField
-                                  control={form.control}
-                                  name={`subtasks.${index}.description`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
-                                      <FormControl>
-                                        <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                <div className="space-y-2">
-                                    <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <FormField
-                                        control={form.control}
-                                        name={`subtasks.${index}.startDate`}
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormControl>
-                                              <Input placeholder="DD-MM-YYYY" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                      <FormField
-                                        control={form.control}
-                                        name={`subtasks.${index}.startTime`}
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormControl>
-                                              <Input placeholder="HH:MM" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <FormField
-                                        control={form.control}
-                                        name={`subtasks.${index}.endDate`}
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormControl>
-                                              <Input placeholder="DD-MM-YYYY" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                      <FormField
-                                        control={form.control}
-                                        name={`subtasks.${index}.endTime`}
-                                        render={({ field }) => (
-                                          <FormItem>
-                                            <FormControl>
-                                              <Input placeholder="HH:MM" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                          </FormItem>
-                                        )}
-                                      />
-                                    </div>
-                                  </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </div>
-                      ))}
+                          )
+                        })}
                     </Accordion>
                   </div>
                 </div>
@@ -385,7 +489,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                   variant="outline"
                   size="sm"
                   className="mt-2"
-                  onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '' })}
+                  onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '', attachments: [] })}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Thêm Công việc
@@ -393,7 +497,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               </div>
             </div>
 
-            <DialogFooter className="pt-4">
+            <DialogFooter className="pt-4 mt-auto">
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
               <Button type="submit">{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
             </DialogFooter>

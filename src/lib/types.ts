@@ -1,5 +1,10 @@
 export type Status = 'To Do' | 'In Progress' | 'Done';
 
+export interface Attachment {
+  name: string;
+  url: string;
+}
+
 export interface Subtask {
   id: string;
   title: string;
@@ -7,6 +12,7 @@ export interface Subtask {
   completed: boolean;
   startDate?: Date;
   endDate?: Date;
+  attachments?: Attachment[];
 }
 
 export interface Task {
@@ -18,4 +24,5 @@ export interface Task {
   endDate: Date;
   createdAt: Date;
   subtasks: Subtask[];
+  attachments?: Attachment[];
 }
