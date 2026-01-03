@@ -19,7 +19,7 @@ function SubtasksDisplay({ subtasks }: { subtasks: Subtask[] }) {
      <Accordion type="single" collapsible className="w-full">
       <AccordionItem value="subtasks" className="border-b-0">
         <AccordionTrigger className="text-xs py-1 hover:no-underline text-sidebar-foreground/80 -ml-2">
-          Xem Công việc
+         <div className="flex-1 text-left">Công việc</div>
         </AccordionTrigger>
         <AccordionContent className="pt-2 space-y-2">
           {subtasks.map(subtask => (
@@ -137,7 +137,7 @@ function TaskProgress({ task }: { task: Task }) {
   return (
     <div className="space-y-2">
       <div>
-        <div className="flex justify-between items-center text-xs mb-1">
+        <div className="flex justify-between items-center mb-1 text-xs">
           <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
             <Clock size={12} /> {timeLeft}
           </span>
@@ -146,15 +146,46 @@ function TaskProgress({ task }: { task: Task }) {
       </div>
       
       {task.subtasks.length > 0 && (
-        <div>
-          <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 mb-1">
-            <span className="flex items-center gap-1.5"><ListChecks size={12} /> Công việc</span>
-            <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
-          </div>
-          <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />
-        </div>
+        <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="subtasks" className="border-b-0">
+              <AccordionTrigger className="text-sm py-1 hover:no-underline w-full p-0 flex-col items-start -ml-1">
+                <div className="w-full space-y-1">
+                  <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
+                      <span className="flex items-center gap-1.5"><ListChecks size={12} /> Công việc</span>
+                      <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
+                  </div>
+                  <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-2 space-y-2">
+                {task.subtasks.map(subtask => (
+                  <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
+                    <div className="flex items-center space-x-2">
+                      {subtask.completed ? (
+                          <Check className="h-3 w-3 text-emerald-400" />
+                        ) : (
+                          <Circle className="h-3 w-3 text-sidebar-foreground/60" />
+                        )}
+                      <span
+                        className={`flex-1 text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
+                      >
+                        {subtask.title}
+                      </span>
+                    </div>
+                    {subtask.description && (
+                      <p className="text-xs text-sidebar-foreground/60 pl-5">{subtask.description}</p>
+                    )}
+                    {subtask.startDate && subtask.endDate && (
+                      <div className="text-xs text-sidebar-foreground/60 pl-5">
+                        Deadline: {format(subtask.startDate, 'dd/MM HH:mm')} - {format(subtask.endDate, 'dd/MM HH:mm')}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
       )}
-      <SubtasksDisplay subtasks={task.subtasks} />
     </div>
   );
 }

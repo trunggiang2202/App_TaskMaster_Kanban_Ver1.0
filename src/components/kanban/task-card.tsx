@@ -140,7 +140,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
         <div className="space-y-3">
           <div>
             <div className="flex justify-between items-center mb-1 text-xs">
-              <span className="flex items-center gap-1.5 text-muted-foreground"><Clock size={14} /> {timeLeft}</span>
+              <span className={`flex items-center gap-1.5 ${getTimeLeftColor()}`}><Clock size={14} /> {timeLeft}</span>
             </div>
             <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
           </div>
@@ -149,7 +149,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
         {task.subtasks.length > 0 && (
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="subtasks" className="border-b-0">
-              <AccordionTrigger className="text-sm py-1 hover:no-underline w-full p-0">
+              <AccordionTrigger className="text-sm py-1 hover:no-underline w-full p-0 flex-col items-start">
                 <div className="w-full space-y-1">
                   <div className="flex justify-between items-center text-xs text-muted-foreground">
                       <span className="flex items-center gap-1.5"><ListChecks size={14} /> Công việc</span>
@@ -157,7 +157,6 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
                   </div>
                   <Progress value={subtaskProgress} className="h-2" />
                 </div>
-                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 ml-2" />
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (
