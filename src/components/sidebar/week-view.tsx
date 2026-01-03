@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { startOfWeek, addDays, format, isSameDay, isSameWeek } from 'date-fns';
+import { startOfWeek, addDays, format, isSameDay, isSameWeek, getDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
@@ -35,6 +35,8 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
   
   const isCurrentWeek = isSameWeek(currentDate, today, { weekStartsOn: 1 });
 
+  const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
   return (
     <div className="px-2 pt-3 pb-2">
       <div className="flex items-center justify-between px-2 mb-2">
@@ -64,7 +66,7 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
             )}
           >
             <span className="text-xs font-medium uppercase">
-              {format(day, 'E', { locale: vi })}
+              {dayNames[getDay(day)]}
             </span>
             <span className="text-lg font-bold">
               {format(day, 'd')}
