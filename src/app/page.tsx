@@ -124,7 +124,7 @@ export default function Home() {
       !st.completed && 
       st.startDate && 
       st.endDate &&
-      isWithinInterval(new Date(), { start: st.startDate, end: st.endDate })
+      isWithinInterval(startOfDay(new Date()), { start: startOfDay(st.startDate), end: startOfDay(st.endDate) })
     );
   };
   
@@ -132,12 +132,18 @@ export default function Home() {
   const uncompletedTasksCount = tasks.filter(task => task.status !== 'Done').length;
 
   const getFilteredTasks = () => {
+    const sDay = startOfDay(selectedDay);
     switch(activeFilter) {
       case 'today':
         return todaysTasks;
       case 'week':
         return tasks.filter(task => 
-          task.subtasks.some(st => st.startDate && st.endDate && isWithinInterval(selectedDay, { start: st.startDate, end: st.endDate }))
+          task.subtasks.some(st => {
+            if (!st.startDate || !st.endDate) return false;
+            const subtaskStart = startOfDay(st.startDate);
+            const subtaskEnd = startOfDay(st.endDate);
+            return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
+          })
         );
       case 'all':
       default:
@@ -153,18 +159,25 @@ export default function Home() {
     if (task.status === 'Done') {
       return count;
     }
-    const inProgressSubtasks = task.subtasks.filter(st => 
-      !st.completed && 
-      st.startDate && 
-      st.endDate && 
-      isWithinInterval(new Date(), { start: st.startDate, end: st.endDate })
-    );
+    const today = startOfDay(new Date());
+    const inProgressSubtasks = task.subtasks.filter(st => {
+        if (!st.completed && st.startDate && st.endDate) {
+            const subtaskStart = startOfDay(st.startDate);
+            const subtaskEnd = startOfDay(st.endDate);
+            return !isAfter(today, subtaskEnd) && !isBefore(today, subtaskStart);
+        }
+        return false;
+    });
     return count + inProgressSubtasks.length;
   }, 0);
 
+
   const handlePrevWeek = () => setCurrentDate(prev => subWeeks(prev, 1));
   const handleNextWeek = () => setCurrentDate(prev => addWeeks(prev, 1));
-  const handleGoToToday = () => setCurrentDate(new Date());
+  const handleGoToToday = () => {
+    setCurrentDate(new Date());
+    setSelectedDay(new Date());
+  };
 
 
   return (
