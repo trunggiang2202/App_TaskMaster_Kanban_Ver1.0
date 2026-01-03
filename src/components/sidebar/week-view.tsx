@@ -27,8 +27,6 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
 
   const hasTasksOnDay = (day: Date) => {
     return tasks.some(task => 
-        (task.startDate && isSameDay(task.startDate, day)) ||
-        (task.endDate && isSameDay(task.endDate, day)) ||
         task.subtasks.some(st => st.startDate && isSameDay(st.startDate, day))
     );
   };

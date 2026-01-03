@@ -139,8 +139,6 @@ export default function Home() {
         return todaysTasks;
       case 'week':
         return tasks.filter(task => 
-          (task.startDate && isSameDay(task.startDate, selectedDay)) || 
-          (task.endDate && isSameDay(task.endDate, selectedDay)) ||
           task.subtasks.some(st => st.startDate && isSameDay(st.startDate, selectedDay))
         );
       case 'all':
