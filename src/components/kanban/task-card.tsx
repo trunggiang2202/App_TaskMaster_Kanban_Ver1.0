@@ -25,8 +25,8 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
   useEffect(() => {
     const calculateTimeProgress = () => {
       const now = new Date().getTime();
-      const start = task.createdAt.getTime();
-      const end = task.deadline.getTime();
+      const start = task.startDate.getTime();
+      const end = task.endDate.getTime();
       if (now >= end) return 100;
       if (now < start) return 0;
       const percentage = ((now - start) / (end - start)) * 100;
@@ -41,7 +41,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
       }, 60000);
       return () => clearInterval(interval);
     }
-  }, [task.createdAt, task.deadline, task.status]);
+  }, [task.startDate, task.endDate, task.status]);
 
   useEffect(() => {
     const completedSubtasks = task.subtasks.filter(st => st.completed).length;
@@ -64,7 +64,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
     }
   };
 
-  const isOverdue = new Date() > task.deadline && task.status !== 'Done';
+  const isOverdue = new Date() > task.endDate && task.status !== 'Done';
 
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow bg-card">
@@ -91,7 +91,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
         <div>
           <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><Clock size={14} /> Deadline</span>
-            <span className={isOverdue ? "text-destructive font-medium" : ""}>{formatDistanceToNow(task.deadline, { addSuffix: true })}</span>
+            <span className={isOverdue ? "text-destructive font-medium" : ""}>{formatDistanceToNow(task.endDate, { addSuffix: true })}</span>
           </div>
           <Progress value={timeProgress} className="h-2" indicatorClassName={isOverdue ? "bg-destructive" : "bg-accent"} />
         </div>
@@ -137,7 +137,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
       <CardFooter className="flex justify-between items-center">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar size={14} />
-          <span>{format(task.deadline, 'MMM d, yyyy')}</span>
+          <span>{format(task.endDate, 'MMM d, yyyy')}</span>
         </div>
       </CardFooter>
     </Card>

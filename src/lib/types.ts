@@ -5,7 +5,7 @@ export interface Subtask {
   title: string;
   completed: boolean;
   startDate?: Date;
-  deadline?: Date;
+  endDate?: Date;
 }
 
 export interface Task {
@@ -13,7 +13,8 @@ export interface Task {
   title: string;
   description?: string;
   status: Status;
-  deadline: Date;
+  startDate: Date;
+  endDate: Date;
   createdAt: Date;
   subtasks: Subtask[];
 }
