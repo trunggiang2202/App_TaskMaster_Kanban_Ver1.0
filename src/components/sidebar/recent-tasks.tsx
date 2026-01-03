@@ -118,7 +118,7 @@ function TaskProgress({ task }: { task: Task }) {
             <Clock size={12} /> Thời gian còn lại: {timeLeft}
           </span>
         </div>
-        <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
+        <Progress value={timeProgress} className="h-1.5 bg-secondary" indicatorClassName={getProgressColor()} />
     </div>
   );
 }
@@ -152,7 +152,7 @@ interface RecentTasksProps {
   tasks: Task[];
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
-  activeFilter: 'all' | 'today';
+  activeFilter: 'all' | 'today' | 'week';
 }
 
 
@@ -182,7 +182,11 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
           </div>
         ))}
          {recentTasks.length === 0 && (
-          <p className="text-sm text-center text-sidebar-foreground/60 py-4">Không có nhiệm vụ nào cho hôm nay</p>
+          <p className="text-sm text-center text-sidebar-foreground/60 py-4">
+            {activeFilter === 'today' ? 'Không có nhiệm vụ nào cho hôm nay' : 
+             activeFilter === 'week' ? 'Không có nhiệm vụ cho ngày này' :
+             'Không có nhiệm vụ nào'}
+          </p>
         )}
       </div>
     </SidebarGroup>

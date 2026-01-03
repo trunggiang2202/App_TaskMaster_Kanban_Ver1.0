@@ -9,14 +9,15 @@ import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isToday, isAfter, isBefore, startOfDay } from 'date-fns';
+import { isToday, isAfter, isBefore, startOfDay, isSameDay } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
 import { WelcomeDialog } from '@/components/welcome-dialog';
 import { getDailyQuote } from '@/lib/daily-quotes';
+import { WeekView } from '@/components/sidebar/week-view';
 
-type FilterType = 'all' | 'today';
+type FilterType = 'all' | 'today' | 'week';
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks.map(t => {
@@ -36,6 +37,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(tasks[0]?.id || null);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
 
   useEffect(() => {
     setShowWelcomeDialog(true);
@@ -122,7 +124,23 @@ export default function Home() {
   const todaysTasks = tasks.filter(hasInProgressSubtasks);
   const uncompletedTasksCount = tasks.filter(task => task.status !== 'Done').length;
 
-  const filteredTasksForSidebar = activeFilter === 'today' ? todaysTasks : tasks;
+  const getFilteredTasks = () => {
+    switch(activeFilter) {
+      case 'today':
+        return todaysTasks;
+      case 'week':
+        return tasks.filter(task => 
+          (task.startDate && isSameDay(task.startDate, selectedDay)) || 
+          (task.endDate && isSameDay(task.endDate, selectedDay)) ||
+          task.subtasks.some(st => st.startDate && isSameDay(st.startDate, selectedDay))
+        );
+      case 'all':
+      default:
+        return tasks;
+    }
+  };
+
+  const filteredTasksForSidebar = getFilteredTasks();
 
   const selectedTask = tasks.find(task => task.id === selectedTaskId);
 
@@ -157,16 +175,26 @@ export default function Home() {
           <Separator className="my-2" />
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-sidebar-accent/60">
+              <TabsList className="grid w-full grid-cols-3 bg-sidebar-accent/60">
                 <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
                   Tất cả ({uncompletedTasksCount})
                 </TabsTrigger>
                 <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
                   Hôm nay ({todaysSubtaskCount})
                 </TabsTrigger>
+                <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
+                  Tuần này
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
+          {activeFilter === 'week' && (
+            <WeekView 
+              tasks={tasks}
+              selectedDay={selectedDay}
+              onSelectDay={setSelectedDay}
+            />
+          )}
           <RecentTasks 
             tasks={filteredTasksForSidebar} 
             selectedTaskId={selectedTaskId}
