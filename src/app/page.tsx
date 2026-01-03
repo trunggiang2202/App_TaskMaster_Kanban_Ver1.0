@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { initialTasks } from '@/lib/data';
 import type { Task } from '@/lib/types';
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarRail, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
 import Header from '@/components/layout/header';
 import KanbanBoard from '@/components/kanban/kanban-board';
 import { TaskDialog } from '@/components/kanban/task-dialog';
@@ -58,6 +58,7 @@ export default function Home() {
   return (
     <SidebarProvider>
       <Sidebar>
+        <SidebarRail />
         <SidebarHeader className="p-4">
           <h2 className="text-2xl font-bold text-sidebar-foreground font-headline">TaskMaster</h2>
         </SidebarHeader>
@@ -95,3 +96,5 @@ export default function Home() {
     </SidebarProvider>
   );
 }
+
+    
