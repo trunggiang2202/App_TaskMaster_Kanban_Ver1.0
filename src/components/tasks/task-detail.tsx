@@ -155,29 +155,31 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                 </Button>
             </div>
         </div>
-
-        {/* Date Range */}
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Calendar className="h-5 w-5" />
-          <span>{formattedRange}</span>
-        </div>
         
         <Separator />
 
-        {/* Description */}
-        <div className="p-4 rounded-md border bg-muted/20">
-            <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
-            <p className="text-muted-foreground leading-relaxed">
-                {task.description || 'Không có mô tả cho nhiệm vụ này.'}
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 rounded-md border bg-muted/20">
+                <h2 className="text-lg font-semibold mb-2">Deadline</h2>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="h-5 w-5" />
+                    <span>{formattedRange}</span>
+                </div>
+            </div>
+
+            <div className="p-4 rounded-md border bg-muted/20">
+                <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                    {task.description || 'Không có mô tả cho nhiệm vụ này.'}
+                </p>
+            </div>
         </div>
-        
-        {/* Subtasks */}
+
         {totalSubtasks > 0 && (
           <div className="p-4 rounded-md border bg-muted/20 space-y-4">
-            <h2 className="text-lg font-semibold mb-2">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
-            <div className="space-y-2">
-              <Progress value={subtaskProgress} className="h-2 mb-4" />
+            <h2 className="text-lg font-semibold">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
+            <div className="space-y-4">
+              <Progress value={subtaskProgress} className="h-2" />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {kanbanColumns.map(column => (
                   <div key={column.title} className="flex flex-col">
