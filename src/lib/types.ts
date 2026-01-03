@@ -24,5 +24,4 @@ export interface Task {
   endDate: Date;
   createdAt: Date;
   subtasks: Subtask[];
-  attachments?: Attachment[];
 }

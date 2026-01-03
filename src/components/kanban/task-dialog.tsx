@@ -45,7 +45,6 @@ const taskSchema = z.object({
   endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(subtaskSchema).optional(),
-  attachments: z.array(attachmentSchema).optional(),
 }).refine(data => {
     try {
       const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
@@ -76,7 +75,6 @@ interface TaskDialogProps {
 }
 
 export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskDialogProps) {
-  const taskAttachmentRef = useRef<HTMLInputElement>(null);
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const form = useForm<TaskFormData>({
@@ -89,18 +87,12 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       startTime: '09:00',
       endTime: '17:00',
       subtasks: [],
-      attachments: [],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "subtasks",
-  });
-
-  const { fields: taskAttachments, append: appendTaskAttachment, remove: removeTaskAttachment } = useFieldArray({
-    control: form.control,
-    name: "attachments"
   });
   
   useEffect(() => {
@@ -112,7 +104,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         startTime: format(taskToEdit.startDate, 'HH:mm'),
         endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
         endTime: format(taskToEdit.endDate, 'HH:mm'),
-        attachments: taskToEdit.attachments || [],
         subtasks: taskToEdit.subtasks.map(st => ({
           title: st.title,
           description: st.description || '',
@@ -132,7 +123,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         startTime: '09:00',
         endTime: '17:00',
         subtasks: [],
-        attachments: [],
       });
     }
   }, [taskToEdit, form]);
@@ -178,21 +168,16 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       startDate: taskStartDate,
       endDate: taskEndDate,
       subtasks: newSubtasks,
-      attachments: data.attachments,
     };
     onSubmit(task);
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any, isSubtask: boolean, index?: number) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any, index: number) => {
       const file = e.target.files?.[0];
       if (file) {
           const newAttachment = { name: file.name, url: URL.createObjectURL(file) };
-          if (isSubtask && index !== undefined) {
-              const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
-              form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
-          } else {
-              appendTaskAttachment(newAttachment);
-          }
+          const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
+          form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
       }
   };
 
@@ -234,39 +219,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                   </FormItem>
                 )}
               />
-               <FormField
-                  control={form.control}
-                  name="attachments"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tệp đính kèm (Nhiệm vụ)</FormLabel>
-                       <Button type="button" variant="outline" size="sm" onClick={() => taskAttachmentRef.current?.click()}>
-                          <Paperclip className="mr-2 h-4 w-4" />
-                          Đính kèm tệp
-                      </Button>
-                      <FormControl>
-                          <Input 
-                            type="file" 
-                            className="hidden" 
-                            ref={taskAttachmentRef}
-                            onChange={(e) => handleFileChange(e, field, false)}
-                          />
-                      </FormControl>
-                      <div className="space-y-2 mt-2">
-                        {taskAttachments.map((attachment, index) => (
-                          <div key={attachment.id} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded-md">
-                            <span className="truncate">{attachment.name}</span>
-                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeTaskAttachment(index)}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
               
               <div className="space-y-2 border p-3 rounded-md">
                 <h3 className="text-sm font-medium">Bắt đầu</h3>
@@ -397,7 +349,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                         type="file"
                                                         className="hidden"
                                                         ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
-                                                        onChange={(e) => handleFileChange(e, subtaskField, true, index)}
+                                                        onChange={(e) => handleFileChange(e, subtaskField, index)}
                                                     />
                                                 </FormControl>
                                                 <div className="space-y-2 mt-2">

@@ -18,10 +18,6 @@ export const initialTasks: Task[] = [
     createdAt: getRelativeDate(-10),
     startDate: getRelativeDate(-10),
     endDate: getRelativeDate(20),
-    attachments: [
-        { name: 'Campaign-Brief-Q3.pdf', url: '#' },
-        { name: 'Marketing-Assets.zip', url: '#' },
-    ],
     subtasks: [
       { id: 'sub-1-1', title: 'Draft campaign brief', completed: true, startDate: getRelativeDate(-10), endDate: getRelativeDate(-8) },
       { id: 'sub-1-2', title: 'Design visual assets', completed: true, startDate: getRelativeDate(-7), endDate: getRelativeDate(-2) },

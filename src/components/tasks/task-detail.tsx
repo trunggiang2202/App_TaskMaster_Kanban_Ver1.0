@@ -9,12 +9,6 @@ import { Separator } from '@/components/ui/separator';
 import { format, isAfter, isBefore, isToday, startOfDay } from 'date-fns';
 import { Calendar, Clock, Edit, FileText, ListChecks, LoaderCircle, Paperclip, Trash2, Circle, Check, Download, AlertTriangle } from 'lucide-react';
 
-const statusConfig: { [key in Status]: { label: string; color: string; } } = {
-  'To Do': { label: 'Cần làm', color: 'bg-sky-500' },
-  'In Progress': { label: 'Đang thực hiện', color: 'bg-amber-500' },
-  'Done': { label: 'Hoàn thành', color: 'bg-emerald-500' },
-};
-
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
   <a 
     href={attachment.url} 
@@ -181,19 +175,6 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
         </p>
       </div>
       
-       {/* Main Task Attachments */}
-      {task.attachments && task.attachments.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 font-semibold">
-            <Paperclip className="h-5 w-5" />
-            <h2 className="text-lg">Tệp đính kèm</h2>
-          </div>
-          <div className="pl-7 grid grid-cols-1 md:grid-cols-2 gap-2">
-            {task.attachments.map((att, index) => <AttachmentItem key={index} attachment={att} />)}
-          </div>
-        </div>
-      )}
-
       {/* Subtasks */}
       {totalSubtasks > 0 && (
         <div className="space-y-4">
