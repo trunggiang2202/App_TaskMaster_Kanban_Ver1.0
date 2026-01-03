@@ -9,7 +9,7 @@ import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isToday } from 'date-fns';
+import { isToday, isAfter, isBefore, startOfDay } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
@@ -77,8 +77,15 @@ export default function Home() {
   };
 
   const filteredTasksForSidebar = tasks.filter(task => {
-    if (activeFilter === 'today' && task.endDate) {
-      return isToday(task.endDate);
+    if (activeFilter === 'today') {
+      const today = startOfDay(new Date());
+      const startDate = startOfDay(task.startDate);
+      const endDate = startOfDay(task.endDate);
+
+      return (
+        task.status !== 'Done' &&
+        (isToday(startDate) || isToday(endDate) || (isBefore(startDate, today) && isAfter(endDate, today)))
+      );
     }
     return true;
   });
