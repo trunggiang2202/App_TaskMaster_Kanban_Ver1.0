@@ -31,7 +31,7 @@ function TaskProgress({ task }: { task: Task }) {
     if (task.status !== 'Done') {
       const interval = setInterval(() => {
         setTimeProgress(calculateTimeProgress());
-      }, 60000);
+      }, 1000); // Update every second for real-time effect
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
@@ -46,6 +46,14 @@ function TaskProgress({ task }: { task: Task }) {
   }, [task.subtasks, task.status]);
 
   const isOverdue = new Date() > new Date(task.endDate) && task.status !== 'Done';
+  const isWarning = timeProgress > 80 && task.status !== 'Done';
+
+  const getProgressColor = () => {
+    if (isOverdue || isWarning) {
+      return 'bg-destructive'; // Red
+    }
+    return 'bg-emerald-500'; // Green
+  };
 
   return (
     <div className="space-y-3">
@@ -56,7 +64,7 @@ function TaskProgress({ task }: { task: Task }) {
             {formatDistanceToNow(new Date(task.endDate), { addSuffix: true })}
           </span>
         </div>
-        <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={isOverdue ? "bg-destructive" : "bg-accent"} />
+        <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={getProgressColor()} />
       </div>
       
       {task.subtasks.length > 0 && (

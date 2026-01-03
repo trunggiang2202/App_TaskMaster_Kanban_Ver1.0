@@ -32,13 +32,13 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
       const percentage = ((now - start) / (end - start)) * 100;
       return Math.min(Math.max(percentage, 0), 100);
     };
-    
+
     setTimeProgress(calculateTimeProgress());
 
     if (task.status !== 'Done') {
       const interval = setInterval(() => {
         setTimeProgress(calculateTimeProgress());
-      }, 60000);
+      }, 1000); // Update every second for real-time effect
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
@@ -65,6 +65,14 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
   };
 
   const isOverdue = new Date() > task.endDate && task.status !== 'Done';
+  const isWarning = timeProgress > 80 && task.status !== 'Done';
+
+  const getProgressColor = () => {
+    if (isOverdue || isWarning) {
+      return 'bg-destructive'; // Red
+    }
+    return 'bg-emerald-500'; // Green
+  };
 
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow bg-card">
@@ -93,13 +101,13 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
             <span className="flex items-center gap-1.5"><Clock size={14} /> Deadline</span>
             <span className={isOverdue ? "text-destructive font-medium" : ""}>{formatDistanceToNow(task.endDate, { addSuffix: true })}</span>
           </div>
-          <Progress value={timeProgress} className="h-2" indicatorClassName={isOverdue ? "bg-destructive" : "bg-accent"} />
+          <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
         </div>
         
         {task.subtasks.length > 0 && (
           <div>
             <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5"><ListChecks size={14} /> Subtasks</span>
+                <span className="flex items-center gap-1.5"><ListChecks size={14} /> Công việc</span>
                 <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
             </div>
             <Progress value={subtaskProgress} className="h-2" />
