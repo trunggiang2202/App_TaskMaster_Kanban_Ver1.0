@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { format, isAfter, startOfDay } from 'date-fns';
 import { Calendar, Edit, Trash2, Circle, Check, Download, Paperclip, LoaderCircle } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
   <a 
@@ -32,8 +33,10 @@ interface SubtaskItemProps {
 }
 
 const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, isInProgress }) => {
+    const canComplete = isClickable && !!subtask.startDate && !!subtask.endDate;
+
     const handleToggle = (e: React.MouseEvent) => {
-        if (isClickable) {
+        if (canComplete) {
             e.stopPropagation();
             onToggle(subtask.id);
         }
@@ -53,15 +56,32 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     };
 
+    const iconElement = (
+      <div 
+        className={`h-5 w-5 mt-0.5 shrink-0 ${canComplete ? 'cursor-pointer' : 'cursor-not-allowed'}`} 
+        onClick={handleToggle}
+      >
+        {renderIcon()}
+      </div>
+    );
+
+
     return (
         <div 
             key={subtask.id} 
             className="flex flex-col"
         >
             <div className="flex items-start gap-3">
-                 <div className={`h-5 w-5 mt-0.5 shrink-0 ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'}`} onClick={handleToggle}>
-                    {renderIcon()}
-                </div>
+                 {!canComplete && !subtask.completed ? (
+                    <Tooltip>
+                        <TooltipTrigger asChild>{iconElement}</TooltipTrigger>
+                        <TooltipContent>
+                            <p>Cần đặt deadline để hoàn thành</p>
+                        </TooltipContent>
+                    </Tooltip>
+                 ) : (
+                    iconElement
+                 )}
                 <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {subtask.title}
@@ -112,21 +132,20 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
       'Xong': [],
     };
 
-    const today = startOfDay(new Date());
+    const now = new Date();
 
     task.subtasks.forEach(st => {
       if (st.completed) {
         categories['Xong'].push(st);
         return;
       }
-
-      const stStartDate = st.startDate ? startOfDay(st.startDate) : null;
       
-      if (stStartDate && isAfter(stStartDate, today)) {
-          categories['Chưa làm'].push(st);
-      } else {
-          // If start date is today or in the past, it's "In Progress"
+      // A subtask is "In Progress" if it's not done and its start time is in the past or now.
+      if (st.startDate && isAfter(now, st.startDate)) {
           categories['Đang làm'].push(st);
+      } else {
+          // Otherwise, it's "To Do" (upcoming or no start date)
+          categories['Chưa làm'].push(st);
       }
     });
 
