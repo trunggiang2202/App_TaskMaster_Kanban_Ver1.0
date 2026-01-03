@@ -31,7 +31,7 @@ export default function KanbanColumn({ status, tasks, onUpdateTask, onTaskStatus
         ))}
         {tasks.length === 0 && (
           <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground">No tasks here yet.</p>
+            <p className="text-muted-foreground">Chưa có nhiệm vụ nào.</p>
           </div>
         )}
       </div>

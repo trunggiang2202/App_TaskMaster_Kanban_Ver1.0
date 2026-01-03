@@ -198,7 +198,7 @@ function TaskProgress({ task, onSubtaskToggle }: { task: Task, onSubtaskToggle: 
                   <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
                       <div className="flex items-center gap-1.5">
                         <ListChecks size={12} /> 
-                        <span>Công việc</span>
+                        <span>Nhiệm vụ</span>
                         <ChevronDown className="accordion-chevron h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200" />
                       </div>
                       <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
@@ -270,7 +270,7 @@ export function RecentTasks({ tasks, onEditTask, onDeleteTask, onUpdateTask }: R
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Công việc đã thêm</SidebarGroupLabel>
+      <SidebarGroupLabel>Nhiệm vụ đã thêm</SidebarGroupLabel>
       <div className="space-y-3 px-2">
         {recentTasks.map(task => (
           <div key={task.id} className="p-2.5 rounded-lg bg-sidebar-accent/50 space-y-2 relative group">
@@ -301,7 +301,7 @@ export function RecentTasks({ tasks, onEditTask, onDeleteTask, onUpdateTask }: R
           </div>
         ))}
          {recentTasks.length === 0 && (
-          <p className="text-sm text-center text-sidebar-foreground/60 py-4">Chưa có công việc nào.</p>
+          <p className="text-sm text-center text-sidebar-foreground/60 py-4">Chưa có nhiệm vụ nào.</p>
         )}
       </div>
     </SidebarGroup>

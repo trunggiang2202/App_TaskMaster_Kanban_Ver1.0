@@ -23,7 +23,7 @@ import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const subtaskSchema = z.object({
-  title: z.string().min(1, "Tiêu đề công việc không được để trống."),
+  title: z.string().min(1, "Tiêu đề nhiệm vụ không được để trống."),
   description: z.string().optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
@@ -166,9 +166,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle>{taskToEdit ? 'Chỉnh sửa công việc' : 'Thêm công việc mới'}</DialogTitle>
+          <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
           <DialogDescription>
-            {taskToEdit ? 'Cập nhật chi tiết công việc của bạn.' : 'Điền vào các chi tiết cho công việc mới của bạn. Bạn có thể thêm các công việc để chia nhỏ nó ra.'}
+            {taskToEdit ? 'Cập nhật chi tiết nhiệm vụ của bạn.' : 'Điền vào các chi tiết cho nhiệm vụ mới của bạn. Bạn có thể thêm các nhiệm vụ để chia nhỏ nó ra.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -193,7 +193,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                 <FormItem>
                   <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Thêm chi tiết về công việc..." {...field} />
+                    <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -267,7 +267,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             <Separator />
             
             <div>
-              <FormLabel>Công việc</FormLabel>
+              <FormLabel>Nhiệm vụ</FormLabel>
               <div className="mt-2 max-h-64 overflow-y-auto">
                  <div className="space-y-2 pr-2">
                    <Accordion type="multiple" className="w-full space-y-2">
@@ -282,7 +282,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem className="flex-grow">
                                     <FormControl>
                                       <Input 
-                                        placeholder={`Công việc ${index + 1}`} 
+                                        placeholder={`Nhiệm vụ ${index + 1}`} 
                                         {...field} 
                                         className="border-none bg-transparent shadow-none focus-visible:ring-0" 
                                       />
@@ -307,7 +307,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem>
                                      <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
                                     <FormControl>
-                                      <Textarea placeholder="Thêm chi tiết cho công việc con..." {...field} />
+                                      <Textarea placeholder="Thêm chi tiết cho nhiệm vụ con..." {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -387,13 +387,13 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                 onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '' })}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Thêm Công việc
+                Thêm Nhiệm vụ
               </Button>
             </div>
 
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="submit">{taskToEdit ? 'Lưu thay đổi' : 'Tạo công việc'}</Button>
+              <Button type="submit">{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
             </DialogFooter>
           </form>
         </Form>
