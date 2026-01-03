@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { format, isAfter, isBefore, isToday, startOfDay } from 'date-fns';
-import { Calendar, Clock, Edit, ListChecks, LoaderCircle, Paperclip, Trash2, Circle, Check, Download, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, Edit, ListChecks, LoaderCircle, Paperclip, Trash2, Circle, Check, Download } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
@@ -78,7 +78,7 @@ interface TaskDetailProps {
   onSubtaskToggle: (taskId: string, subtaskId: string) => void;
 }
 
-type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong' | 'Trễ';
+type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong';
 
 export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTask, onSubtaskToggle }: TaskDetailProps) {
   const [formattedRange, setFormattedRange] = React.useState('');
@@ -107,7 +107,6 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
       'Chưa làm': [],
       'Đang làm': [],
       'Xong': [],
-      'Trễ': [],
     };
 
     const today = startOfDay(new Date());
@@ -119,11 +118,8 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
       }
 
       const stStartDate = st.startDate ? startOfDay(st.startDate) : null;
-      const stEndDate = st.endDate ? startOfDay(st.endDate) : null;
-
-      if (stEndDate && isBefore(stEndDate, today)) {
-          categories['Trễ'].push(st);
-      } else if (stStartDate && (isAfter(stStartDate, today))) {
+      
+      if (stStartDate && isAfter(stStartDate, today)) {
           categories['Chưa làm'].push(st);
       } else {
           categories['Đang làm'].push(st);
@@ -137,7 +133,6 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
   const kanbanColumns: { title: SubtaskStatus, icon: React.ReactNode, subtasks: Subtask[], isClickable: boolean }[] = [
     { title: 'Chưa làm', icon: <Clock className="h-4 w-4 text-sky-500" />, subtasks: categorizedSubtasks['Chưa làm'], isClickable: false },
     { title: 'Đang làm', icon: <LoaderCircle className="h-4 w-4 text-amber-500 animate-spin" />, subtasks: categorizedSubtasks['Đang làm'], isClickable: true },
-    { title: 'Trễ', icon: <AlertTriangle className="h-4 w-4 text-destructive" />, subtasks: categorizedSubtasks['Trễ'], isClickable: true },
     { title: 'Xong', icon: <Check className="h-4 w-4 text-emerald-500" />, subtasks: categorizedSubtasks['Xong'], isClickable: true },
   ];
 
@@ -145,7 +140,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
     <>
       <div className="p-6 lg:p-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <h1 className="text-3xl font-bold font-headline tracking-tight">{task.title}</h1>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
@@ -186,7 +181,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
             </div>
             <div className="pl-7 space-y-2">
               <Progress value={subtaskProgress} className="h-2 mb-4" />
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {kanbanColumns.map(column => (
                   <div key={column.title} className="flex flex-col">
                     <div className="flex items-center gap-2 mb-2">
