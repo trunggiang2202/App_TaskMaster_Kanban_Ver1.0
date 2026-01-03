@@ -15,37 +15,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Plus, Trash2 } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Plus, Trash2 } from 'lucide-react';
 import type { Task, Subtask } from '@/lib/types';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 
 const taskSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long.'),
   description: z.string().optional(),
-  startDate: z.date({ required_error: 'A start date is required.' }),
-  startTime: z.string({ required_error: 'A start time is required.' }),
-  endDate: z.date({ required_error: 'An end date is required.' }),
-  endTime: z.string({ required_error: 'An end time is required.' }),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Định dạng ngày phải là YYYY-MM-DD"),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Định dạng ngày phải là YYYY-MM-DD"),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(z.object({
     title: z.string().min(1, "Subtask title can't be empty."),
   })).optional(),
 }).refine(data => {
-    const startDateTime = new Date(data.startDate);
-    const [startHour, startMinute] = data.startTime.split(':').map(Number);
-    startDateTime.setHours(startHour, startMinute);
-
-    const endDateTime = new Date(data.endDate);
-    const [endHour, endMinute] = data.endTime.split(':').map(Number);
-    endDateTime.setHours(endHour, endMinute);
-
+    const startDateTime = new Date(`${data.startDate}T${data.startTime}`);
+    const endDateTime = new Date(`${data.endDate}T${data.endTime}`);
     return endDateTime > startDateTime;
 }, {
-    message: "End date and time must be after start date and time.",
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"],
 });
 
@@ -57,21 +46,6 @@ interface AddTaskDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onAddTask: (task: Task) => void;
 }
-
-const generateTimeOptions = () => {
-    const options = [];
-    for (let i = 0; i < 24; i++) {
-        for (let j = 0; j < 60; j += 30) {
-            const hour = i.toString().padStart(2, '0');
-            const minute = j.toString().padStart(2, '0');
-            options.push(`${hour}:${minute}`);
-        }
-    }
-    return options;
-};
-
-const timeOptions = generateTimeOptions();
-
 
 export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialogProps) {
   const form = useForm<TaskFormData>({
@@ -104,13 +78,8 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
       completed: false,
     })) : [];
 
-    const [startHour, startMinute] = data.startTime.split(':').map(Number);
-    const startDate = new Date(data.startDate);
-    startDate.setHours(startHour, startMinute);
-
-    const [endHour, endMinute] = data.endTime.split(':').map(Number);
-    const endDate = new Date(data.endDate);
-    endDate.setHours(endHour, endMinute);
+    const startDate = new Date(`${data.startDate}T${data.startTime}`);
+    const endDate = new Date(`${data.endDate}T${data.endTime}`);
 
     const newTask: Task = {
       id: crypto.randomUUID(),
@@ -173,31 +142,10 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                     name="startDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ngày</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={'outline'}
-                                className={cn(
-                                  'w-full pl-3 text-left font-normal',
-                                  !field.value && 'text-muted-foreground'
-                                )}
-                              >
-                                {field.value ? format(field.value, 'PPP') : <span>Chọn một ngày</span>}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <FormLabel>Ngày (YYYY-MM-DD)</FormLabel>
+                         <FormControl>
+                            <Input placeholder="2024-12-31" {...field} />
+                          </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -207,19 +155,10 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                     name="startTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Giờ</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Chọn giờ" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {timeOptions.map(time => (
-                                <SelectItem key={time} value={time}>{time}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <FormLabel>Giờ (HH:MM)</FormLabel>
+                         <FormControl>
+                            <Input placeholder="09:00" {...field} />
+                          </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -235,35 +174,10 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                     name="endDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Ngày</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={'outline'}
-                                className={cn(
-                                  'w-full pl-3 text-left font-normal',
-                                  !field.value && 'text-muted-foreground'
-                                )}
-                              >
-                                {field.value ? format(field.value, 'PPP') : <span>Chọn một ngày</span>}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => {
-                                  const startDate = form.getValues('startDate');
-                                  return startDate ? date < startDate : false;
-                              }}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <FormLabel>Ngày (YYYY-MM-DD)</FormLabel>
+                         <FormControl>
+                            <Input placeholder="2024-12-31" {...field} />
+                          </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -273,19 +187,10 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                     name="endTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Giờ</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Chọn giờ" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {timeOptions.map(time => (
-                                <SelectItem key={time} value={time}>{time}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <FormLabel>Giờ (HH:MM)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="17:00" {...field} />
+                          </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
