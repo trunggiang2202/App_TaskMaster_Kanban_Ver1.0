@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -163,7 +164,7 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
           </div>
         ))}
          {recentTasks.length === 0 && (
-          <p className="text-sm text-center text-sidebar-foreground/60 py-4"></p>
+          <p className="text-sm text-center text-sidebar-foreground/60 py-4">Không có nhiệm vụ nào cho hôm nay</p>
         )}
       </div>
     </SidebarGroup>

@@ -113,20 +113,13 @@ export default function Home() {
     );
   };
 
-  const isTaskForToday = (task: Task) => {
-    const today = startOfDay(new Date());
-    const startDate = task.startDate ? startOfDay(task.startDate) : null;
-    const endDate = task.endDate ? startOfDay(task.endDate) : null;
-
-    if (!startDate || !endDate) return false;
-
-    return (
-      task.status !== 'Done' &&
-      (isToday(startDate) || isToday(endDate) || (isBefore(startDate, today) && isAfter(endDate, today)))
-    );
+  const hasInProgressSubtasks = (task: Task) => {
+    const now = new Date();
+    if (task.status === 'Done') return false;
+    return task.subtasks.some(st => !st.completed && st.startDate && isAfter(now, st.startDate));
   };
-
-  const todaysTasks = tasks.filter(isTaskForToday);
+  
+  const todaysTasks = tasks.filter(hasInProgressSubtasks);
   const uncompletedTasksCount = tasks.filter(task => task.status !== 'Done').length;
 
   const filteredTasksForSidebar = activeFilter === 'today' ? todaysTasks : tasks;
