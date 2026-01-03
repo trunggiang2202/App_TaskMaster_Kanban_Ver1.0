@@ -8,9 +8,11 @@ import Header from '@/components/layout/header';
 import KanbanBoard from '@/components/kanban/kanban-board';
 import { AddTaskDialog } from '@/components/kanban/add-task-dialog';
 import { Plus } from 'lucide-react';
+import { RecentTasks } from '@/components/sidebar/recent-tasks';
+import { Separator } from '@/components/ui/separator';
 
 export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks.map(t => ({...t, startDate: new Date(t.startDate), endDate: new Date(t.endDate), createdAt: new Date(t.createdAt) })));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const addTask = (newTask: Task) => {
@@ -36,14 +38,16 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-sidebar-foreground font-headline">TaskMaster</h2>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarMenu>
-            <SidebarMenuItem className="px-2">
+          <SidebarMenu className="px-2">
+            <SidebarMenuItem>
               <SidebarMenuButton onClick={() => setIsDialogOpen(true)} className="w-full">
                 <Plus />
                 <span>New Task</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+          <Separator className="my-2" />
+          <RecentTasks tasks={tasks} />
         </SidebarContent>
       </Sidebar>
       <SidebarInset>

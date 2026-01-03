@@ -1,5 +1,8 @@
 import type { Task } from './types';
 
+// Note: In a real app, these dates would not be dynamically generated like this
+// as it can cause hydration issues. This is done for demonstration purposes.
+
 export const initialTasks: Task[] = [
   {
     id: 'task-1',
@@ -10,10 +13,10 @@ export const initialTasks: Task[] = [
     startDate: new Date(new Date().setDate(new Date().getDate() - 10)),
     endDate: new Date(new Date().setDate(new Date().getDate() + 20)),
     subtasks: [
-      { id: 'sub-1-1', title: 'Draft campaign brief', completed: true, endDate: new Date(new Date().setDate(new Date().getDate() - 8)) },
-      { id: 'sub-1-2', title: 'Design visual assets', completed: true, endDate: new Date(new Date().setDate(new Date().getDate() - 2)) },
-      { id: 'sub-1-3', title: 'Develop ad copy', completed: false, endDate: new Date(new Date().setDate(new Date().getDate() + 5)) },
-      { id: 'sub-1-4', title: 'Setup tracking and analytics', completed: false, endDate: new Date(new Date().setDate(new Date().getDate() + 10)) },
+      { id: 'sub-1-1', title: 'Draft campaign brief', completed: true },
+      { id: 'sub-1-2', title: 'Design visual assets', completed: true },
+      { id: 'sub-1-3', title: 'Develop ad copy', completed: false },
+      { id: 'sub-1-4', title: 'Setup tracking and analytics', completed: false },
     ],
   },
   {
@@ -25,9 +28,9 @@ export const initialTasks: Task[] = [
     startDate: new Date(new Date().setDate(new Date().getDate() - 5)),
     endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
     subtasks: [
-      { id: 'sub-2-1', title: 'API endpoint for registration', completed: false, endDate: new Date(new Date().setDate(new Date().getDate() + 7)) },
-      { id: 'sub-2-2', title: 'Frontend login form', completed: false, endDate: new Date(new Date().setDate(new Date().getDate() + 14)) },
-      { id: 'sub-2-3', title: 'Integrate Google OAuth', completed: false, endDate: new Date(new Date().setDate(new Date().getDate() + 21)) },
+      { id: 'sub-2-1', title: 'API endpoint for registration', completed: false },
+      { id: 'sub-2-2', title: 'Frontend login form', completed: false },
+      { id: 'sub-2-3', title: 'Integrate Google OAuth', completed: false },
     ],
   },
   {
