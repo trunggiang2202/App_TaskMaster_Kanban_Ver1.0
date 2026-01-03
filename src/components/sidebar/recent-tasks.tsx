@@ -6,7 +6,7 @@ import type { Task } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar } from 'lucide-react';
-import { isToday, startOfDay, isBefore, isAfter, format } from 'date-fns';
+import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -123,15 +123,13 @@ function TaskProgress({ task }: { task: Task }) {
 }
 
 const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
-    const now = new Date();
     
     // Subtasks for today are those not completed and where today is between start and end date.
     const todaySubtasks = task.subtasks.filter(st => 
       !st.completed && 
       st.startDate && 
       st.endDate && 
-      isAfter(now, st.startDate) && 
-      isBefore(now, st.endDate)
+      isWithinInterval(new Date(), { start: st.startDate, end: st.endDate })
     );
     
     const uncompletedTodaySubtasks = todaySubtasks.length;

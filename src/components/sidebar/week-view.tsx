@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { startOfWeek, addDays, format, isSameDay, isSameWeek, getDay } from 'date-fns';
+import { startOfWeek, addDays, format, isSameDay, isSameWeek, getDay, isWithinInterval } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
@@ -27,7 +27,7 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
 
   const hasTasksOnDay = (day: Date) => {
     return tasks.some(task => 
-        task.subtasks.some(st => st.startDate && isSameDay(st.startDate, day))
+      task.subtasks.some(st => st.startDate && st.endDate && isWithinInterval(day, { start: st.startDate, end: st.endDate }))
     );
   };
   

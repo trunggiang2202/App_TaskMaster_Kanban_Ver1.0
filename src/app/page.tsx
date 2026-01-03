@@ -9,7 +9,7 @@ import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isToday, isAfter, isBefore, startOfDay, isSameDay, startOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { isToday, isAfter, isBefore, startOfDay, isSameDay, startOfWeek, addWeeks, subWeeks, isWithinInterval } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
@@ -117,16 +117,14 @@ export default function Home() {
   };
 
   const hasInProgressSubtasks = (task: Task) => {
-    const now = new Date();
     if (task.status === 'Done') return false;
     // A task is for "Today" if it has subtasks that are not completed,
     // and today's date is between the subtask's start and end date.
     return task.subtasks.some(st => 
       !st.completed && 
       st.startDate && 
-      st.endDate && 
-      isAfter(now, st.startDate) && 
-      isBefore(now, st.endDate)
+      st.endDate &&
+      isWithinInterval(new Date(), { start: st.startDate, end: st.endDate })
     );
   };
   
@@ -139,7 +137,7 @@ export default function Home() {
         return todaysTasks;
       case 'week':
         return tasks.filter(task => 
-          task.subtasks.some(st => st.startDate && isSameDay(st.startDate, selectedDay))
+          task.subtasks.some(st => st.startDate && st.endDate && isWithinInterval(selectedDay, { start: st.startDate, end: st.endDate }))
         );
       case 'all':
       default:
@@ -152,7 +150,6 @@ export default function Home() {
   const selectedTask = tasks.find(task => task.id === selectedTaskId);
 
   const todaysSubtaskCount = tasks.reduce((count, task) => {
-    const now = new Date();
     if (task.status === 'Done') {
       return count;
     }
@@ -160,8 +157,7 @@ export default function Home() {
       !st.completed && 
       st.startDate && 
       st.endDate && 
-      isAfter(now, st.startDate) &&
-      isBefore(now, st.endDate)
+      isWithinInterval(new Date(), { start: st.startDate, end: st.endDate })
     );
     return count + inProgressSubtasks.length;
   }, 0);
