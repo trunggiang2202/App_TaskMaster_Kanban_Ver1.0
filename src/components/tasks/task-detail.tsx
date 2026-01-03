@@ -174,7 +174,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
         
         {/* Subtasks */}
         {totalSubtasks > 0 && (
-          <div className="space-y-4">
+          <div className="p-4 rounded-md border bg-muted/20 space-y-4">
             <div className="flex items-center gap-2 font-semibold">
               <ListChecks className="h-5 w-5" />
               <h2 className="text-lg">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
