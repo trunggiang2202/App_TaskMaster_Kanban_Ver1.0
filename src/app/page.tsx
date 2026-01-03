@@ -9,7 +9,7 @@ import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isToday, isAfter, isBefore, startOfDay, isSameDay } from 'date-fns';
+import { isToday, isAfter, isBefore, startOfDay, isSameDay, startOfWeek, addWeeks, subWeeks } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
@@ -38,6 +38,7 @@ export default function Home() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(tasks[0]?.id || null);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   useEffect(() => {
     setShowWelcomeDialog(true);
@@ -167,6 +168,10 @@ export default function Home() {
     return count + inProgressSubtasks.length;
   }, 0);
 
+  const handlePrevWeek = () => setCurrentDate(prev => subWeeks(prev, 1));
+  const handleNextWeek = () => setCurrentDate(prev => addWeeks(prev, 1));
+  const handleGoToToday = () => setCurrentDate(new Date());
+
 
   return (
     <SidebarProvider>
@@ -204,6 +209,10 @@ export default function Home() {
               tasks={tasks}
               selectedDay={selectedDay}
               onSelectDay={setSelectedDay}
+              currentDate={currentDate}
+              onPrevWeek={handlePrevWeek}
+              onNextWeek={handleNextWeek}
+              onGoToToday={handleGoToToday}
             />
           )}
           <RecentTasks 

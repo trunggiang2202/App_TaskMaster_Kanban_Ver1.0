@@ -2,20 +2,26 @@
 'use client';
 
 import * as React from 'react';
-import { startOfWeek, addDays, format, isSameDay } from 'date-fns';
+import { startOfWeek, addDays, format, isSameDay, isSameWeek } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface WeekViewProps {
   tasks: Task[];
   selectedDay: Date;
   onSelectDay: (day: Date) => void;
+  currentDate: Date;
+  onPrevWeek: () => void;
+  onNextWeek: () => void;
+  onGoToToday: () => void;
 }
 
-export function WeekView({ tasks, selectedDay, onSelectDay }: WeekViewProps) {
+export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevWeek, onNextWeek, onGoToToday }: WeekViewProps) {
   const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Bắt đầu từ thứ 2
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Bắt đầu từ thứ 2
 
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
@@ -26,9 +32,22 @@ export function WeekView({ tasks, selectedDay, onSelectDay }: WeekViewProps) {
         task.subtasks.some(st => st.startDate && isSameDay(st.startDate, day))
     );
   };
+  
+  const isCurrentWeek = isSameWeek(currentDate, today, { weekStartsOn: 1 });
 
   return (
-    <div className="px-4 pt-3 pb-2">
+    <div className="px-2 pt-3 pb-2">
+      <div className="flex items-center justify-between px-2 mb-2">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onPrevWeek}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-sm font-semibold text-sidebar-foreground">
+             Tháng {format(currentDate, 'M, yyyy')}
+          </h3>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onNextWeek}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+      </div>
       <div className="grid grid-cols-7 gap-1">
         {weekDays.map(day => (
           <button
@@ -56,6 +75,13 @@ export function WeekView({ tasks, selectedDay, onSelectDay }: WeekViewProps) {
           </button>
         ))}
       </div>
+      {!isCurrentWeek && (
+        <div className="mt-2 px-2">
+            <Button variant="outline" size="sm" className="w-full" onClick={onGoToToday}>
+                Quay về hôm nay
+            </Button>
+        </div>
+      )}
     </div>
   );
 }
