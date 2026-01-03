@@ -86,9 +86,9 @@ export default function Home() {
           <Separator className="my-2" />
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="all">Tất cả</TabsTrigger>
-                <TabsTrigger value="today">Hôm nay</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-sidebar-accent/60">
+                <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">Tất cả</TabsTrigger>
+                <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">Hôm nay</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
