@@ -40,16 +40,17 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     return (
         <div 
             key={subtask.id} 
-            className="flex flex-col p-3 rounded-md bg-muted/50"
+            className="flex flex-col p-3 rounded-md bg-muted/50 cursor-pointer"
+            onClick={onTitleClick}
         >
             <div className="flex items-start gap-3">
                  {subtask.completed ? (
-                    <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full shrink-0 cursor-pointer" onClick={handleToggle}>
+                    <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); handleToggle(); }}>
                         <Check className="h-3 w-3 text-primary-foreground" />
                     </div>
                 ) : (
                     isClickable ? (
-                        <div className="h-5 w-5 mt-0.5 shrink-0 cursor-pointer" onClick={handleToggle}>
+                        <div className="h-5 w-5 mt-0.5 shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); handleToggle(); }}>
                           <Circle className="h-5 w-5 text-muted-foreground" />
                         </div>
                     ) : (
@@ -58,17 +59,12 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                         </div>
                     )
                 )}
-                <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
+                <div className="flex-1">
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {subtask.title}
                     </span>
                 </div>
             </div>
-            {subtask.attachments && subtask.attachments.length > 0 && (
-              <div className="pl-8 pt-2 space-y-2 cursor-pointer" onClick={onTitleClick}>
-                 {subtask.attachments.map((att, index) => <AttachmentItem key={index} attachment={att} />)}
-              </div>
-            )}
         </div>
     )
 };
