@@ -35,7 +35,7 @@ export function WeekView({ tasks, selectedDay, onSelectDay }: WeekViewProps) {
             key={day.toISOString()}
             onClick={() => onSelectDay(day)}
             className={cn(
-              "flex flex-col items-center justify-center p-1 rounded-md transition-colors h-14",
+              "flex flex-col items-center justify-center p-1 rounded-md transition-none h-14",
               isSameDay(day, selectedDay)
                 ? "bg-sidebar-primary/90 text-sidebar-primary-foreground"
                 : "hover:bg-sidebar-accent/80",
