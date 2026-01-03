@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { format, isAfter, startOfDay } from 'date-fns';
-import { Calendar, Edit, Trash2, Circle, Check, Download, Paperclip, LoaderCircle } from 'lucide-react';
+import { format, isAfter, isBefore } from 'date-fns';
+import { Calendar, Edit, Trash2, Circle, Check, Download, Paperclip, LoaderCircle, AlertTriangle } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -30,9 +30,10 @@ interface SubtaskItemProps {
     onTitleClick: () => void;
     isClickable: boolean;
     isInProgress: boolean;
+    isOverdue: boolean;
 }
 
-const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, isInProgress }) => {
+const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, isInProgress, isOverdue }) => {
     const canComplete = isClickable && !!subtask.startDate && !!subtask.endDate;
 
     const handleToggle = (e: React.MouseEvent) => {
@@ -49,6 +50,9 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                     <Check className="h-3 w-3 text-primary-foreground" />
                 </div>
             );
+        }
+        if (isOverdue) {
+            return <AlertTriangle className="h-5 w-5 text-destructive" />;
         }
         if (isInProgress) {
             return <LoaderCircle className="h-5 w-5 text-amber-500 animate-spin" />;
@@ -152,11 +156,22 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
     return categories;
   }, [task.subtasks]);
 
+  const now = new Date();
 
-  const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; borderColor: string; bgColor: string; }[] = [
-    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-sky-500', borderColor: 'border-sky-500', bgColor: 'bg-sky-500/5' },
-    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500', borderColor: 'border-amber-500', bgColor: 'bg-amber-500/5' },
-    { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-emerald-500', borderColor: 'border-emerald-500', bgColor: 'bg-emerald-500/5' },
+  const getSubtaskBorderColor = (subtask: Subtask, columnTitle: SubtaskStatus) => {
+    if (subtask.completed) return 'border-emerald-500';
+    if (columnTitle === 'Đang làm' && subtask.endDate && isBefore(subtask.endDate, now)) {
+      return 'border-destructive';
+    }
+    if (columnTitle === 'Đang làm') return 'border-amber-500';
+    if (columnTitle === 'Chưa làm') return 'border-sky-500';
+    return 'border-muted';
+  };
+
+  const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
+    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-sky-500', bgColor: 'bg-sky-500/5' },
+    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500', bgColor: 'bg-amber-500/5' },
+    { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-emerald-500', bgColor: 'bg-emerald-500/5' },
   ];
 
   return (
@@ -209,19 +224,23 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                     </div>
                     <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
                       {column.subtasks.length > 0 ? (
-                        column.subtasks.map(st => (
-                          <Card key={st.id} className={`bg-background shadow-sm border-l-4 ${column.borderColor}`}>
-                             <CardContent className="p-3">
-                              <SubtaskItem 
-                                  subtask={st}
-                                  onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
-                                  onTitleClick={() => handleSubtaskClick(st)}
-                                  isClickable={column.isClickable}
-                                  isInProgress={column.title === 'Đang làm' && !st.completed}
-                              />
-                             </CardContent>
-                          </Card>
-                        ))
+                        column.subtasks.map(st => {
+                          const isOverdue = column.title === 'Đang làm' && !st.completed && !!st.endDate && isBefore(st.endDate, now);
+                          return (
+                            <Card key={st.id} className={`bg-background shadow-sm border-l-4 ${getSubtaskBorderColor(st, column.title)}`}>
+                              <CardContent className="p-3">
+                                <SubtaskItem 
+                                    subtask={st}
+                                    onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
+                                    onTitleClick={() => handleSubtaskClick(st)}
+                                    isClickable={column.isClickable}
+                                    isInProgress={column.title === 'Đang làm' && !st.completed}
+                                    isOverdue={isOverdue}
+                                />
+                              </CardContent>
+                            </Card>
+                          )
+                        })
                       ) : (
                         <div className="flex items-center justify-center h-full">
                           <p className="text-xs text-muted-foreground">Không có công việc</p>
