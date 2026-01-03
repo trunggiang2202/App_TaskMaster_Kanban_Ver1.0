@@ -118,7 +118,7 @@ function TaskProgress({ task }: { task: Task }) {
             <Clock size={12} /> Thời gian còn lại: {timeLeft}
           </span>
         </div>
-        <Progress value={timeProgress} className="h-1.5 bg-secondary" indicatorClassName={getProgressColor()} />
+        <Progress value={timeProgress} className={`h-1.5 ${getProgressColor()}`} />
     </div>
   );
 }
@@ -126,8 +126,14 @@ function TaskProgress({ task }: { task: Task }) {
 const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
     const now = new Date();
     
-    // "In Progress" subtasks are today's tasks
-    const todaySubtasks = task.subtasks.filter(st => !st.completed && st.startDate && isAfter(now, st.startDate));
+    // Subtasks for today are those not completed and where today is between start and end date.
+    const todaySubtasks = task.subtasks.filter(st => 
+      !st.completed && 
+      st.startDate && 
+      st.endDate && 
+      isAfter(now, st.startDate) && 
+      isBefore(now, st.endDate)
+    );
     
     const uncompletedTodaySubtasks = todaySubtasks.length;
 

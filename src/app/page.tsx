@@ -118,7 +118,15 @@ export default function Home() {
   const hasInProgressSubtasks = (task: Task) => {
     const now = new Date();
     if (task.status === 'Done') return false;
-    return task.subtasks.some(st => !st.completed && st.startDate && isAfter(now, st.startDate));
+    // A task is for "Today" if it has subtasks that are not completed,
+    // and today's date is between the subtask's start and end date.
+    return task.subtasks.some(st => 
+      !st.completed && 
+      st.startDate && 
+      st.endDate && 
+      isAfter(now, st.startDate) && 
+      isBefore(now, st.endDate)
+    );
   };
   
   const todaysTasks = tasks.filter(hasInProgressSubtasks);
@@ -146,12 +154,15 @@ export default function Home() {
 
   const todaysSubtaskCount = tasks.reduce((count, task) => {
     const now = new Date();
-    // Only count subtasks for tasks that are not 'Done'
     if (task.status === 'Done') {
       return count;
     }
     const inProgressSubtasks = task.subtasks.filter(st => 
-      !st.completed && st.startDate && isAfter(now, st.startDate)
+      !st.completed && 
+      st.startDate && 
+      st.endDate && 
+      isAfter(now, st.startDate) &&
+      isBefore(now, st.endDate)
     );
     return count + inProgressSubtasks.length;
   }, 0);
