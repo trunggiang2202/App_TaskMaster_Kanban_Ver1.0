@@ -29,11 +29,6 @@ export default function KanbanColumn({ status, tasks, onUpdateTask, onTaskStatus
         {tasks.map(task => (
           <TaskCard key={task.id} task={task} onUpdateTask={onUpdateTask} onTaskStatusChange={onTaskStatusChange} onEditTask={onEditTask} />
         ))}
-        {tasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground">Chưa có nhiệm vụ nào.</p>
-          </div>
-        )}
       </div>
     </div>
   );
