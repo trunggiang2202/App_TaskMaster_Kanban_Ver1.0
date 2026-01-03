@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { initialTasks } from '@/lib/data';
 import type { Task } from '@/lib/types';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -12,6 +12,8 @@ import { isToday, isAfter, isBefore, startOfDay } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
+import { WelcomeDialog } from '@/components/welcome-dialog';
+import { getDailyQuote } from '@/lib/daily-quotes';
 
 type FilterType = 'all' | 'today';
 
@@ -32,6 +34,15 @@ export default function Home() {
   const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(tasks[0]?.id || null);
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+
+  useEffect(() => {
+    const sessionWelcomed = sessionStorage.getItem('welcome_shown');
+    if (!sessionWelcomed) {
+      setShowWelcomeDialog(true);
+      sessionStorage.setItem('welcome_shown', 'true');
+    }
+  }, []);
 
   const handleOpenDialog = (task?: Task) => {
     setTaskToEdit(task);
@@ -94,8 +105,10 @@ export default function Home() {
   const filteredTasksForSidebar = tasks.filter(task => {
     if (activeFilter === 'today') {
       const today = startOfDay(new Date());
-      const startDate = startOfDay(task.startDate);
-      const endDate = startOfDay(task.endDate);
+      const startDate = task.startDate ? startOfDay(task.startDate) : null;
+      const endDate = task.endDate ? startOfDay(task.endDate) : null;
+
+      if (!startDate || !endDate) return false;
 
       return (
         task.status !== 'Done' &&
@@ -106,6 +119,19 @@ export default function Home() {
   });
 
   const selectedTask = tasks.find(task => task.id === selectedTaskId);
+
+  const todaysSubtaskCount = tasks.reduce((count, task) => {
+    const today = startOfDay(new Date());
+    const todaySubtasks = task.subtasks.filter(st => {
+      if (!st.startDate || !st.endDate || st.completed) return false;
+      
+      const stStartDate = startOfDay(st.startDate);
+      const stEndDate = startOfDay(st.endDate);
+      
+      return isToday(stStartDate) || isToday(stEndDate) || (isBefore(stStartDate, today) && isAfter(stEndDate, today));
+    });
+    return count + todaySubtasks.length;
+  }, 0);
 
   return (
     <SidebarProvider>
@@ -168,6 +194,12 @@ export default function Home() {
         onOpenChange={handleCloseDialog}
         onSubmit={handleSubmitTask}
         taskToEdit={taskToEdit}
+      />
+       <WelcomeDialog
+        isOpen={showWelcomeDialog}
+        onOpenChange={setShowWelcomeDialog}
+        todayTaskCount={todaysSubtaskCount}
+        dailyQuote={getDailyQuote()}
       />
     </SidebarProvider>
   );
