@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { format, isAfter, isBefore, isToday, startOfDay } from 'date-fns';
-import { Calendar, Edit, ListChecks, Trash2, Circle, Check, Download, Paperclip } from 'lucide-react';
+import { format, isAfter, startOfDay } from 'date-fns';
+import { Calendar, Edit, ListChecks, Trash2, Circle, Check, Download, Paperclip, LoaderCircle } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
@@ -28,15 +28,29 @@ interface SubtaskItemProps {
     onToggle: (subtaskId: string) => void;
     onTitleClick: () => void;
     isClickable: boolean;
-    borderColorClass: string;
+    isInProgress: boolean;
 }
 
-const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, borderColorClass }) => {
+const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, isInProgress }) => {
     const handleToggle = (e: React.MouseEvent) => {
         if (isClickable) {
             e.stopPropagation();
             onToggle(subtask.id);
         }
+    };
+
+    const renderIcon = () => {
+        if (subtask.completed) {
+            return (
+                <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full">
+                    <Check className="h-3 w-3 text-primary-foreground" />
+                </div>
+            );
+        }
+        if (isInProgress) {
+            return <LoaderCircle className="h-5 w-5 text-amber-500 animate-spin" />;
+        }
+        return <Circle className="h-5 w-5 text-muted-foreground" />;
     };
 
     return (
@@ -46,13 +60,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
         >
             <div className="flex items-start gap-3">
                  <div className={`h-5 w-5 mt-0.5 shrink-0 ${isClickable ? 'cursor-pointer' : ''}`} onClick={handleToggle}>
-                    {subtask.completed ? (
-                         <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full">
-                            <Check className="h-3 w-3 text-primary-foreground" />
-                        </div>
-                    ) : (
-                        <Circle className="h-5 w-5 text-muted-foreground" />
-                    )}
+                    {renderIcon()}
                 </div>
                 <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
@@ -134,7 +142,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
   return (
     <>
       <div className="p-6 lg:p-8 space-y-6">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
             <h1 className="text-3xl font-bold font-headline tracking-tight">{task.title}</h1>
             <div className="flex items-center gap-2 flex-shrink-0">
                 <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
@@ -157,10 +165,8 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
         <Separator />
 
         {/* Description */}
-        <div className="p-4 rounded-md border bg-muted/20 space-y-3">
-            <div className="flex items-center font-semibold">
-                <h2 className="text-lg">Mô tả</h2>
-            </div>
+        <div className="p-4 rounded-md border bg-muted/20">
+            <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
             <p className="text-muted-foreground leading-relaxed">
                 {task.description || 'Không có mô tả cho nhiệm vụ này.'}
             </p>
@@ -191,7 +197,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                                   onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
                                   onTitleClick={() => handleSubtaskClick(st)}
                                   isClickable={column.isClickable}
-                                  borderColorClass={column.borderColor}
+                                  isInProgress={column.title === 'Đang làm'}
                               />
                              </CardContent>
                           </Card>
