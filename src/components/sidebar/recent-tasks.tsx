@@ -6,8 +6,8 @@ import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ListChecks, Clock, Timer, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { ListChecks, Clock, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -59,7 +59,6 @@ function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
   const [subtaskProgress, setSubtaskProgress] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState('');
-  const [deadlineStatus, setDeadlineStatus] = React.useState('');
   
   React.useEffect(() => {
     const calculateTimeProgress = () => {
@@ -111,11 +110,6 @@ function TaskProgress({ task }: { task: Task }) {
     }
   }, [task.startDate, task.endDate, task.status]);
   
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-        setDeadlineStatus(formatDistanceToNow(new Date(task.endDate), { addSuffix: true }));
-    }
-  }, [task.endDate]);
 
   React.useEffect(() => {
     if (task.subtasks.length > 0) {
@@ -146,20 +140,13 @@ function TaskProgress({ task }: { task: Task }) {
   return (
     <div className="space-y-2">
       <div>
-        <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 mb-1">
-          <span className="flex items-center gap-1.5"><Clock size={12} /> Deadline</span>
-          <span className={isOverdue ? "text-destructive font-medium" : ""}>
-            {deadlineStatus}
+        <div className="flex justify-between items-center text-xs mb-1">
+          <span className="flex items-center gap-1.5 text-sidebar-foreground/80"><Clock size={12} /> Deadline</span>
+          <span className={`font-semibold ${getTimeLeftColor()}`}>
+            {timeLeft}
           </span>
         </div>
         <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={getProgressColor()} />
-      </div>
-
-      <div className="flex justify-between items-center">
-        <span className="flex items-center gap-1.5 text-xs text-sidebar-foreground/80"><Timer size={12} /> Thời gian còn lại</span>
-        <div className={`text-xs font-semibold ${getTimeLeftColor()}`}>
-          {timeLeft}
-        </div>
       </div>
       
       {task.subtasks.length > 0 && (
@@ -174,6 +161,13 @@ function TaskProgress({ task }: { task: Task }) {
       <SubtasksDisplay subtasks={task.subtasks} />
     </div>
   );
+}
+
+
+interface RecentTasksProps {
+  tasks: Task[];
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
 

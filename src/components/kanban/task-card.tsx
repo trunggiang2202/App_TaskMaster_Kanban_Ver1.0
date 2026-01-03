@@ -8,8 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, ListChecks, Clock, MoreHorizontal, Timer, Edit, Trash2 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { Calendar, ListChecks, Clock, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface TaskCardProps {
   task: Task;
@@ -23,7 +23,6 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
   const [subtaskProgress, setSubtaskProgress] = useState(0);
   const [isDoneDisabled, setIsDoneDisabled] = useState(true);
   const [timeLeft, setTimeLeft] = useState('');
-  const [deadlineStatus, setDeadlineStatus] = useState('');
 
   useEffect(() => {
     const calculateTimeProgress = () => {
@@ -74,12 +73,6 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setDeadlineStatus(formatDistanceToNow(task.endDate, { addSuffix: true }));
-    }
-  }, [task.endDate]);
 
   useEffect(() => {
     const completedSubtasks = task.subtasks.filter(st => st.completed).length;
@@ -147,18 +140,11 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
         
         <div className="space-y-3">
           <div>
-            <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><Clock size={14} /> Tiến độ</span>
-              <span className={isOverdue ? "text-destructive font-medium" : ""}>{deadlineStatus}</span>
+            <div className="flex justify-between items-center mb-1 text-xs">
+              <span className="flex items-center gap-1.5 text-muted-foreground"><Clock size={14} /> Tiến độ</span>
+              <span className={`font-semibold ${getTimeLeftColor()}`}>{timeLeft}</span>
             </div>
             <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Timer size={14} /> Thời gian còn lại</span>
-            <div className={`text-sm font-semibold ${getTimeLeftColor()}`}>
-              {timeLeft}
-            </div>
           </div>
         </div>
         
