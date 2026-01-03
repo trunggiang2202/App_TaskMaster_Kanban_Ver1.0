@@ -114,7 +114,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         subtasks: [],
       });
     }
-  }, [taskToEdit, form]);
+  }, [taskToEdit, form.reset]);
 
   const parseDate = (dateStr?: string, timeStr?: string): Date | undefined => {
     if (!dateStr || !timeStr) return undefined;
@@ -366,7 +366,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                 variant="outline"
                 size="sm"
                 className="mt-2"
-                onClick={() => append({ title: "" })}
+                onClick={() => append({ title: "", startDate: '', startTime: '', endDate: '', endTime: '' })}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm Công việc
