@@ -200,7 +200,7 @@ function TaskProgress({ task }: { task: Task }) {
                         <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 w-full">
                             <div className="flex items-center gap-1.5">
                               <ListChecks size={12} /> 
-                              <span>Nhiệm vụ</span>
+                              <span>Công việc</span>
                               <ChevronDown className="accordion-chevron h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200" />
                             </div>
                             <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>

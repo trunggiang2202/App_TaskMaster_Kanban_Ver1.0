@@ -91,7 +91,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
         <div className="space-y-4">
           <div className="flex items-center gap-2 font-semibold">
             <ListChecks className="h-5 w-5" />
-            <h2 className="text-lg">Nhiệm vụ con ({completedSubtasks}/{totalSubtasks})</h2>
+            <h2 className="text-lg">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
           </div>
           <div className="pl-7 space-y-3">
              <Progress value={subtaskProgress} className="h-2" />
