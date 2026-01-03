@@ -242,7 +242,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
                       <div className="flex items-center gap-1.5">
                         <ListChecks size={14} />
                         <span>Công việc</span>
-                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                        <ChevronDown className="accordion-chevron h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
                       </div>
                       <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
                   </div>
