@@ -36,7 +36,7 @@ const taskSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
-  endDate: z.string().regex(/^\d{2}-\d{2}-\d{4} I want to add a description field for each subtask. It is not required.$/, "Định dạng ngày phải là DD-MM-YYYY"),
+  endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
@@ -268,95 +268,38 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             
             <div>
               <FormLabel>Công việc</FormLabel>
-              <div className="space-y-2 mt-2 max-h-64 overflow-y-auto pr-2">
-                 <Accordion type="multiple" className="w-full space-y-2">
-                  {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
-                       <AccordionItem value={`item-${index}`} className="w-full border-b-0">
-                         <div className="flex items-center gap-2 w-full">
-                           <FormField
-                              control={form.control}
-                              name={`subtasks.${index}.title`}
-                              render={({ field }) => (
-                                <FormItem className="flex-grow">
-                                  <FormControl>
-                                    <Input 
-                                      placeholder={`Công việc ${index + 1}`} 
-                                      {...field} 
-                                      className="border-none bg-transparent shadow-none focus-visible:ring-0" 
-                                    />
-                                  </FormControl>
-                                  <FormMessage className="pl-3" />
-                                </FormItem>
-                              )}
-                            />
-                            <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                               <Settings2 className="h-4 w-4" />
-                            </AccordionTrigger>
-                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                         </div>
-                        <AccordionContent className="px-3 pt-2">
-                           <div className="space-y-4">
-                            <div className="space-y-2">
-                                <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.startDate`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input placeholder="DD-MM-YYYY" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                   <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.startTime`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input placeholder="HH:MM" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                   <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.endDate`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input placeholder="DD-MM-YYYY" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                   <FormField
-                                    control={form.control}
-                                    name={`subtasks.${index}.endTime`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormControl>
-                                          <Input placeholder="HH:MM" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
-                              </div>
+              <div className="mt-2 max-h-64 overflow-y-auto">
+                 <div className="space-y-2 pr-2">
+                   <Accordion type="multiple" className="w-full space-y-2">
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
+                         <AccordionItem value={`item-${index}`} className="w-full border-b-0">
+                           <div className="flex items-center gap-2 w-full">
+                             <FormField
+                                control={form.control}
+                                name={`subtasks.${index}.title`}
+                                render={({ field }) => (
+                                  <FormItem className="flex-grow">
+                                    <FormControl>
+                                      <Input 
+                                        placeholder={`Công việc ${index + 1}`} 
+                                        {...field} 
+                                        className="border-none bg-transparent shadow-none focus-visible:ring-0" 
+                                      />
+                                    </FormControl>
+                                    <FormMessage className="pl-3" />
+                                  </FormItem>
+                                )}
+                              />
+                              <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                                 <Settings2 className="h-4 w-4" />
+                              </AccordionTrigger>
+                              <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                           </div>
+                          <AccordionContent className="px-3 pt-2">
+                             <div className="space-y-4">
                               <FormField
                                 control={form.control}
                                 name={`subtasks.${index}.description`}
@@ -370,12 +313,71 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   </FormItem>
                                 )}
                               />
-                           </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </div>
-                  ))}
-                 </Accordion>
+                              <div className="space-y-2">
+                                  <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                      control={form.control}
+                                      name={`subtasks.${index}.startDate`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormControl>
+                                            <Input placeholder="DD-MM-YYYY" {...field} />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                     <FormField
+                                      control={form.control}
+                                      name={`subtasks.${index}.startTime`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormControl>
+                                            <Input placeholder="HH:MM" {...field} />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
+                                  <div className="grid grid-cols-2 gap-4">
+                                     <FormField
+                                      control={form.control}
+                                      name={`subtasks.${index}.endDate`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormControl>
+                                            <Input placeholder="DD-MM-YYYY" {...field} />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                     <FormField
+                                      control={form.control}
+                                      name={`subtasks.${index}.endTime`}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormControl>
+                                            <Input placeholder="HH:MM" {...field} />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                             </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </div>
+                    ))}
+                   </Accordion>
+                 </div>
               </div>
               <Button
                 type="button"
