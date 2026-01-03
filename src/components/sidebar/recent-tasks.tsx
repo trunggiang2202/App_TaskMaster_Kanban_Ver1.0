@@ -62,7 +62,7 @@ function TaskProgress({ task }: { task: Task }) {
       {task.subtasks.length > 0 && (
         <div className="space-y-1">
           <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
-            <span className="flex items-center gap-1.5"><ListChecks size={12} /> Công việc phụ</span>
+            <span className="flex items-center gap-1.5"><ListChecks size={12} /> Công việc</span>
             <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
           </div>
           <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />

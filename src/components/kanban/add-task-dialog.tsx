@@ -20,14 +20,14 @@ import type { Task, Subtask } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 
 const taskSchema = z.object({
-  title: z.string().min(3, 'Tiêu đề phải có ít nhất 3 ký tự.'),
+  title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
   startDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(z.object({
-    title: z.string().min(1, "Tiêu đề công việc phụ không được để trống."),
+    title: z.string().min(1, "Tiêu đề công việc không được để trống."),
   })).optional(),
 }).refine(data => {
     try {
@@ -116,7 +116,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
         <DialogHeader>
           <DialogTitle>Thêm công việc mới</DialogTitle>
           <DialogDescription>
-            Điền vào các chi tiết cho công việc mới của bạn. Bạn có thể thêm các công việc phụ để chia nhỏ nó ra.
+            Điền vào các chi tiết cho công việc mới của bạn. Bạn có thể thêm các công việc để chia nhỏ nó ra.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -126,7 +126,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tiêu đề công việc</FormLabel>
+                  <FormLabel>Nhiệm vụ</FormLabel>
                   <FormControl>
                     <Input placeholder="ví dụ: Hoàn thành báo cáo dự án" {...field} />
                   </FormControl>
@@ -217,7 +217,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
             <Separator />
             
             <div>
-              <FormLabel>Công việc phụ</FormLabel>
+              <FormLabel>Công việc</FormLabel>
               <div className="space-y-2 mt-2 max-h-40 overflow-y-auto pr-2">
                 {fields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                       render={({ field }) => (
                         <FormItem className="flex-grow">
                           <FormControl>
-                            <Input placeholder={`Công việc phụ ${index + 1}`} {...field} />
+                            <Input placeholder={`Công việc ${index + 1}`} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -247,7 +247,7 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
                 onClick={() => append({ title: "" })}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Thêm công việc phụ
+                Thêm công việc
               </Button>
             </div>
 
