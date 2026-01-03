@@ -212,15 +212,12 @@ function TaskProgress({ task }: { task: Task }) {
               </div>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => {
-                  const isSubtaskInProgress = task.status === 'In Progress' && !subtask.completed;
                   return (
                     <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
                       <div 
                         className="flex items-start space-x-2"
                       >
-                        {isSubtaskInProgress ? (
-                          <LoaderCircle className="h-3 w-3 mt-0.5 text-amber-400 shrink-0 animate-spin" />
-                        ) : subtask.completed ? (
+                        {subtask.completed ? (
                            <div className="h-3 w-3 mt-0.5 flex items-center justify-center bg-primary rounded-full shrink-0">
                                 <Check className="h-2 w-2 text-primary-foreground" />
                             </div>
