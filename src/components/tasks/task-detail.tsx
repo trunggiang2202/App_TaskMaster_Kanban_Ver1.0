@@ -175,11 +175,8 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
         {/* Subtasks */}
         {totalSubtasks > 0 && (
           <div className="p-4 rounded-md border bg-muted/20 space-y-4">
-            <div className="flex items-center gap-2 font-semibold">
-              <ListChecks className="h-5 w-5" />
-              <h2 className="text-lg">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
-            </div>
-            <div className="pl-7 space-y-2">
+            <h2 className="text-lg font-semibold mb-2">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
+            <div className="space-y-2">
               <Progress value={subtaskProgress} className="h-2 mb-4" />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {kanbanColumns.map(column => (
