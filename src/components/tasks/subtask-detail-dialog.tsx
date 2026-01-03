@@ -121,19 +121,23 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     return 'text-muted-foreground';
   };
 
-  const formattedRange = subtask.startDate && subtask.endDate
-    ? `${format(subtask.startDate, 'dd/MM/yy, HH:mm')} - ${format(subtask.endDate, 'dd/MM/yy, HH:mm')}`
-    : 'Không có thông tin.';
+  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'dd/MM/yy, HH:mm')}` : '';
+  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yy, HH:mm')}` : '';
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center text-xs">
-          <p className="text-foreground">{formattedRange}</p>
-          <span className={`flex items-center gap-1 font-semibold ${getTimeLeftColor()}`}>
-            <Clock size={12} /> {timeLeft}
-          </span>
+      <div className="grid grid-cols-2 gap-x-4 text-xs">
+          <p className="text-foreground">{formattedStart}</p>
+          <p className="text-foreground text-right">{formattedEnd}</p>
       </div>
-      <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
+      <div className="space-y-2">
+        <div className="flex justify-between items-center text-xs">
+            <span className={`flex items-center gap-1 font-semibold ${getTimeLeftColor()}`}>
+              <Clock size={12} /> {timeLeft}
+            </span>
+        </div>
+        <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
+      </div>
     </div>
   );
 }
