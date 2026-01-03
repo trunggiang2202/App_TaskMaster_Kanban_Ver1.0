@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import type { Task, Subtask, Status, Attachment } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -149,20 +148,18 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
   return (
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center justify-end mb-2">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Chỉnh sửa
-            </Button>
-            <Button variant="destructive" size="sm" onClick={() => onDeleteTask(task.id)}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Xóa
-            </Button>
-          </div>
-        </div>
+      <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-headline tracking-tight">{task.title}</h1>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Chỉnh sửa
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => onDeleteTask(task.id)}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Xóa
+          </Button>
+        </div>
       </div>
 
       {/* Date Range */}
