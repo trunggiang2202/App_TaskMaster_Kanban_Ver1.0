@@ -39,23 +39,34 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>{subtask.title}</DialogTitle>
-          {subtask.description && (
-             <DialogDescription className="pt-2">{subtask.description}</DialogDescription>
-          )}
+          <DialogDescription>
+            Chi tiết cho công việc.
+          </DialogDescription>
         </DialogHeader>
         
-        {subtask.attachments && subtask.attachments.length > 0 && (
-          <div className="space-y-3 pt-2">
-             <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
+        <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              {subtask.attachments.map((att, index) => <AttachmentItem key={index} attachment={att} />)}
+                <h3 className="text-sm font-medium text-muted-foreground">Mô tả</h3>
+                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px]">
+                    <p className="text-sm text-foreground leading-relaxed">
+                        {subtask.description || <span className="text-muted-foreground">Không có mô tả.</span>}
+                    </p>
+                </div>
             </div>
-          </div>
-        )}
 
-        {!subtask.description && (!subtask.attachments || subtask.attachments.length === 0) && (
-            <p className="text-sm text-muted-foreground pt-2">Công việc này không có mô tả chi tiết hay tệp đính kèm.</p>
-        )}
+            <div className="space-y-2">
+                <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
+                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px]">
+                    {subtask.attachments && subtask.attachments.length > 0 ? (
+                        <div className="space-y-2">
+                            {subtask.attachments.map((att, index) => <AttachmentItem key={index} attachment={att} />)}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Không có tệp đính kèm.</p>
+                    )}
+                </div>
+            </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
