@@ -12,7 +12,7 @@ interface RecentTasksProps {
 }
 
 function TaskProgress({ task }: { task: Task }) {
-  const [timeProgress, setTimeProgress] = React.useState(0);
+  const [timeProgress, setTimeProgress] = React.useState(100);
   const [subtaskProgress, setSubtaskProgress] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState('');
   
@@ -21,9 +21,11 @@ function TaskProgress({ task }: { task: Task }) {
       const now = new Date().getTime();
       const start = new Date(task.startDate).getTime();
       const end = new Date(task.endDate).getTime();
-      if (now >= end) return 100;
-      if (now < start) return 0;
-      const percentage = ((now - start) / (end - start)) * 100;
+      
+      if (now >= end) return 0;
+      if (now < start) return 100;
+      
+      const percentage = ((end - now) / (end - start)) * 100;
       return Math.min(Math.max(percentage, 0), 100);
     };
 
@@ -75,8 +77,8 @@ function TaskProgress({ task }: { task: Task }) {
     }
   }, [task.subtasks, task.status]);
 
-  const isOverdue = new Date() > new Date(task.endDate) && task.status !== 'Done';
-  const isWarning = timeProgress > 80 && task.status !== 'Done';
+  const isOverdue = timeProgress === 0 && task.status !== 'Done';
+  const isWarning = timeProgress <= 20 && task.status !== 'Done';
 
   const getProgressColor = () => {
     if (isOverdue || isWarning) {

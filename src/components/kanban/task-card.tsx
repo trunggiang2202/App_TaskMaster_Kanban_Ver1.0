@@ -18,7 +18,7 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: TaskCardProps) {
-  const [timeProgress, setTimeProgress] = useState(0);
+  const [timeProgress, setTimeProgress] = useState(100);
   const [subtaskProgress, setSubtaskProgress] = useState(0);
   const [isDoneDisabled, setIsDoneDisabled] = useState(true);
   const [timeLeft, setTimeLeft] = useState('');
@@ -28,9 +28,11 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
       const now = new Date().getTime();
       const start = task.startDate.getTime();
       const end = task.endDate.getTime();
-      if (now >= end) return 100;
-      if (now < start) return 0;
-      const percentage = ((now - start) / (end - start)) * 100;
+
+      if (now >= end) return 0;
+      if (now < start) return 100;
+      
+      const percentage = ((end - now) / (end - start)) * 100;
       return Math.min(Math.max(percentage, 0), 100);
     };
 
@@ -94,8 +96,8 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
     }
   };
 
-  const isOverdue = new Date() > task.endDate && task.status !== 'Done';
-  const isWarning = timeProgress > 80 && task.status !== 'Done';
+  const isOverdue = timeProgress === 0 && task.status !== 'Done';
+  const isWarning = timeProgress <= 20 && task.status !== 'Done';
 
   const getProgressColor = () => {
     if (isOverdue || isWarning) {
