@@ -199,7 +199,7 @@ export default function Home() {
                   Hôm nay ({todaysSubtaskCount})
                 </TabsTrigger>
                 <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
-                  Tuần này
+                  Xem tuần
                 </TabsTrigger>
               </TabsList>
             </Tabs>
