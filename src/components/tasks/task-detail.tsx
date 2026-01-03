@@ -170,9 +170,13 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
           <FileText className="h-5 w-5" />
           <h2 className="text-lg">Mô tả</h2>
         </div>
-        <p className="text-muted-foreground leading-relaxed pl-7">
-          {task.description || 'Không có mô tả cho nhiệm vụ này.'}
-        </p>
+        <div className="pl-7">
+          <div className="p-4 rounded-md border bg-muted/20">
+            <p className="text-muted-foreground leading-relaxed">
+              {task.description || 'Không có mô tả cho nhiệm vụ này.'}
+            </p>
+          </div>
+        </div>
       </div>
       
       {/* Subtasks */}
