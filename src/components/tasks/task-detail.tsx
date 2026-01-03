@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -7,9 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { format, isAfter, isBefore } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import { Calendar, Edit, Trash2, Circle, Check, Download, Paperclip, LoaderCircle, AlertTriangle } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
   <a 
@@ -76,16 +78,18 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
             className="flex flex-col"
         >
             <div className="flex items-start gap-3">
-                 {!canComplete && !subtask.completed ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>{iconElement}</TooltipTrigger>
-                        <TooltipContent>
-                            <p>Cần đặt deadline để hoàn thành</p>
-                        </TooltipContent>
-                    </Tooltip>
-                 ) : (
-                    iconElement
-                 )}
+                 <TooltipProvider>
+                    {!canComplete && !subtask.completed ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>{iconElement}</TooltipTrigger>
+                            <TooltipContent>
+                                <p>Cần đặt deadline để hoàn thành</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    ) : (
+                        iconElement
+                    )}
+                 </TooltipProvider>
                 <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {subtask.title}
@@ -114,8 +118,8 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
 
   React.useEffect(() => {
     if (task) {
-      const start = format(task.startDate, 'MMM d, yyyy, HH:mm');
-      const end = format(task.endDate, 'MMM d, yyyy, HH:mm');
+      const start = format(task.startDate, 'dd/MM/yyyy, HH:mm', { locale: vi });
+      const end = format(task.endDate, 'dd/MM/yyyy, HH:mm', { locale: vi });
       setFormattedRange(`${start} - ${end}`);
     }
   }, [task]);
@@ -262,3 +266,5 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
     </>
   );
 }
+
+    

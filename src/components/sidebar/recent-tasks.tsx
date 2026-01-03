@@ -7,6 +7,7 @@ import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter, format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 function TaskProgress({ task }: { task: Task }) {
@@ -82,8 +83,8 @@ function TaskProgress({ task }: { task: Task }) {
     return 'text-sidebar-foreground/80';
   };
 
-  const formattedStartDate = format(task.startDate, 'dd/MM/yyyy HH:mm');
-  const formattedEndDate = format(task.endDate, 'dd/MM/yyyy HH:mm');
+  const formattedStartDate = format(task.startDate, 'dd/MM/yyyy HH:mm', { locale: vi });
+  const formattedEndDate = format(task.endDate, 'dd/MM/yyyy HH:mm', { locale: vi });
   
   return (
     <div className="space-y-2">
@@ -172,3 +173,5 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
     </SidebarGroup>
   );
 }
+
+    

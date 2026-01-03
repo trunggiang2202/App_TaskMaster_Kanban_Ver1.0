@@ -14,6 +14,7 @@ import { Paperclip, Download, Calendar, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
     if (attachment.type === 'image') {
@@ -121,8 +122,8 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     return 'text-muted-foreground';
   };
 
-  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'dd/MM/yyyy HH:mm')}` : '';
-  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yyyy HH:mm')}` : '';
+  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'dd/MM/yyyy HH:mm', { locale: vi })}` : '';
+  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'dd/MM/yyyy HH:mm', { locale: vi })}` : '';
 
   return (
     <div className="space-y-3">
@@ -195,3 +196,5 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
     </Dialog>
   );
 }
+
+    
