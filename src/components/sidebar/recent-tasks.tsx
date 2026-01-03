@@ -7,6 +7,7 @@ import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter, format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
@@ -150,7 +151,10 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
           <div 
             key={task.id}
             onClick={() => onSelectTask(task.id)}
-            className={`p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors ${selectedTaskId === task.id ? 'bg-sidebar-accent/50' : 'bg-sidebar-accent'}`}
+            className={cn(
+                'p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors',
+                selectedTaskId === task.id ? 'bg-sidebar-accent/50 ring-2 ring-accent' : 'bg-sidebar-accent'
+            )}
           >
             <div className="flex justify-between items-start">
               <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
