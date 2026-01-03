@@ -39,13 +39,15 @@ function TaskProgress({ task }: { task: Task }) {
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
       
       let result = '';
       if (days > 0) result += `${days}d `;
       if (hours > 0 || days > 0) result += `${hours}h `;
-      if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m`;
+      if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+      result += `${seconds}s`;
       
-      return result.trim() === '' ? '0m' : result.trim();
+      return result.trim() === '' ? '0s' : result.trim();
     }
 
     const updateTimes = () => {
@@ -56,7 +58,7 @@ function TaskProgress({ task }: { task: Task }) {
     updateTimes();
     
     if (task.status !== 'Done') {
-      const interval = setInterval(updateTimes, 60000); // Update every minute
+      const interval = setInterval(updateTimes, 1000); // Update every second
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
