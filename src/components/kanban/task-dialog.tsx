@@ -67,7 +67,10 @@ const taskSchema = z.object({
 }).refine(data => {
   if (data.subtasks) {
     for (const subtask of data.subtasks) {
-      if (subtask.title && subtask.startDate && subtask.endDate && subtask.startTime && subtask.endTime) {
+      if (subtask.title && subtask.title.trim() !== '') {
+        if (!subtask.startDate || !subtask.startTime || !subtask.endDate || !subtask.endTime) {
+          return false; // Invalid if a subtask with a title is missing any deadline field
+        }
         try {
           const [startDay, startMonth, startYear] = subtask.startDate.split('-').map(Number);
           const [startHour, startMinute] = subtask.startTime.split(':').map(Number);
@@ -78,17 +81,17 @@ const taskSchema = z.object({
           const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
           
           if (endDateTime <= startDateTime) {
-            return false;
+            return false; // Subtask end time must be after start time
           }
         } catch (e) {
-          return false;
+          return false; // Date parsing failed
         }
       }
     }
   }
   return true;
 }, {
-  message: "Deadline của công việc không hợp lệ.",
+  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ bắt đầu và kết thúc).",
   path: ["subtasks"],
 });
 
@@ -351,17 +354,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                           <Input 
                                             placeholder={`Công việc ${index + 1}`} 
                                             {...field}
-                                            onChange={(e) => {
-                                              field.onChange(e);
-                                              // If title is cleared, also clear deadline to avoid validation error
-                                              if (e.target.value.trim() === '') {
-                                                form.setValue(`subtasks.${index}.startDate`, '');
-                                                form.setValue(`subtasks.${index}.startTime`, '');
-                                                form.setValue(`subtasks.${index}.endDate`, '');
-                                                form.setValue(`subtasks.${index}.endTime`, '');
-                                                form.clearErrors(`subtasks.${index}`);
-                                              }
-                                            }}
                                             className="border-none bg-transparent shadow-none focus-visible:ring-0" 
                                           />
                                         </FormControl>
@@ -512,6 +504,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     Thêm Công việc
                   </Button>
                 </div>
+                {form.formState.errors.subtasks && <FormMessage>{form.formState.errors.subtasks.message}</FormMessage>}
               </div>
             </div>
 
