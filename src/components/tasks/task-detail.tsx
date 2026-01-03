@@ -42,26 +42,19 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     return (
         <div 
             key={subtask.id} 
-            className="flex flex-col cursor-pointer"
-            onClick={onTitleClick}
+            className="flex flex-col"
         >
             <div className="flex items-start gap-3">
-                 {isClickable ? (
-                    <div className="h-5 w-5 mt-0.5 shrink-0 cursor-pointer" onClick={handleToggle}>
-                        {subtask.completed ? (
-                             <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full">
-                                <Check className="h-3 w-3 text-primary-foreground" />
-                            </div>
-                        ) : (
-                            <Circle className="h-5 w-5 text-muted-foreground" />
-                        )}
-                    </div>
-                ) : (
-                    <div className="h-5 w-5 mt-0.5 shrink-0">
-                       <div className="w-5 h-5" />
-                    </div>
-                )}
-                <div className="flex-1">
+                 <div className={`h-5 w-5 mt-0.5 shrink-0 ${isClickable ? 'cursor-pointer' : ''}`} onClick={handleToggle}>
+                    {subtask.completed ? (
+                         <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full">
+                            <Check className="h-3 w-3 text-primary-foreground" />
+                        </div>
+                    ) : (
+                        <Circle className="h-5 w-5 text-muted-foreground" />
+                    )}
+                </div>
+                <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {subtask.title}
                     </span>
