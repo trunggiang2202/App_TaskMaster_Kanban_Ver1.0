@@ -192,15 +192,18 @@ function TaskProgress({ task }: { task: Task }) {
       {task.subtasks.length > 0 && (
         <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="subtasks" className="border-b-0">
-              <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline w-full p-0 flex items-center -ml-1">
+              <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline w-full p-0 flex flex-col items-start -ml-1">
                 <div className="w-full space-y-1">
                   <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
-                      <span className="flex items-center gap-1.5"><ListChecks size={12} /> Công việc</span>
+                      <div className="flex items-center gap-1.5">
+                        <ListChecks size={12} /> 
+                        <span>Công việc</span>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200" />
+                      </div>
                       <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
                   </div>
                   <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />
                 </div>
-                 <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200 ml-2" />
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (

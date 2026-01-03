@@ -235,15 +235,18 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
         {task.subtasks.length > 0 && (
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="subtasks" className="border-b-0">
-              <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline w-full p-0 flex items-center">
-                <div className="flex-1 text-left space-y-1">
+              <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline w-full p-0 flex flex-col items-start">
+                <div className="w-full text-left space-y-1">
                   <div className="flex justify-between items-center text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1.5"><ListChecks size={14} /> Công việc</span>
+                      <div className="flex items-center gap-1.5">
+                        <ListChecks size={14} />
+                        <span>Công việc</span>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                      </div>
                       <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
                   </div>
                   <Progress value={subtaskProgress} className="h-2" />
                 </div>
-                 <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ml-2" />
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (
