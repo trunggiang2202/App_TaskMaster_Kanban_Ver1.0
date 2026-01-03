@@ -196,7 +196,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent className="sm:max-w-[625px] flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
           <DialogDescription>
@@ -204,8 +204,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col">
-            <div className="space-y-4 pr-6 -mr-6 overflow-y-auto max-h-[calc(80vh-200px)] custom-scrollbar">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto pr-6 -mr-6 custom-scrollbar space-y-4">
               <FormField
                 control={form.control}
                 name="title"
@@ -301,8 +301,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               
               <div>
                 <FormLabel>Công việc</FormLabel>
-                <div className="mt-2 max-h-64 overflow-y-auto">
-                  <div className="space-y-2 pr-2">
+                <div className="mt-2 space-y-2">
                     <Accordion type="multiple" className="w-full space-y-2">
                       {fields.map((field, index) => {
                           const subtaskAttachments = form.watch(`subtasks.${index}.attachments`) || [];
@@ -458,18 +457,17 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           )
                         })}
                     </Accordion>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '', attachments: [] })}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Thêm Công việc
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '', attachments: [] })}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Thêm Công việc
-                </Button>
               </div>
             </div>
 
