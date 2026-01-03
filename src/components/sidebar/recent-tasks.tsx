@@ -6,49 +6,93 @@ import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check } from 'lucide-react';
+import { ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-function SubtasksDisplay({ subtasks }: { subtasks: Subtask[] }) {
-  if (subtasks.length === 0) {
-    return null;
-  }
+function SubtaskTimeProgress({ subtask }: { subtask: Subtask }) {
+  const [timeProgress, setTimeProgress] = React.useState(100);
+  const [timeLeft, setTimeLeft] = React.useState('');
+  const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    const calculateTimeProgress = () => {
+      if (!subtask.startDate || !subtask.endDate) return 100;
+      const now = new Date().getTime();
+      const start = new Date(subtask.startDate).getTime();
+      const end = new Date(subtask.endDate).getTime();
+
+      if (now >= end) return 0;
+      if (now < start) return 100;
+
+      const percentage = ((end - now) / (end - start)) * 100;
+      return Math.min(Math.max(percentage, 0), 100);
+    };
+
+    const calculateTimeLeft = () => {
+      if (!subtask.startDate || !subtask.endDate) return '';
+      if (subtask.completed) return 'Đã hoàn thành';
+
+      const now = new Date().getTime();
+      const end = new Date(subtask.endDate).getTime();
+      const distance = end - now;
+
+      if (distance < 0) return 'Đã quá hạn';
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+      let result = '';
+      if (days > 0) result += `${days}d `;
+      if (hours > 0 || days > 0) result += `${hours}h `;
+      if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m`;
+
+      return result.trim() === '' ? '0m' : result.trim();
+    };
+
+    const updateTimes = () => {
+        setTimeProgress(calculateTimeProgress());
+        setTimeLeft(calculateTimeLeft());
+    };
+
+    updateTimes();
+
+    if (!subtask.completed) {
+      intervalRef.current = setInterval(updateTimes, 60000);
+    } else {
+        if(intervalRef.current) clearInterval(intervalRef.current);
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [subtask.startDate, subtask.endDate, subtask.completed]);
+
+  if (!subtask.startDate || !subtask.endDate) return null;
   
+  const isOverdue = timeProgress === 0 && !subtask.completed;
+  const isWarning = timeProgress < 20 && !subtask.completed;
+
+  const getProgressColor = () => {
+    if (isOverdue || isWarning) return 'bg-destructive';
+    return 'bg-emerald-400';
+  };
+  
+  const getTimeLeftColor = () => {
+    if (subtask.completed) return 'text-emerald-400';
+    if (isOverdue) return 'text-destructive';
+    if (isWarning) return 'text-amber-400';
+    return 'text-sidebar-foreground/60';
+  };
+
   return (
-     <Accordion type="single" collapsible className="w-full">
-      <AccordionItem value="subtasks" className="border-b-0">
-        <AccordionTrigger className="text-xs py-1 hover:no-underline text-sidebar-foreground/80 -ml-2">
-         <div className="flex-1 text-left">Công việc</div>
-        </AccordionTrigger>
-        <AccordionContent className="pt-2 space-y-2">
-          {subtasks.map(subtask => (
-            <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
-              <div className="flex items-center space-x-2">
-                 {subtask.completed ? (
-                    <Check className="h-3 w-3 text-emerald-400" />
-                  ) : (
-                    <Circle className="h-3 w-3 text-sidebar-foreground/60" />
-                  )}
-                <span
-                  className={`flex-1 text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
-                >
-                  {subtask.title}
-                </span>
-              </div>
-               {subtask.description && (
-                <p className="text-xs text-sidebar-foreground/60 pl-6">{subtask.description}</p>
-              )}
-              {subtask.startDate && subtask.endDate && (
-                <div className="text-xs text-sidebar-foreground/60 pl-6">
-                  Deadline: {format(subtask.startDate, 'dd/MM HH:mm')} - {format(subtask.endDate, 'dd/MM HH:mm')}
-                </div>
-              )}
-            </div>
-          ))}
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+    <div className="pl-5 mt-1">
+        <div className="flex justify-between items-center mb-1 text-xs">
+            <span className={`flex items-center gap-1.5 ${getTimeLeftColor()}`}><Clock size={12} /> {timeLeft}</span>
+        </div>
+        <Progress value={timeProgress} className="h-1 bg-sidebar-accent" indicatorClassName={getProgressColor()} />
+    </div>
   );
 }
 
@@ -148,7 +192,7 @@ function TaskProgress({ task }: { task: Task }) {
       {task.subtasks.length > 0 && (
         <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="subtasks" className="border-b-0">
-              <AccordionTrigger className="text-sm py-1 hover:no-underline w-full p-0 flex-col items-start -ml-1">
+              <AccordionTrigger className="text-sm font-medium py-1 hover:no-underline w-full p-0 flex items-center -ml-1">
                 <div className="w-full space-y-1">
                   <div className="flex justify-between items-center text-xs text-sidebar-foreground/80">
                       <span className="flex items-center gap-1.5"><ListChecks size={12} /> Công việc</span>
@@ -156,30 +200,29 @@ function TaskProgress({ task }: { task: Task }) {
                   </div>
                   <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />
                 </div>
+                 <ChevronDown className="h-4 w-4 shrink-0 text-sidebar-foreground/60 transition-transform duration-200 ml-2" />
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (
                   <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-start space-x-2">
                       {subtask.completed ? (
-                          <Check className="h-3 w-3 text-emerald-400" />
+                          <Check className="h-3 w-3 mt-0.5 text-emerald-400 shrink-0" />
                         ) : (
-                          <Circle className="h-3 w-3 text-sidebar-foreground/60" />
+                          <Circle className="h-3 w-3 mt-0.5 text-sidebar-foreground/60 shrink-0" />
                         )}
-                      <span
-                        className={`flex-1 text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
-                      >
-                        {subtask.title}
-                      </span>
-                    </div>
-                    {subtask.description && (
-                      <p className="text-xs text-sidebar-foreground/60 pl-5">{subtask.description}</p>
-                    )}
-                    {subtask.startDate && subtask.endDate && (
-                      <div className="text-xs text-sidebar-foreground/60 pl-5">
-                        Deadline: {format(subtask.startDate, 'dd/MM HH:mm')} - {format(subtask.endDate, 'dd/MM HH:mm')}
+                      <div className="flex-1">
+                        <span
+                          className={`text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
+                        >
+                          {subtask.title}
+                        </span>
+                        {subtask.description && (
+                          <p className="text-xs text-sidebar-foreground/60">{subtask.description}</p>
+                        )}
                       </div>
-                    )}
+                    </div>
+                    <SubtaskTimeProgress subtask={subtask} />
                   </div>
                 ))}
               </AccordionContent>
