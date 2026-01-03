@@ -22,6 +22,8 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -34,8 +36,10 @@ const subtaskSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
+  startPeriod: z.enum(['AM', 'PM']).optional(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
+  endPeriod: z.enum(['AM', 'PM']).optional(),
   attachments: z.array(attachmentSchema).optional(),
 });
 
@@ -43,18 +47,30 @@ const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
   startDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
+  startTime: z.string().regex(/^\d{1,2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
+  startPeriod: z.enum(['AM', 'PM']),
   endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
+  endTime: z.string().regex(/^\d{1,2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
+  endPeriod: z.enum(['AM', 'PM']),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
+    const convertTo24Hour = (time: string, period: 'AM' | 'PM') => {
+        let [hours, minutes] = time.split(':').map(Number);
+        if (period === 'PM' && hours < 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    };
+
     try {
+      const startTime24 = convertTo24Hour(data.startTime, data.startPeriod);
+      const endTime24 = convertTo24Hour(data.endTime, data.endPeriod);
+
       const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-      const [startHour, startMinute] = data.startTime.split(':').map(Number);
+      const [startHour, startMinute] = startTime24.split(':').map(Number);
       const startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
       
       const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-      const [endHour, endMinute] = data.endTime.split(':').map(Number);
+      const [endHour, endMinute] = endTime24.split(':').map(Number);
       const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
       
       return endDateTime > startDateTime;
@@ -68,16 +84,25 @@ const taskSchema = z.object({
   if (data.subtasks) {
     for (const subtask of data.subtasks) {
       if (subtask.title && subtask.title.trim() !== '') {
-        if (!subtask.startDate || !subtask.startTime || !subtask.endDate || !subtask.endTime) {
+        if (!subtask.startDate || !subtask.startTime || !subtask.startPeriod || !subtask.endDate || !subtask.endTime || !subtask.endPeriod) {
           return false; // Invalid if a subtask with a title is missing any deadline field
         }
         try {
+            const convertTo24Hour = (time: string, period: 'AM' | 'PM') => {
+                let [hours, minutes] = time.split(':').map(Number);
+                if (period === 'PM' && hours < 12) hours += 12;
+                if (period === 'AM' && hours === 12) hours = 0;
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            };
+            const startTime24 = convertTo24Hour(subtask.startTime, subtask.startPeriod);
+            const endTime24 = convertTo24Hour(subtask.endTime, subtask.endPeriod);
+
           const [startDay, startMonth, startYear] = subtask.startDate.split('-').map(Number);
-          const [startHour, startMinute] = subtask.startTime.split(':').map(Number);
+          const [startHour, startMinute] = startTime24.split(':').map(Number);
           const startDateTime = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
           
           const [endDay, endMonth, endYear] = subtask.endDate.split('-').map(Number);
-          const [endHour, endMinute] = subtask.endTime.split(':').map(Number);
+          const [endHour, endMinute] = endTime24.split(':').map(Number);
           const endDateTime = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
           
           if (endDateTime <= startDateTime) {
@@ -91,7 +116,7 @@ const taskSchema = z.object({
   }
   return true;
 }, {
-  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ bắt đầu và kết thúc).",
+  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ/AM-PM bắt đầu và kết thúc).",
   path: ["subtasks"],
 });
 
@@ -107,6 +132,17 @@ interface TaskDialogProps {
 export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskDialogProps) {
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const convertTo12Hour = (date: Date) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    return {
+      time: `${hours12}:${String(minutes).padStart(2, '0')}`,
+      period: ampm as 'AM' | 'PM'
+    };
+  };
+
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -115,7 +151,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       startDate: '',
       endDate: '',
       startTime: '09:00',
-      endTime: '17:00',
+      startPeriod: 'AM',
+      endTime: '05:00',
+      endPeriod: 'PM',
       subtasks: [],
     },
     mode: 'onChange', // Validate on change to disable/enable button
@@ -128,22 +166,32 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   
   useEffect(() => {
     if (taskToEdit) {
+      const start = convertTo12Hour(taskToEdit.startDate);
+      const end = convertTo12Hour(taskToEdit.endDate);
       form.reset({
         title: taskToEdit.title,
         description: taskToEdit.description || '',
         startDate: format(taskToEdit.startDate, 'dd-MM-yyyy'),
-        startTime: format(taskToEdit.startDate, 'HH:mm'),
+        startTime: start.time,
+        startPeriod: start.period,
         endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
-        endTime: format(taskToEdit.endDate, 'HH:mm'),
-        subtasks: taskToEdit.subtasks.map(st => ({
-          title: st.title,
-          description: st.description || '',
-          startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
-          startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
-          endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
-          endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
-          attachments: st.attachments || [],
-        })),
+        endTime: end.time,
+        endPeriod: end.period,
+        subtasks: taskToEdit.subtasks.map(st => {
+          const subStart = st.startDate ? convertTo12Hour(st.startDate) : { time: '', period: 'AM' as const };
+          const subEnd = st.endDate ? convertTo12Hour(st.endDate) : { time: '', period: 'PM' as const };
+          return {
+            title: st.title,
+            description: st.description || '',
+            startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
+            startTime: subStart.time,
+            startPeriod: subStart.period,
+            endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
+            endTime: subEnd.time,
+            endPeriod: subEnd.period,
+            attachments: st.attachments || [],
+          };
+        }),
       });
     } else {
       form.reset({
@@ -152,17 +200,21 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         startDate: '',
         endDate: '',
         startTime: '09:00',
-        endTime: '17:00',
+        startPeriod: 'AM',
+        endTime: '05:00',
+        endPeriod: 'PM',
         subtasks: [],
       });
     }
   }, [taskToEdit, form, isOpen]);
 
-  const parseDate = (dateStr?: string, timeStr?: string): Date | undefined => {
-    if (!dateStr || !timeStr) return undefined;
+  const parseDate = (dateStr?: string, timeStr?: string, period?: 'AM' | 'PM'): Date | undefined => {
+    if (!dateStr || !timeStr || !period) return undefined;
     try {
       const [day, month, year] = dateStr.split('-').map(Number);
-      const [hour, minute] = timeStr.split(':').map(Number);
+      let [hour, minute] = timeStr.split(':').map(Number);
+      if (period === 'PM' && hour < 12) hour += 12;
+      if (period === 'AM' && hour === 12) hour = 0;
       return new Date(year, month - 1, day, hour, minute);
     } catch {
       return undefined;
@@ -170,8 +222,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   };
 
   function handleSubmit(data: TaskFormData) {
-    const taskStartDate = parseDate(data.startDate, data.startTime);
-    const taskEndDate = parseDate(data.endDate, data.endTime);
+    const taskStartDate = parseDate(data.startDate, data.startTime, data.startPeriod);
+    const taskEndDate = parseDate(data.endDate, data.endTime, data.endPeriod);
 
     if (!taskStartDate || !taskEndDate) return;
 
@@ -179,8 +231,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     const newSubtasks: Subtask[] = data.subtasks ? data.subtasks
       .filter(st => st.title && st.title.trim() !== '') // Only include subtasks with a title
       .map((st, index) => {
-        const subtaskStartDate = parseDate(st.startDate, st.startTime);
-        const subtaskEndDate = parseDate(st.endDate, st.endTime);
+        const subtaskStartDate = parseDate(st.startDate, st.startTime, st.startPeriod);
+        const subtaskEndDate = parseDate(st.endDate, st.endTime, st.endPeriod);
         return {
           id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
           title: st.title,
@@ -271,7 +323,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               
               <div className="space-y-2 border p-3 rounded-md">
                 <h3 className="text-sm font-medium">Bắt đầu</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
                   <FormField
                     control={form.control}
                     name="startDate"
@@ -290,20 +342,40 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     name="startTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Giờ (HH:MM)</FormLabel>
+                        <FormLabel>Giờ</FormLabel>
                         <FormControl>
-                            <Input placeholder="09:00" {...field} />
+                            <Input placeholder="09:00" {...field} className="w-24"/>
                           </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                   <FormField
+                      control={form.control}
+                      name="startPeriod"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="w-[80px]">
+                                <SelectValue placeholder="AM/PM" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="AM">AM</SelectItem>
+                              <SelectItem value="PM">PM</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </div>
               </div>
 
               <div className="space-y-2 border p-3 rounded-md">
                 <h3 className="text-sm font-medium">Kết thúc</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
                   <FormField
                     control={form.control}
                     name="endDate"
@@ -322,14 +394,34 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     name="endTime"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Giờ (HH:MM)</FormLabel>
+                        <FormLabel>Giờ</FormLabel>
                         <FormControl>
-                            <Input placeholder="17:00" {...field} />
+                            <Input placeholder="05:00" {...field} className="w-24"/>
                           </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <FormField
+                      control={form.control}
+                      name="endPeriod"
+                      render={({ field }) => (
+                        <FormItem>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="w-[80px]">
+                                <SelectValue placeholder="AM/PM" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="AM">AM</SelectItem>
+                              <SelectItem value="PM">PM</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </div>
               </div>
 
@@ -430,7 +522,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     />
                                     <div className="space-y-2">
                                         <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
                                           <FormField
                                             control={form.control}
                                             name={`subtasks.${index}.startDate`}
@@ -449,8 +541,28 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             render={({ field }) => (
                                               <FormItem>
                                                 <FormControl>
-                                                  <Input placeholder="HH:MM" {...field} />
+                                                  <Input placeholder="HH:MM" {...field} className="w-24" />
                                                 </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                          <FormField
+                                            control={form.control}
+                                            name={`subtasks.${index}.startPeriod`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                  <FormControl>
+                                                    <SelectTrigger className="w-[80px]">
+                                                      <SelectValue placeholder="AM/PM" />
+                                                    </SelectTrigger>
+                                                  </FormControl>
+                                                  <SelectContent>
+                                                    <SelectItem value="AM">AM</SelectItem>
+                                                    <SelectItem value="PM">PM</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                               </FormItem>
                                             )}
@@ -459,7 +571,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                       </div>
                                       <div className="space-y-2">
                                         <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
                                           <FormField
                                             control={form.control}
                                             name={`subtasks.${index}.endDate`}
@@ -478,8 +590,28 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             render={({ field }) => (
                                               <FormItem>
                                                 <FormControl>
-                                                  <Input placeholder="HH:MM" {...field} />
+                                                  <Input placeholder="HH:MM" {...field} className="w-24" />
                                                 </FormControl>
+                                                <FormMessage />
+                                              </FormItem>
+                                            )}
+                                          />
+                                          <FormField
+                                            control={form.control}
+                                            name={`subtasks.${index}.endPeriod`}
+                                            render={({ field }) => (
+                                              <FormItem>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                  <FormControl>
+                                                    <SelectTrigger className="w-[80px]">
+                                                      <SelectValue placeholder="AM/PM" />
+                                                    </SelectTrigger>
+                                                  </FormControl>
+                                                  <SelectContent>
+                                                    <SelectItem value="AM">AM</SelectItem>
+                                                    <SelectItem value="PM">PM</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
                                                 <FormMessage />
                                               </FormItem>
                                             )}
@@ -498,7 +630,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     variant="outline"
                     size="sm"
                     className="mt-2"
-                    onClick={() => append({ title: "", description: "", startDate: '', startTime: '', endDate: '', endTime: '', attachments: [] })}
+                    onClick={() => append({ title: "", description: "", startDate: '', startTime: '', startPeriod: 'AM', endDate: '', endTime: '', endPeriod: 'PM', attachments: [] })}
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Thêm Công việc
