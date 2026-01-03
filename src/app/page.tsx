@@ -11,6 +11,7 @@ import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isToday } from 'date-fns';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 type FilterType = 'all' | 'today';
 
@@ -59,7 +60,7 @@ export default function Home() {
     );
   };
 
-  const filteredTasks = tasks.filter(task => {
+  const filteredTasksForSidebar = tasks.filter(task => {
     if (activeFilter === 'today') {
       return isToday(task.endDate);
     }
@@ -83,8 +84,16 @@ export default function Home() {
             </SidebarMenuItem>
           </SidebarMenu>
           <Separator className="my-2" />
+          <div className="px-2">
+            <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="all">Tất cả</TabsTrigger>
+                <TabsTrigger value="today">Hôm nay</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
           <RecentTasks 
-            tasks={tasks} 
+            tasks={filteredTasksForSidebar} 
             onEditTask={handleOpenDialog}
             onDeleteTask={deleteTask}
           />
@@ -92,9 +101,9 @@ export default function Home() {
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col h-screen bg-background">
-          <Header activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+          <Header />
           <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            <KanbanBoard tasks={filteredTasks} onUpdateTask={updateTask} onTaskStatusChange={handleTaskStatusChange} onEditTask={handleOpenDialog} />
+            <KanbanBoard tasks={tasks} onUpdateTask={updateTask} onTaskStatusChange={handleTaskStatusChange} onEditTask={handleOpenDialog} />
           </main>
         </div>
       </SidebarInset>
@@ -107,5 +116,3 @@ export default function Home() {
     </SidebarProvider>
   );
 }
-
-    
