@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import type { Task, Subtask } from '@/lib/types';
-import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
+import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -270,7 +270,6 @@ export function RecentTasks({ tasks, onEditTask, onDeleteTask, onUpdateTask }: R
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Nhiệm vụ đã thêm</SidebarGroupLabel>
       <div className="space-y-3 px-2">
         {recentTasks.map(task => (
           <div key={task.id} className="p-2.5 rounded-lg bg-sidebar-accent/50 space-y-2 relative group">
