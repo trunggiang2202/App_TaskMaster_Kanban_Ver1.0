@@ -1,18 +1,58 @@
 'use client';
 
 import * as React from 'react';
-import type { Task } from '@/lib/types';
+import type { Task, Subtask } from '@/lib/types';
 import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ListChecks, Clock, Timer, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Checkbox } from '@/components/ui/checkbox';
 
-interface RecentTasksProps {
-  tasks: Task[];
-  onEditTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
+function SubtasksDisplay({ subtasks }: { subtasks: Subtask[] }) {
+  if (subtasks.length === 0) {
+    return null;
+  }
+  
+  return (
+     <Accordion type="single" collapsible className="w-full">
+      <AccordionItem value="subtasks" className="border-b-0">
+        <AccordionTrigger className="text-xs py-1 hover:no-underline text-sidebar-foreground/80 -ml-2">
+          Xem Công việc
+        </AccordionTrigger>
+        <AccordionContent className="pt-2 space-y-2">
+          {subtasks.map(subtask => (
+            <div key={subtask.id} className="flex flex-col space-y-1 p-2 rounded-md bg-sidebar-background/50">
+              <div className="flex items-center space-x-2">
+                 <Checkbox
+                    id={`sidebar-subtask-${subtask.id}`}
+                    checked={subtask.completed}
+                    className="border-sidebar-foreground/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    disabled
+                  />
+                <label
+                  htmlFor={`sidebar-subtask-${subtask.id}`}
+                  className={`flex-1 text-xs ${subtask.completed ? 'line-through text-sidebar-foreground/60' : 'text-sidebar-foreground/90'}`}
+                >
+                  {subtask.title}
+                </label>
+              </div>
+               {subtask.description && (
+                <p className="text-xs text-sidebar-foreground/60 pl-6">{subtask.description}</p>
+              )}
+              {subtask.startDate && subtask.endDate && (
+                <div className="text-xs text-sidebar-foreground/60 pl-6">
+                  Deadline: {format(subtask.startDate, 'dd/MM HH:mm')} - {format(subtask.endDate, 'dd/MM HH:mm')}
+                </div>
+              )}
+            </div>
+          ))}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
 }
 
 function TaskProgress({ task }: { task: Task }) {
@@ -133,6 +173,7 @@ function TaskProgress({ task }: { task: Task }) {
           <Progress value={subtaskProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName="bg-primary" />
         </div>
       )}
+      <SubtasksDisplay subtasks={task.subtasks} />
     </div>
   );
 }
