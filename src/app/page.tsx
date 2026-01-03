@@ -1,3 +1,64 @@
+'use client';
+
+import { useState } from 'react';
+import { initialTasks } from '@/lib/data';
+import type { Task } from '@/lib/types';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
+import Header from '@/components/layout/header';
+import KanbanBoard from '@/components/kanban/kanban-board';
+import { AddTaskDialog } from '@/components/kanban/add-task-dialog';
+import { Plus } from 'lucide-react';
+
 export default function Home() {
-  return <></>;
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const addTask = (newTask: Task) => {
+    setTasks(prevTasks => [newTask, ...prevTasks]);
+  };
+
+  const updateTask = (updatedTask: Task) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task => (task.id === updatedTask.id ? updatedTask : task))
+    );
+  };
+  
+  const handleTaskStatusChange = (taskId: string, status: Task['status']) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task => (task.id === taskId ? { ...task, status } : task))
+    );
+  };
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader className="p-4">
+          <h2 className="text-2xl font-bold text-sidebar-foreground font-headline">TaskMaster</h2>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarMenu>
+            <SidebarMenuItem className="px-2">
+              <SidebarMenuButton onClick={() => setIsDialogOpen(true)} className="w-full">
+                <Plus />
+                <span>New Task</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset>
+        <div className="flex flex-col h-screen bg-background">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            <KanbanBoard tasks={tasks} onUpdateTask={updateTask} onTaskStatusChange={handleTaskStatusChange} />
+          </main>
+        </div>
+      </SidebarInset>
+      <AddTaskDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onAddTask={addTask}
+      />
+    </SidebarProvider>
+  );
 }
