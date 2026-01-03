@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Settings2 } from 'lucide-react';
 import type { Task, Subtask } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
@@ -24,6 +24,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 const subtaskSchema = z.object({
   title: z.string().min(1, "Tiêu đề công việc không được để trống."),
+  startDate: z.string().optional(),
+  startTime: z.string().optional(),
+  endDate: z.string().optional(),
+  endTime: z.string().optional(),
 });
 
 const taskSchema = z.object({
@@ -93,6 +97,10 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         endTime: format(taskToEdit.endDate, 'HH:mm'),
         subtasks: taskToEdit.subtasks.map(st => ({
           title: st.title,
+          startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
+          startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
+          endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
+          endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
         })),
       });
     } else {
@@ -106,22 +114,35 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         subtasks: [],
       });
     }
-  }, [taskToEdit, form.reset]);
+  }, [taskToEdit, form]);
+
+  const parseDate = (dateStr?: string, timeStr?: string): Date | undefined => {
+    if (!dateStr || !timeStr) return undefined;
+    try {
+      const [day, month, year] = dateStr.split('-').map(Number);
+      const [hour, minute] = timeStr.split(':').map(Number);
+      return new Date(year, month - 1, day, hour, minute);
+    } catch {
+      return undefined;
+    }
+  };
 
   function handleSubmit(data: TaskFormData) {
-    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const [startHour, startMinute] = data.startTime.split(':').map(Number);
-    const startDate = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
-    
-    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-    const [endHour, endMinute] = data.endTime.split(':').map(Number);
-    const endDate = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
+    const taskStartDate = parseDate(data.startDate, data.startTime);
+    const taskEndDate = parseDate(data.endDate, data.endTime);
+
+    if (!taskStartDate || !taskEndDate) return;
+
 
     const newSubtasks: Subtask[] = data.subtasks ? data.subtasks.map((st, index) => {
+        const subtaskStartDate = parseDate(st.startDate, st.startTime);
+        const subtaskEndDate = parseDate(st.endDate, st.endTime);
         return {
           id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
           title: st.title,
           completed: taskToEdit?.subtasks[index]?.completed || false,
+          startDate: subtaskStartDate,
+          endDate: subtaskEndDate,
         };
     }) : [];
 
@@ -131,8 +152,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       description: data.description,
       status: taskToEdit?.status || 'To Do',
       createdAt: taskToEdit?.createdAt || new Date(),
-      startDate,
-      endDate,
+      startDate: taskStartDate,
+      endDate: taskEndDate,
       subtasks: newSubtasks,
     };
     onSubmit(task);
@@ -244,30 +265,101 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             
             <div>
               <FormLabel>Công việc</FormLabel>
-              <div className="space-y-2 mt-2 max-h-48 overflow-y-auto pr-2">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-center gap-2 bg-muted/50 rounded-md p-1 pr-2">
-                    <FormField
-                      control={form.control}
-                      name={`subtasks.${index}.title`}
-                      render={({ field }) => (
-                        <FormItem className="flex-grow">
-                          <FormControl>
-                            <Input 
-                              placeholder={`Công việc ${index + 1}`} 
-                              {...field} 
-                              className="border-none bg-transparent shadow-none focus-visible:ring-0" 
+              <div className="space-y-2 mt-2 max-h-64 overflow-y-auto pr-2">
+                 <Accordion type="multiple" className="w-full space-y-2">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
+                       <AccordionItem value={`item-${index}`} className="w-full border-b-0">
+                         <div className="flex items-center gap-2 w-full">
+                           <FormField
+                              control={form.control}
+                              name={`subtasks.${index}.title`}
+                              render={({ field }) => (
+                                <FormItem className="flex-grow">
+                                  <FormControl>
+                                    <Input 
+                                      placeholder={`Công việc ${index + 1}`} 
+                                      {...field} 
+                                      className="border-none bg-transparent shadow-none focus-visible:ring-0" 
+                                    />
+                                  </FormControl>
+                                  <FormMessage className="pl-3" />
+                                </FormItem>
+                              )}
                             />
-                          </FormControl>
-                          <FormMessage className="pl-3" />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
+                            <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                               <Settings2 className="h-4 w-4" />
+                            </AccordionTrigger>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                         </div>
+                        <AccordionContent className="px-3 pt-2">
+                           <div className="space-y-4">
+                            <div className="space-y-2">
+                                <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name={`subtasks.${index}.startDate`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input placeholder="DD-MM-YYYY" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                   <FormField
+                                    control={form.control}
+                                    name={`subtasks.${index}.startTime`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input placeholder="HH:MM" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                   <FormField
+                                    control={form.control}
+                                    name={`subtasks.${index}.endDate`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input placeholder="DD-MM-YYYY" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                   <FormField
+                                    control={form.control}
+                                    name={`subtasks.${index}.endTime`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormControl>
+                                          <Input placeholder="HH:MM" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                           </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </div>
+                  ))}
+                 </Accordion>
               </div>
               <Button
                 type="button"

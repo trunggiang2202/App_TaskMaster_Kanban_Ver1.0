@@ -184,19 +184,26 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (
-                  <div key={subtask.id} className="flex items-center space-x-2 p-2 rounded-md bg-muted/50">
-                    <Checkbox
-                      id={`subtask-${subtask.id}`}
-                      checked={subtask.completed}
-                      onCheckedChange={(checked) => handleSubtaskChange(subtask.id, !!checked)}
-                      disabled={task.status === 'Done'}
-                    />
-                    <label
-                      htmlFor={`subtask-${subtask.id}`}
-                      className={`flex-1 text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}
-                    >
-                      {subtask.title}
-                    </label>
+                  <div key={subtask.id} className="flex flex-col space-y-2 p-2 rounded-md bg-muted/50">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`subtask-${subtask.id}`}
+                        checked={subtask.completed}
+                        onCheckedChange={(checked) => handleSubtaskChange(subtask.id, !!checked)}
+                        disabled={task.status === 'Done'}
+                      />
+                      <label
+                        htmlFor={`subtask-${subtask.id}`}
+                        className={`flex-1 text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}
+                      >
+                        {subtask.title}
+                      </label>
+                    </div>
+                    {subtask.startDate && subtask.endDate && (
+                      <div className="text-xs text-muted-foreground pl-6">
+                        Deadline: {format(subtask.startDate, 'dd/MM HH:mm')} - {format(subtask.endDate, 'dd/MM HH:mm')}
+                      </div>
+                    )}
                   </div>
                 ))}
               </AccordionContent>
