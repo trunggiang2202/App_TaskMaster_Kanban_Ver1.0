@@ -10,8 +10,20 @@ import { isToday, startOfDay, isBefore, isAfter, format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
+const calculateInitialTimeProgress = (task: Task) => {
+    const now = new Date().getTime();
+    const start = new Date(task.startDate).getTime();
+    const end = new Date(task.endDate).getTime();
+    
+    if (now >= end) return 0;
+    if (now < start) return 100;
+    
+    const percentage = ((end - now) / (end - start)) * 100;
+    return Math.min(Math.max(percentage, 0), 100);
+};
+
 function TaskProgress({ task }: { task: Task }) {
-  const [timeProgress, setTimeProgress] = React.useState(100);
+  const [timeProgress, setTimeProgress] = React.useState(() => calculateInitialTimeProgress(task));
   const [timeLeft, setTimeLeft] = React.useState('');
   
   React.useEffect(() => {
@@ -71,10 +83,13 @@ function TaskProgress({ task }: { task: Task }) {
   const isWarning = timeProgress < 20 && task.status !== 'Done';
 
   const getProgressColor = () => {
-    if (isOverdue || isWarning) {
-      return 'bg-destructive'; // Red
+    if (isOverdue) {
+      return 'bg-sidebar-accent'; // Grey for overdue
     }
-    return 'bg-emerald-500'; // Green
+    if (isWarning) {
+      return 'bg-destructive'; // Red for warning
+    }
+    return 'bg-emerald-500'; // Green for normal
   };
 
   const getTimeLeftColor = () => {
@@ -103,7 +118,7 @@ function TaskProgress({ task }: { task: Task }) {
             <Clock size={12} /> Thời gian còn lại: {timeLeft}
           </span>
         </div>
-        <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={getProgressColor()} />
+        <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
     </div>
   );
 }
