@@ -45,7 +45,21 @@ function TaskProgress({ task }: { task: Task }) {
       }
 
       const now = new Date().getTime();
+      const start = new Date(task.startDate).getTime();
       const end = new Date(task.endDate).getTime();
+      
+      if (now < start) {
+        const distance = end - start;
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let result = '';
+        if (days > 0) result += `${days}d `;
+        if (hours > 0 || days > 0) result += `${hours}h `;
+        if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+        return result.trim();
+      }
+
       const distance = end - now;
 
       if (distance < 0) {
@@ -78,8 +92,10 @@ function TaskProgress({ task }: { task: Task }) {
     }
   }, [task.startDate, task.endDate, task.status]);
   
-  const isOverdue = timeProgress === 0 && task.status !== 'Done';
-  const isWarning = timeProgress < 20 && task.status !== 'Done';
+  const now = new Date();
+  const isOverdue = !task.completed && isAfter(now, task.endDate);
+  const isInProgress = isAfter(now, task.startDate) && isBefore(now, task.endDate);
+  const isWarning = isInProgress && timeProgress < 20;
 
   const getProgressColor = () => {
     if (isOverdue) {
@@ -114,7 +130,8 @@ function TaskProgress({ task }: { task: Task }) {
         </div>
         <div className="flex justify-between items-center text-xs">
           <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
-            <Clock size={12} /> Thời gian còn lại: {timeLeft}
+            <Clock size={12} /> 
+            {isAfter(new Date(), task.startDate) ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
           </span>
         </div>
         <Progress value={timeProgress} className={`h-1.5 ${getProgressColor()}`} />

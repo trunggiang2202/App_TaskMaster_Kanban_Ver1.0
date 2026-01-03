@@ -13,7 +13,7 @@ import {
 import { Paperclip, Download, Calendar, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
-import { format } from 'date-fns';
+import { format, isAfter } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
@@ -71,7 +71,21 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
       if (!startDate || !endDate) return 'Chưa có deadline';
 
       const now = new Date().getTime();
+      const start = new Date(startDate).getTime();
       const end = new Date(endDate).getTime();
+
+      if (now < start) {
+        const distance = end - start;
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let result = '';
+        if (days > 0) result += `${days}d `;
+        if (hours > 0 || days > 0) result += `${hours}h `;
+        if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+        return result.trim();
+      }
+
       const distance = end - now;
 
       if (distance < 0) return 'Đã quá hạn';
@@ -79,15 +93,13 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
       
       let result = '';
       if (days > 0) result += `${days}d `;
       if (hours > 0 || days > 0) result += `${hours}h `;
       if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
-      result += `${seconds}s`;
       
-      return result.trim() === '' ? '0s' : result.trim();
+      return result.trim() === '' ? 'dưới 1 phút' : result.trim();
     };
 
     const updateTimes = () => {
@@ -131,7 +143,8 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
             <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedStart}</p>
             <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedEnd}</p>
             <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
-                <Clock className="h-4 w-4" /> Thời gian còn lại: {timeLeft}
+                <Clock className="h-4 w-4" /> 
+                {subtask.startDate && isAfter(new Date(), subtask.startDate) ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
             </p>
         </div>
         <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
