@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check } from 'lucide-react';
+import { Calendar, ListChecks, Clock, MoreHorizontal, Edit, Trash2, Circle, Check, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface TaskCardProps {
@@ -147,20 +147,17 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEdi
         </div>
         
         {task.subtasks.length > 0 && (
-          <div>
-            <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5"><ListChecks size={14} /> Công việc</span>
-                <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
-            </div>
-            <Progress value={subtaskProgress} className="h-2" />
-          </div>
-        )}
-
-        {task.subtasks.length > 0 && (
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="subtasks" className="border-b-0">
-              <AccordionTrigger className="text-sm py-1 hover:no-underline -ml-2">
-                Xem Công việc
+              <AccordionTrigger className="text-sm py-1 hover:no-underline w-full p-0">
+                <div className="w-full space-y-1">
+                  <div className="flex justify-between items-center text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5"><ListChecks size={14} /> Công việc</span>
+                      <span>{task.subtasks.filter(s => s.completed).length}/{task.subtasks.length}</span>
+                  </div>
+                  <Progress value={subtaskProgress} className="h-2" />
+                </div>
+                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 ml-2" />
               </AccordionTrigger>
               <AccordionContent className="pt-2 space-y-2">
                 {task.subtasks.map(subtask => (
