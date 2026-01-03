@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -86,12 +87,26 @@ export default function Home() {
     setTasks(prevTasks =>
       prevTasks.map(task => {
         if (task.id === taskId) {
+          // First, toggle the specified subtask's completion status
           const updatedSubtasks = task.subtasks.map(subtask =>
             subtask.id === subtaskId
               ? { ...subtask, completed: !subtask.completed }
               : subtask
           );
-          return { ...task, subtasks: updatedSubtasks };
+
+          // After updating, check if all subtasks are now completed
+          const allSubtasksDone = updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed);
+
+          // Determine the new parent task status
+          let newStatus = task.status;
+          if (allSubtasksDone) {
+            newStatus = 'Done';
+          } else if (task.status === 'Done' && !allSubtasksDone) {
+            // If the parent was 'Done' but now a subtask is not, revert it
+            newStatus = 'In Progress';
+          }
+
+          return { ...task, subtasks: updatedSubtasks, status: newStatus };
         }
         return task;
       })
@@ -120,6 +135,10 @@ export default function Home() {
 
   const todaysSubtaskCount = tasks.reduce((count, task) => {
     const now = new Date();
+    // Only count subtasks for tasks that are not 'Done'
+    if (task.status === 'Done') {
+      return count;
+    }
     const inProgressSubtasks = task.subtasks.filter(st => 
       !st.completed && st.startDate && isAfter(now, st.startDate)
     );
