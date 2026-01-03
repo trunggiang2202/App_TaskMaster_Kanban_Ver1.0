@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -111,13 +112,12 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
   const getProgressColor = () => {
     if (completed) return 'bg-emerald-500';
     if (isOverdue || isWarning) return 'bg-destructive';
-    return 'bg-primary';
+    return 'bg-emerald-500';
   };
 
   const getTimeLeftColor = () => {
     if (completed) return 'text-emerald-500';
-    if (isOverdue) return 'text-destructive';
-    if (isWarning) return 'text-amber-500';
+    if (isOverdue || isWarning) return 'text-destructive';
     return 'text-muted-foreground';
   };
 
