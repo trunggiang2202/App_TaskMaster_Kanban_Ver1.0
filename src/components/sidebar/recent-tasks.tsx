@@ -95,7 +95,7 @@ function TaskProgress({ task }: { task: Task }) {
       if (hours > 0 || days > 0) result += `${hours}h `;
       if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m`;
       
-      return result.trim() === '' ? '0m còn lại' : result.trim() + ' còn lại';
+      return result.trim() === '' ? '0m' : result.trim();
     }
 
     setTimeProgress(calculateTimeProgress());
