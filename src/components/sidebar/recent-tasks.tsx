@@ -4,8 +4,8 @@ import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2 } from 'lucide-react';
-import { isToday, startOfDay, isBefore, isAfter } from 'date-fns';
+import { Clock, CheckCircle2, Calendar } from 'lucide-react';
+import { isToday, startOfDay, isBefore, isAfter, format } from 'date-fns';
 
 function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
@@ -80,9 +80,22 @@ function TaskProgress({ task }: { task: Task }) {
     if (isWarning) return 'text-amber-500';
     return 'text-sidebar-foreground/80';
   };
+
+  const formattedStartDate = format(task.startDate, 'dd/MM/yyyy HH:mm');
+  const formattedEndDate = format(task.endDate, 'dd/MM/yyyy HH:mm');
   
   return (
     <div className="space-y-2">
+       <div className="space-y-1 text-xs text-sidebar-foreground/70">
+          <div className="flex items-center gap-2">
+            <Calendar size={12} />
+            <span>Bắt đầu: {formattedStartDate}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar size={12} />
+            <span>Kết thúc: {formattedEndDate}</span>
+          </div>
+        </div>
       <div>
         <div className="flex justify-between items-center mb-1 text-xs">
           <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
