@@ -8,20 +8,22 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, ListChecks, Clock, MoreHorizontal, Timer } from 'lucide-react';
+import { Calendar, ListChecks, Clock, MoreHorizontal, Timer, Edit, Trash2 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 
 interface TaskCardProps {
   task: Task;
   onUpdateTask: (task: Task) => void;
   onTaskStatusChange: (taskId: string, status: Status) => void;
+  onEditTask: (task: Task) => void;
 }
 
-export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: TaskCardProps) {
+export default function TaskCard({ task, onUpdateTask, onTaskStatusChange, onEditTask }: TaskCardProps) {
   const [timeProgress, setTimeProgress] = useState(100);
   const [subtaskProgress, setSubtaskProgress] = useState(0);
   const [isDoneDisabled, setIsDoneDisabled] = useState(true);
   const [timeLeft, setTimeLeft] = useState('');
+  const [deadlineStatus, setDeadlineStatus] = useState('');
 
   useEffect(() => {
     const calculateTimeProgress = () => {
@@ -74,6 +76,12 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDeadlineStatus(formatDistanceToNow(task.endDate, { addSuffix: true }));
+    }
+  }, [task.endDate]);
 
   useEffect(() => {
     const completedSubtasks = task.subtasks.filter(st => st.completed).length;
@@ -97,7 +105,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
   };
 
   const isOverdue = timeProgress === 0 && task.status !== 'Done';
-  const isWarning = timeProgress <= 20 && task.status !== 'Done';
+  const isWarning = timeProgress < 20 && task.status !== 'Done';
 
   const getProgressColor = () => {
     if (isOverdue || isWarning) {
@@ -124,6 +132,10 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => onEditTask(task)}>
+              <Edit className="mr-2 h-4 w-4" />
+              <span>Chỉnh sửa</span>
+            </DropdownMenuItem>
             {task.status !== 'To Do' && <DropdownMenuItem onClick={() => onTaskStatusChange(task.id, 'To Do')}>Move to To Do</DropdownMenuItem>}
             {task.status !== 'In Progress' && <DropdownMenuItem onClick={() => onTaskStatusChange(task.id, 'In Progress')}>Move to In Progress</DropdownMenuItem>}
             {task.status !== 'Done' && <DropdownMenuItem onClick={handleMarkAsDone} disabled={isDoneDisabled}>Mark as Done</DropdownMenuItem>}
@@ -139,7 +151,7 @@ export default function TaskCard({ task, onUpdateTask, onTaskStatusChange }: Tas
           <div>
             <div className="flex justify-between items-center mb-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5"><Clock size={14} /> Tiến độ</span>
-              <span className={isOverdue ? "text-destructive font-medium" : ""}>{formatDistanceToNow(task.endDate, { addSuffix: true })}</span>
+              <span className={isOverdue ? "text-destructive font-medium" : ""}>{deadlineStatus}</span>
             </div>
             <Progress value={timeProgress} className="h-2" indicatorClassName={getProgressColor()} />
           </div>

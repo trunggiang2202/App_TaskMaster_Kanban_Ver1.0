@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,6 +19,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Plus, Trash2 } from 'lucide-react';
 import type { Task, Subtask } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
+import { format } from 'date-fns';
 
 const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
@@ -49,13 +51,14 @@ const taskSchema = z.object({
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
-interface AddTaskDialogProps {
+interface TaskDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onAddTask: (task: Task) => void;
+  onSubmit: (task: Task) => void;
+  taskToEdit?: Task;
 }
 
-export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialogProps) {
+export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskDialogProps) {
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -68,26 +71,37 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
       subtasks: [],
     },
   });
-  
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "subtasks",
   });
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      form.reset();
+  
+  useEffect(() => {
+    if (taskToEdit) {
+      form.reset({
+        title: taskToEdit.title,
+        description: taskToEdit.description || '',
+        startDate: format(taskToEdit.startDate, 'dd-MM-yyyy'),
+        startTime: format(taskToEdit.startDate, 'HH:mm'),
+        endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
+        endTime: format(taskToEdit.endDate, 'HH:mm'),
+        subtasks: taskToEdit.subtasks.map(st => ({ title: st.title })),
+      });
+    } else {
+      form.reset({
+        title: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        startTime: '09:00',
+        endTime: '17:00',
+        subtasks: [],
+      });
     }
-    onOpenChange(open);
-  }
+  }, [taskToEdit, form]);
 
-  function onSubmit(data: TaskFormData) {
-    const newSubtasks: Subtask[] = data.subtasks ? data.subtasks.map(st => ({
-      id: crypto.randomUUID(),
-      title: st.title,
-      completed: false,
-    })) : [];
-
+  function handleSubmit(data: TaskFormData) {
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
     const [startHour, startMinute] = data.startTime.split(':').map(Number);
     const startDate = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
@@ -96,31 +110,36 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
     const [endHour, endMinute] = data.endTime.split(':').map(Number);
     const endDate = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
 
-    const newTask: Task = {
-      id: crypto.randomUUID(),
+    const newSubtasks: Subtask[] = data.subtasks ? data.subtasks.map((st, index) => ({
+      id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
+      title: st.title,
+      completed: taskToEdit?.subtasks[index]?.completed || false,
+    })) : [];
+
+    const task: Task = {
+      id: taskToEdit?.id || crypto.randomUUID(),
       title: data.title,
       description: data.description,
-      status: 'To Do',
-      createdAt: new Date(),
+      status: taskToEdit?.status || 'To Do',
+      createdAt: taskToEdit?.createdAt || new Date(),
       startDate,
       endDate,
       subtasks: newSubtasks,
     };
-    onAddTask(newTask);
-    handleOpenChange(false);
+    onSubmit(task);
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle>Thêm công việc mới</DialogTitle>
+          <DialogTitle>{taskToEdit ? 'Chỉnh sửa công việc' : 'Thêm công việc mới'}</DialogTitle>
           <DialogDescription>
-            Điền vào các chi tiết cho công việc mới của bạn. Bạn có thể thêm các công việc để chia nhỏ nó ra.
+            {taskToEdit ? 'Cập nhật chi tiết công việc của bạn.' : 'Điền vào các chi tiết cho công việc mới của bạn. Bạn có thể thêm các công việc để chia nhỏ nó ra.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -252,8 +271,8 @@ export function AddTaskDialog({ isOpen, onOpenChange, onAddTask }: AddTaskDialog
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>Hủy</Button>
-              <Button type="submit">Tạo công việc</Button>
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
+              <Button type="submit">{taskToEdit ? 'Lưu thay đổi' : 'Tạo công việc'}</Button>
             </DialogFooter>
           </form>
         </Form>

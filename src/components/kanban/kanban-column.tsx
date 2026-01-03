@@ -6,9 +6,10 @@ interface KanbanColumnProps {
   tasks: Task[];
   onUpdateTask: (task: Task) => void;
   onTaskStatusChange: (taskId: string, status: Status) => void;
+  onEditTask: (task: Task) => void;
 }
 
-export default function KanbanColumn({ status, tasks, onUpdateTask, onTaskStatusChange }: KanbanColumnProps) {
+export default function KanbanColumn({ status, tasks, onUpdateTask, onTaskStatusChange, onEditTask }: KanbanColumnProps) {
   const statusColors: { [key in Status]: string } = {
     'To Do': 'bg-sky-500',
     'In Progress': 'bg-amber-500',
@@ -26,7 +27,7 @@ export default function KanbanColumn({ status, tasks, onUpdateTask, onTaskStatus
       </div>
       <div className="flex flex-col gap-4 overflow-y-auto">
         {tasks.map(task => (
-          <TaskCard key={task.id} task={task} onUpdateTask={onUpdateTask} onTaskStatusChange={onTaskStatusChange} />
+          <TaskCard key={task.id} task={task} onUpdateTask={onUpdateTask} onTaskStatusChange={onTaskStatusChange} onEditTask={onEditTask} />
         ))}
         {tasks.length === 0 && (
           <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">

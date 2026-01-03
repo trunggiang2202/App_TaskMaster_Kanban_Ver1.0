@@ -4,17 +4,22 @@ import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { ListChecks, Clock, Timer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ListChecks, Clock, Timer, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface RecentTasksProps {
   tasks: Task[];
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
 function TaskProgress({ task }: { task: Task }) {
   const [timeProgress, setTimeProgress] = React.useState(100);
   const [subtaskProgress, setSubtaskProgress] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState('');
+  const [deadlineStatus, setDeadlineStatus] = React.useState('');
   
   React.useEffect(() => {
     const calculateTimeProgress = () => {
@@ -67,18 +72,24 @@ function TaskProgress({ task }: { task: Task }) {
       return () => clearInterval(interval);
     }
   }, [task.startDate, task.endDate, task.status]);
+  
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+        setDeadlineStatus(formatDistanceToNow(new Date(task.endDate), { addSuffix: true }));
+    }
+  }, [task.endDate]);
 
   React.useEffect(() => {
     if (task.subtasks.length > 0) {
       const completedCount = task.subtasks.filter(st => st.completed).length;
       setSubtaskProgress((completedCount / task.subtasks.length) * 100);
     } else {
-      setSubtaskProgress(task.status === 'Done' ? 100 : 0);
+       setSubtaskProgress(task.status === 'Done' ? 100 : 0);
     }
   }, [task.subtasks, task.status]);
 
   const isOverdue = timeProgress === 0 && task.status !== 'Done';
-  const isWarning = timeProgress <= 20 && task.status !== 'Done';
+  const isWarning = timeProgress < 20 && task.status !== 'Done';
 
   const getProgressColor = () => {
     if (isOverdue || isWarning) {
@@ -100,7 +111,7 @@ function TaskProgress({ task }: { task: Task }) {
         <div className="flex justify-between items-center text-xs text-sidebar-foreground/80 mb-1">
           <span className="flex items-center gap-1.5"><Clock size={12} /> Deadline</span>
           <span className={isOverdue ? "text-destructive font-medium" : ""}>
-            {formatDistanceToNow(new Date(task.endDate), { addSuffix: true })}
+            {deadlineStatus}
           </span>
         </div>
         <Progress value={timeProgress} className="h-1.5 bg-sidebar-accent" indicatorClassName={getProgressColor()} />
@@ -127,8 +138,7 @@ function TaskProgress({ task }: { task: Task }) {
 }
 
 
-export function RecentTasks({ tasks }: RecentTasksProps) {
-  // Sort tasks by creation date, newest first, and take the top 5
+export function RecentTasks({ tasks, onEditTask, onDeleteTask }: RecentTasksProps) {
   const recentTasks = [...tasks]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
@@ -138,8 +148,27 @@ export function RecentTasks({ tasks }: RecentTasksProps) {
       <SidebarGroupLabel>Công việc đã thêm</SidebarGroupLabel>
       <div className="space-y-3 px-2">
         {recentTasks.map(task => (
-          <div key={task.id} className="p-2.5 rounded-lg bg-sidebar-accent/50 space-y-2">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">{task.title}</p>
+          <div key={task.id} className="p-2.5 rounded-lg bg-sidebar-accent/50 space-y-2 relative group">
+            <div className="flex justify-between items-start">
+              <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => onEditTask(task)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    <span>Chỉnh sửa</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDeleteTask(task.id)} className="text-destructive">
+                     <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Xóa</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <TaskProgress task={task} />
           </div>
         ))}
