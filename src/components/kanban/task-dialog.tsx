@@ -319,107 +319,111 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                 )}
               />
               
-              <div className="space-y-2 border p-3 rounded-md">
-                <h3 className="text-sm font-medium">Bắt đầu</h3>
-                <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
-                  <FormField
-                    control={form.control}
-                    name="startDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                        <FormControl>
-                            <Input placeholder="31-12-2024" {...field} />
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giờ</FormLabel>
-                        <FormControl>
-                            <Input placeholder="09:00" {...field} className="w-24"/>
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                      control={form.control}
-                      name="startPeriod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} value={field.value}>
+              <div className="space-y-2">
+                <FormLabel>Bắt đầu</FormLabel>
+                <div className="space-y-2 border p-3 rounded-md">
+                    <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                      <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                             <FormControl>
-                              <SelectTrigger className="w-[80px]">
-                                <SelectValue placeholder="AM/PM" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="AM">AM</SelectItem>
-                              <SelectItem value="PM">PM</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                <Input placeholder="31-12-2024" {...field} />
+                              </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="startTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Giờ</FormLabel>
+                            <FormControl>
+                                <Input placeholder="09:00" {...field} className="w-24"/>
+                              </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                          control={form.control}
+                          name="startPeriod"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="w-[80px]">
+                                    <SelectValue placeholder="AM/PM" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="AM">AM</SelectItem>
+                                  <SelectItem value="PM">PM</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
                 </div>
               </div>
 
-              <div className="space-y-2 border p-3 rounded-md">
-                <h3 className="text-sm font-medium">Kết thúc</h3>
-                <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
-                  <FormField
-                    control={form.control}
-                    name="endDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                        <FormControl>
-                            <Input placeholder="31-12-2024" {...field} />
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="endTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giờ</FormLabel>
-                        <FormControl>
-                            <Input placeholder="05:00" {...field} className="w-24"/>
-                          </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                      control={form.control}
-                      name="endPeriod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select onValueChange={field.onChange} value={field.value}>
+              <div className="space-y-2">
+                <FormLabel>Kết thúc</FormLabel>
+                <div className="space-y-2 border p-3 rounded-md">
+                    <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                      <FormField
+                        control={form.control}
+                        name="endDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                             <FormControl>
-                              <SelectTrigger className="w-[80px]">
-                                <SelectValue placeholder="AM/PM" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="AM">AM</SelectItem>
-                              <SelectItem value="PM">PM</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                <Input placeholder="31-12-2024" {...field} />
+                              </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="endTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Giờ</FormLabel>
+                            <FormControl>
+                                <Input placeholder="05:00" {...field} className="w-24"/>
+                              </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="endPeriod"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="w-[80px]">
+                                    <SelectValue placeholder="AM/PM" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="AM">AM</SelectItem>
+                                  <SelectItem value="PM">PM</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
                 </div>
               </div>
 
