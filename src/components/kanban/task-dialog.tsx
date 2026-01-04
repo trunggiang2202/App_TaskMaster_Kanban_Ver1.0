@@ -146,6 +146,7 @@ interface TaskDialogProps {
 export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskDialogProps) {
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [activeTab, setActiveTab] = useState('task');
+  const [isTaskTabValid, setIsTaskTabValid] = useState(false);
 
   const convertTo12Hour = (date: Date) => {
     const hours = date.getHours();
@@ -182,6 +183,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   useEffect(() => {
     if (isOpen) {
       setActiveTab('task'); // Reset to the first tab whenever the dialog opens
+      setIsTaskTabValid(false);
       if (taskToEdit) {
         const start = convertTo12Hour(taskToEdit.startDate);
         const end = convertTo12Hour(taskToEdit.endDate);
@@ -288,10 +290,13 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       }
   };
 
-  const triggerValidation = async () => {
-    const result = await form.trigger(["title", "description", "startDate", "startTime", "startPeriod", "endDate", "endTime", "endPeriod"]);
+  const triggerValidationAndSwitchTab = async () => {
+    const result = await form.trigger(["title", "startDate", "startTime", "startPeriod", "endDate", "endTime", "endPeriod"]);
     if (result) {
+        setIsTaskTabValid(true);
         setActiveTab('subtasks');
+    } else {
+        setIsTaskTabValid(false);
     }
   };
 
@@ -350,7 +355,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
               <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
                 <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
-                <TabsTrigger value="subtasks" disabled={activeTab === 'task'} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
+                <TabsTrigger value="subtasks" disabled={!isTaskTabValid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
               </TabsList>
               
               <TabsContent value="task" className="flex-1 overflow-y-auto pr-6 -mr-6 py-4 custom-scrollbar space-y-4">
@@ -753,11 +758,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
               {activeTab === 'task' ? (
                 <>
                   <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-                  <Button type="button" onClick={triggerValidation}>Tiếp tục</Button>
+                  <Button type="button" onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
                 </>
               ) : (
                 <>
-                   <Button type="button" variant="outline" onClick={() => setActiveTab('task')}>Quay lại</Button>
+                   <Button type="button" variant="outline" onClick={() => { setIsTaskTabValid(true); setActiveTab('task'); }}>Quay lại</Button>
                    <Button type="submit" disabled={!form.formState.isValid}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
                 </>
               )}
