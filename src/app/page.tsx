@@ -208,7 +208,7 @@ export default function Home() {
               Hi, Louis Giang
               <span className="inline-block w-10 text-left">{loadingDots}</span>
             </span>
-            <Sparkles className="text-primary" />
+            <span>😁</span>
           </h2>
         </SidebarHeader>
         <SidebarContent>
