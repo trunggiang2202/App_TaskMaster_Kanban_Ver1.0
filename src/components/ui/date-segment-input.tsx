@@ -57,12 +57,6 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
       currentYear = segmentValue;
       setYear(currentYear);
     }
-    
-    if (day === '' && month === '' && year === '' && segmentValue !== '') {
-        const fullYear = new Date().getFullYear().toString();
-        if (segment !== 'year') setYear(fullYear);
-        currentYear = fullYear;
-    }
 
     triggerParentOnChange(currentDay, currentMonth, currentYear);
   };

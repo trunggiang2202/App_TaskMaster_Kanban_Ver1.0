@@ -62,20 +62,20 @@ const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
   startDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: " ",
+    message: "Định dạng ngày phải là DD-MM-YYYY",
   }),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   endDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: " ",
+    message: "Định dạng ngày phải là DD-MM-YYYY",
   }),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
     const startDateTime = parseDateTime(data.startDate, data.startTime);
     const endDateTime = parseDateTime(data.endDate, data.endTime);
     return endDateTime && startDateTime && endDateTime > startDateTime;
 }, {
-    message: " ",
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"],
 }).refine(data => {
   if (data.subtasks) {
@@ -296,9 +296,10 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     return 'border-muted';
   };
 
-  const isTaskTabValid = Object.keys(form.formState.errors).filter(key => 
-    key === 'title' || key === 'startDate' || key === 'startTime' || key === 'endDate' || key === 'endTime' || key === 'root'
-  ).length === 0;
+
+  const isTaskTabInvalid = Object.keys(form.formState.errors).some(key =>
+    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root'].includes(key)
+  );
 
 
   return (
@@ -319,7 +320,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
               <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
-              <TabsTrigger value="subtasks" disabled={!isTaskTabValid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
+              <TabsTrigger value="subtasks" disabled={isTaskTabInvalid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
             </TabsList>
             
             <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
@@ -624,7 +625,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           {activeTab === 'task' ? (
             <>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="button" onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
+              <Button type="button" onClick={triggerValidationAndSwitchTab} disabled={isTaskTabInvalid}>Tiếp tục</Button>
             </>
           ) : (
             <>
