@@ -3,7 +3,6 @@
 
 import { createContext, useState, useCallback, useMemo, useContext, useEffect } from 'react';
 import type { Task } from '@/lib/types';
-import { initialTasks } from '@/lib/data';
 
 interface TaskContextType {
   tasks: Task[];
@@ -18,9 +17,9 @@ interface TaskContextType {
 export const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 // Helper function to safely get data from localStorage
-const getInitialTasks = (): Task[] => {
+const getTasksFromLocalStorage = (): Task[] => {
   if (typeof window === 'undefined') {
-    return initialTasks;
+    return [];
   }
   try {
     const item = window.localStorage.getItem('tasks');
@@ -43,27 +42,8 @@ const getInitialTasks = (): Task[] => {
   } catch (error) {
     console.warn('Error reading localStorage "tasks":', error);
   }
-  
-  // If nothing in localStorage, use initial data and save it
-  const tasksWithDates = initialTasks.map(t => {
-    const task: Task = {...t, createdAt: new Date(t.createdAt) };
-    if (t.startDate) task.startDate = new Date(t.startDate);
-    if (t.endDate) task.endDate = new Date(t.endDate);
-    task.subtasks = t.subtasks.map(st => {
-        const subtask = {...st};
-        if (st.startDate) subtask.startDate = new Date(st.startDate);
-        if (st.endDate) subtask.endDate = new Date(st.endDate);
-        return subtask;
-    });
-    return task;
-  });
-  
-  try {
-    window.localStorage.setItem('tasks', JSON.stringify(tasksWithDates));
-  } catch (error) {
-    console.warn('Error setting initial localStorage "tasks":', error);
-  }
-  return tasksWithDates;
+  // If nothing in localStorage or an error occurs, return an empty array.
+  return [];
 };
 
 
@@ -72,7 +52,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
-    const initialData = getInitialTasks();
+    const initialData = getTasksFromLocalStorage();
     setTasks(initialData);
     if (initialData.length > 0) {
       setSelectedTaskId(initialData[0].id)
@@ -81,8 +61,8 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     try {
-      // Avoid saving empty tasks array on initial server render
-      if (tasks.length > 0 || localStorage.getItem('tasks')) {
+      // Avoid saving empty tasks array on initial server render if localStorage is already populated
+      if (tasks.length > 0 || localStorage.getItem('tasks') !== null) {
         localStorage.setItem('tasks', JSON.stringify(tasks));
       }
     } catch (error) {
