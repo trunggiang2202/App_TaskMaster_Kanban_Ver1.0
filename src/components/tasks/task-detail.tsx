@@ -218,7 +218,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Hủy</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => onDeleteTask(task.id)}>
+                      <AlertDialogAction variant="destructive" onClick={() => onDeleteTask(task.id)}>
                         Xóa
                       </AlertDialogAction>
                     </AlertDialogFooter>
