@@ -366,63 +366,71 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         <div className="space-y-2">
                           <FormLabel>Bắt đầu</FormLabel>
                           <div className="border p-3 rounded-md space-y-3">
-                              <FormField
-                                control={form.control}
-                                name="startDate"
-                                render={({ field, fieldState }) => (
-                                  <FormItem>
-                                    <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                                    <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} />
-                                      </FormControl>
-                                    <FormMessage className="h-4" />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="startTime"
-                                render={({ field, fieldState }) => (
-                                  <FormItem>
-                                    <FormLabel>Giờ</FormLabel>
-                                    <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5" />
-                                      </FormControl>
-                                    <FormMessage className="h-4" />
-                                  </FormItem>
-                                )}
-                              />
+                              <div className="relative pb-4">
+                                <FormField
+                                  control={form.control}
+                                  name="startDate"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                      <FormControl>
+                                          <DateSegmentInput value={field.value} onChange={field.onChange} />
+                                        </FormControl>
+                                      <FormMessage className="absolute bottom-0" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <div className="relative pb-4">
+                                <FormField
+                                  control={form.control}
+                                  name="startTime"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Giờ</FormLabel>
+                                      <FormControl>
+                                          <Input type="time" {...field} className="bg-primary/5" />
+                                        </FormControl>
+                                      <FormMessage className="absolute bottom-0" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
                           </div>
                         </div>
                         <div className="space-y-2">
                           <FormLabel>Kết thúc</FormLabel>
                           <div className="border p-3 rounded-md space-y-3">
-                              <FormField
-                                control={form.control}
-                                name="endDate"
-                                render={({ field, fieldState }) => (
-                                  <FormItem>
-                                    <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                                    <FormControl>
-                                      <DateSegmentInput value={field.value} onChange={field.onChange} />
-                                    </FormControl>
-                                    <FormMessage className="h-4" />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="endTime"
-                                render={({ field, fieldState }) => (
-                                  <FormItem>
-                                    <FormLabel>Giờ</FormLabel>
-                                    <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5" />
+                              <div className="relative pb-4">
+                                <FormField
+                                  control={form.control}
+                                  name="endDate"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                      <FormControl>
+                                        <DateSegmentInput value={field.value} onChange={field.onChange} />
                                       </FormControl>
-                                    <FormMessage className="h-4" />
-                                  </FormItem>
-                                )}
-                              />
+                                      <FormMessage className="absolute bottom-0" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <div className="relative pb-4">
+                                <FormField
+                                  control={form.control}
+                                  name="endTime"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Giờ</FormLabel>
+                                      <FormControl>
+                                          <Input type="time" {...field} className="bg-primary/5" />
+                                        </FormControl>
+                                      <FormMessage className="absolute bottom-0" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
                           </div>
                         </div>
                     </div>
