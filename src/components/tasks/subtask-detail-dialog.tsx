@@ -229,17 +229,23 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
 
             <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
-                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px] space-y-3">
+                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px] space-y-4">
                     {attachments.length > 0 ? (
                         <>
                             {imageAttachments.length > 0 && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                    {imageAttachments.map((att, index) => <AttachmentItem key={`img-${index}`} attachment={att} />)}
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-semibold text-foreground">Ảnh ({imageAttachments.length})</h4>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                        {imageAttachments.map((att, index) => <AttachmentItem key={`img-${index}`} attachment={att} />)}
+                                    </div>
                                 </div>
                             )}
                             {fileAttachments.length > 0 && (
                                 <div className="space-y-2">
-                                    {fileAttachments.map((att, index) => <AttachmentItem key={`file-${index}`} attachment={att} />)}
+                                    <h4 className="text-sm font-semibold text-foreground">Tệp ({fileAttachments.length})</h4>
+                                    <div className="space-y-2">
+                                        {fileAttachments.map((att, index) => <AttachmentItem key={`file-${index}`} attachment={att} />)}
+                                    </div>
                                 </div>
                             )}
                         </>
