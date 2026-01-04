@@ -65,7 +65,7 @@ const taskSchema = z.object({
     message: " ",
   }),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
-  endDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4ah}$/), {
+  endDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
     message: " ",
   }),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
@@ -154,7 +154,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       endTime: '',
       subtasks: [],
     },
-    mode: 'onChange', 
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -162,11 +161,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     name: "subtasks",
   });
   
-  const watchedStartDate = form.watch('startDate');
-  const watchedStartTime = form.watch('startTime');
-  const watchedEndDate = form.watch('endDate');
-  const watchedEndTime = form.watch('endTime');
-
   useEffect(() => {
     if (isOpen) {
       setActiveTab('task'); // Reset to the first tab whenever the dialog opens
@@ -178,40 +172,42 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           startTime: format(taskToEdit.startDate, 'HH:mm'),
           endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
           endTime: format(taskToEdit.endDate, 'HH:mm'),
-          subtasks: taskToEdit.subtasks.map(st => {
-            const currentYear = new Date().getFullYear();
-            return {
+          subtasks: taskToEdit.subtasks.map(st => ({
               title: st.title,
               description: st.description || '',
-              startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : `---${currentYear}`,
+              startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
               startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
-              endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : `---${currentYear}`,
+              endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
               endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
               attachments: st.attachments || [],
-            };
-          }),
+          })),
         });
       } else {
         const currentYear = new Date().getFullYear();
         form.reset({
           title: '',
           description: '',
-          startDate: `--${currentYear}`,
-          endDate: `--${currentYear}`,
+          startDate: ``,
           startTime: '',
+          endDate: ``,
           endTime: '',
-          subtasks: [{ title: "", description: "", startDate: `--${currentYear}`, startTime: "", endDate: `--${currentYear}`, endTime: "", attachments: [] }],
+          subtasks: [{ title: "", description: "", startDate: ``, startTime: "", endDate: ``, endTime: "", attachments: [] }],
         });
       }
     }
   }, [taskToEdit, form, isOpen]);
 
+
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      // Always re-validate the schema when any date/time field changes
-      if (name?.includes('Date') || name?.includes('Time')) {
-        form.trigger();
-      }
+        if (
+            name === 'startDate' ||
+            name === 'startTime' ||
+            name === 'endDate' ||
+            name === 'endTime'
+        ) {
+            form.trigger();
+        }
     });
     return () => subscription.unsubscribe();
   }, [form]);
@@ -620,14 +616,13 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         size="sm"
                         className="mt-2"
                         onClick={() => {
-                            const parentStartDate = form.getValues('startDate');
-                            const parentStartTime = form.getValues('startTime');
                             append({ 
                                 title: "", 
                                 description: "", 
-                                startDate: parentStartDate, 
-                                startTime: parentStartTime, 
-                                endDate: parentStartDate, _endTime: parentStartTime, 
+                                startDate: "", 
+                                startTime: "", 
+                                endDate: "", 
+                                endTime: "", 
                                 attachments: [] 
                             })
                         }}
@@ -648,7 +643,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           {activeTab === 'task' ? (
             <>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="button" onClick={triggerValidationAndSwitchTab} disabled={!isTaskTabValid}>Tiếp tục</Button>
+              <Button type="button" onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
             </>
           ) : (
             <>
@@ -661,5 +656,3 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
-
-    
