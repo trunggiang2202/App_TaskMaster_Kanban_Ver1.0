@@ -110,18 +110,25 @@ function TaskProgress({ task }: { task: Task }) {
   return (
     <div className="space-y-2">
        <div className="space-y-1 text-xs text-sidebar-foreground/70">
-          <div className={cn("flex items-center gap-2", !isUpcoming && "text-emerald-500")}>
+          <div className={cn("flex items-center gap-2", !isUpcoming && task.status !== 'Done' && "text-emerald-500")}>
             <Calendar size={12} />
             <span>Bắt đầu: {formattedStartDate}</span>
-            {!isUpcoming && <span className="font-semibold">(Đã bắt đầu)</span>}
+            {!isUpcoming && task.status !== 'Done' && <span className="font-semibold">(Đã bắt đầu)</span>}
           </div>
-          <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
-            <Calendar size={12} />
-            <span>Kết thúc: {formattedEndDate}</span>
-            {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
-          </div>
+          {task.status === 'Done' ? (
+            <div className="flex items-center gap-2 font-semibold text-emerald-500">
+                <CheckCircle2 size={12} />
+                <span>Đã hoàn thành</span>
+            </div>
+          ) : (
+            <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
+                <Calendar size={12} />
+                <span>Kết thúc: {formattedEndDate}</span>
+                {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
+            </div>
+          )}
         </div>
-        {!isOverdue && (
+        {!isOverdue && task.status !== 'Done' && (
             <>
                 <div className="flex justify-between items-center text-xs">
                   <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>

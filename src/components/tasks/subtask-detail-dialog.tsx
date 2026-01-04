@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Paperclip, Download, Calendar, Clock } from 'lucide-react';
+import { Paperclip, Download, Calendar, Clock, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
 import { format, isAfter, isBefore } from 'date-fns';
@@ -138,16 +138,23 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
   return (
     <div className="space-y-3">
         <div className="space-y-1 text-sm text-foreground">
-            <p className={cn("flex items-center gap-2", !isUpcoming && "text-emerald-500 font-semibold")}>
+            <p className={cn("flex items-center gap-2", !isUpcoming && !completed && "text-emerald-500 font-semibold")}>
               <Calendar className="h-4 w-4" /> 
               Bắt đầu: {formattedStart}
-              {!isUpcoming && <span className="font-semibold">(Đã bắt đầu)</span>}
+              {!isUpcoming && !completed && <span className="font-semibold">(Đã bắt đầu)</span>}
             </p>
-            <p className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
-              <Calendar className="h-4 w-4" /> Kết thúc: {formattedEnd}
-              {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
-            </p>
-            {!isOverdue && (
+            {completed ? (
+                 <p className="flex items-center gap-2 font-semibold text-emerald-500">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Đã hoàn thành
+                </p>
+            ) : (
+                <p className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
+                  <Calendar className="h-4 w-4" /> Kết thúc: {formattedEnd}
+                  {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
+                </p>
+            )}
+            {!isOverdue && !completed && (
                 <>
                     <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
                         <Clock className="h-4 w-4" /> 
