@@ -111,9 +111,18 @@ interface TaskDetailProps {
 
 type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong';
 
+type CategorizedSubtasks = Record<SubtaskStatus, Subtask[]>;
+
+const initialCategorizedSubtasks: CategorizedSubtasks = {
+  'Chưa làm': [],
+  'Đang làm': [],
+  'Xong': [],
+};
+
 export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTask, onSubtaskToggle }: TaskDetailProps) {
   const [selectedSubtask, setSelectedSubtask] = React.useState<Subtask | null>(null);
   const [isSubtaskDetailOpen, setIsSubtaskDetailOpen] = React.useState(false);
+  const [categorizedSubtasks, setCategorizedSubtasks] = React.useState<CategorizedSubtasks>(initialCategorizedSubtasks);
 
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
@@ -123,32 +132,33 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
     setSelectedSubtask(subtask);
     setIsSubtaskDetailOpen(true);
   };
-
-  const categorizedSubtasks = React.useMemo(() => {
-    const categories: Record<SubtaskStatus, Subtask[]> = {
-      'Chưa làm': [],
-      'Đang làm': [],
-      'Xong': [],
+  
+  React.useEffect(() => {
+    const categorize = () => {
+      const categories: CategorizedSubtasks = {
+        'Chưa làm': [],
+        'Đang làm': [],
+        'Xong': [],
+      };
+      const now = new Date();
+      task.subtasks.forEach(st => {
+        if (st.completed) {
+          categories['Xong'].push(st);
+          return;
+        }
+        if (st.startDate && isAfter(now, st.startDate)) {
+          categories['Đang làm'].push(st);
+        } else {
+          categories['Chưa làm'].push(st);
+        }
+      });
+      setCategorizedSubtasks(categories);
     };
 
-    const now = new Date();
+    categorize(); // Initial categorization
+    const intervalId = setInterval(categorize, 1000); // Re-categorize every second
 
-    task.subtasks.forEach(st => {
-      if (st.completed) {
-        categories['Xong'].push(st);
-        return;
-      }
-      
-      // A subtask is "In Progress" if it's not done and its start time is in the past or now.
-      if (st.startDate && isAfter(now, st.startDate)) {
-          categories['Đang làm'].push(st);
-      } else {
-          // Otherwise, it's "To Do" (upcoming or no start date)
-          categories['Chưa làm'].push(st);
-      }
-    });
-
-    return categories;
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [task.subtasks]);
 
   const now = new Date();
@@ -250,5 +260,3 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
     </>
   );
 }
-
-    
