@@ -16,6 +16,7 @@ import { getDailyQuote } from '@/lib/daily-quotes';
 import { WeekView } from '@/components/sidebar/week-view';
 import { TaskProvider, useTasks } from '@/contexts/TaskContext';
 import { StatsDialog } from '@/components/stats/StatsDialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type FilterType = 'all' | 'today' | 'week';
 
@@ -141,9 +142,23 @@ function TaskKanban() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <SidebarMenuButton variant="outline" size="icon" className="w-10 h-10 border-sidebar-border" onClick={() => setIsStatsDialogOpen(true)}>
-                        <BarChart3 />
-                    </SidebarMenuButton>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton 
+                            variant="ghost" 
+                            size="icon" 
+                            className="w-10 h-10 transition-transform hover:scale-110" 
+                            onClick={() => setIsStatsDialogOpen(true)}
+                          >
+                              <BarChart3 />
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>Xem thống kê</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                 </SidebarMenuItem>
             </div>
           </SidebarMenu>
