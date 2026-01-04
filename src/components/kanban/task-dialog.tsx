@@ -365,8 +365,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <FormLabel>Bắt đầu</FormLabel>
-                          <div className="border p-3 rounded-md space-y-3">
-                              <div className="relative pb-4">
+                          <div className="border p-3 rounded-md">
+                              <div className="relative pb-4 mb-4">
                                 <FormField
                                   control={form.control}
                                   name="startDate"
@@ -400,8 +400,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         </div>
                         <div className="space-y-2">
                           <FormLabel>Kết thúc</FormLabel>
-                          <div className="border p-3 rounded-md space-y-3">
-                              <div className="relative pb-4">
+                          <div className="border p-3 rounded-md">
+                              <div className="relative pb-4 mb-4">
                                 <FormField
                                   control={form.control}
                                   name="endDate"
