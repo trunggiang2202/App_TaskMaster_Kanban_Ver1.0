@@ -372,7 +372,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem>
                                     <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                     <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} />
+                                        <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
                                       </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -403,7 +403,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem>
                                     <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                     <FormControl>
-                                      <DateSegmentInput value={field.value} onChange={field.onChange} />
+                                      <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
                                     </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -649,5 +649,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
 
     
