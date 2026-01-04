@@ -496,7 +496,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             <Input 
                                               placeholder={`Công việc ${index + 1}`} 
                                               {...field}
-                                              className="border-none bg-transparent shadow-none focus-visible:ring-0" 
+                                              className="border-none bg-muted/50 shadow-none focus-visible:ring-0" 
                                             />
                                           </FormControl>
                                           <FormMessage className="pl-3" />
@@ -719,3 +719,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
