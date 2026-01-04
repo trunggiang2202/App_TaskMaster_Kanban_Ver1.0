@@ -39,9 +39,23 @@ export default function Home() {
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [loadingDots, setLoadingDots] = useState('');
 
   useEffect(() => {
     setShowWelcomeDialog(true);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLoadingDots(dots => {
+        if (dots.length >= 3) {
+          return '.';
+        }
+        return dots + '.';
+      });
+    }, 500); // Change dots every 500ms
+  
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
   const handleOpenDialog = (task?: Task) => {
@@ -187,6 +201,7 @@ export default function Home() {
           <h2 className="flex items-center gap-2 text-2xl font-bold font-headline bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
             <Sparkles className="text-amber-400" />
             Hi, Louis Giang
+            <span className="inline-block w-10 text-left">{loadingDots}</span>
             <Sparkles className="text-amber-400" />
           </h2>
         </SidebarHeader>
