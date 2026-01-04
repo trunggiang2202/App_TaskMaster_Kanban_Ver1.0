@@ -116,10 +116,12 @@ const taskSchema = z.object({
     message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
     path: ["subtasks"],
 }).refine(data => {
-    if (!data.subtasks || data.subtasks.length === 0) return true;
-    const hasAtLeastOneSubtaskWithTitle = data.subtasks.some(st => st.title && st.title.trim() !== '');
-    if (!hasAtLeastOneSubtaskWithTitle) return false;
-    return true;
+    // This rule applies only if there are subtasks.
+    // It checks if there is at least one subtask with a title.
+    if (data.subtasks && data.subtasks.length > 0) {
+      return data.subtasks.some(st => st.title && st.title.trim() !== '');
+    }
+    return true; // No subtasks, so the rule passes.
 }, {
     message: "Nhiệm vụ phải có ít nhất một công việc.",
     path: ["subtasks"],
@@ -316,8 +318,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   };
 
   const isTaskTabInvalid = Object.keys(form.formState.errors).some(key =>
-    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root'].includes(key)
+    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root', 'description'].includes(key) || (form.formState.errors as any)[key]?.type === 'custom'
   );
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -429,6 +432,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         </div>
                     </div>
                      {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
+                     {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
                   </Form>
               </TabsContent>
 
@@ -653,6 +657,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   );
 }
 
+
+    
 
     
 
