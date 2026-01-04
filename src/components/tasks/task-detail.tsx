@@ -197,7 +197,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Hành động này sẽ xóa công việc <span className="font-bold">{task.title}</span> vĩnh viễn.
+                        Hành động này sẽ xóa nhiệm vụ <span className="font-bold">{task.title}</span> vĩnh viễn.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
