@@ -302,7 +302,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       }
       onOpenChange(open);
     }}>
-      <DialogContent className="sm:max-w-[625px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-[625px] flex flex-col max-h-[90vh]" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
           <DialogDescription>
@@ -324,8 +324,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                       name="title"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Tên nhiệm vụ</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tên nhiệm vụ" {...field} className="bg-primary/5"/>
+                            <Input placeholder="Launch new marketing campaign" {...field} className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -496,7 +497,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             <Input 
                                               placeholder={`Công việc ${index + 1}`} 
                                               {...field}
-                                              className="border-none bg-transparent shadow-none focus-visible:ring-0" 
+                                              className="border-none bg-primary/5 shadow-none focus-visible:ring-0" 
                                             />
                                           </FormControl>
                                           <FormMessage className="pl-3" />
