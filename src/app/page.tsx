@@ -4,7 +4,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus } from 'lucide-react';
+import { Plus, BarChart3 } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks } from 'date-fns';
@@ -15,13 +15,14 @@ import { WelcomeDialog } from '@/components/welcome-dialog';
 import { getDailyQuote } from '@/lib/daily-quotes';
 import { WeekView } from '@/components/sidebar/week-view';
 import { TaskProvider, useTasks } from '@/contexts/TaskContext';
-import { StatsView } from '@/components/stats/StatsView';
+import { StatsDialog } from '@/components/stats/StatsDialog';
 
-type FilterType = 'all' | 'today' | 'week' | 'stats';
+type FilterType = 'all' | 'today' | 'week';
 
 function TaskKanban() {
   const { tasks, selectedTaskId, setSelectedTaskId } = useTasks();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [isStatsDialogOpen, setIsStatsDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<import('@/lib/types').Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
@@ -47,14 +48,14 @@ function TaskKanban() {
     return () => clearInterval(interval);
   });
 
-  const handleOpenDialog = useCallback((task?: import('@/lib/types').Task) => {
+  const handleOpenTaskDialog = useCallback((task?: import('@/lib/types').Task) => {
     setTaskToEdit(task);
-    setIsDialogOpen(true);
+    setIsTaskDialogOpen(true);
   }, []);
   
-  const handleCloseDialog = useCallback(() => {
+  const handleCloseTaskDialog = useCallback(() => {
     setTaskToEdit(undefined);
-    setIsDialogOpen(false);
+    setIsTaskDialogOpen(false);
   }, []);
 
   const hasInProgressSubtasks = useCallback((task: import('@/lib/types').Task) => {
@@ -86,7 +87,6 @@ function TaskKanban() {
           })
         );
       case 'all':
-      case 'stats':
       default:
         return tasks;
     }
@@ -133,17 +133,24 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => handleOpenDialog()} className="w-full">
-                <Plus />
-                <span>Nhiệm vụ mới</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <div className="flex w-full items-center gap-2">
+                <SidebarMenuItem className="flex-1">
+                  <SidebarMenuButton onClick={() => handleOpenTaskDialog()} className="w-full">
+                    <Plus />
+                    <span>Nhiệm vụ mới</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton variant="outline" size="icon" className="w-10 h-10 border-sidebar-border" onClick={() => setIsStatsDialogOpen(true)}>
+                        <BarChart3 />
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </div>
           </SidebarMenu>
           <Separator className="my-2" />
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-sidebar-accent/60">
+              <TabsList className="grid w-full grid-cols-3 bg-sidebar-accent/60">
                 <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
                   Tất cả ({uncompletedTasksCount})
                 </TabsTrigger>
@@ -152,9 +159,6 @@ function TaskKanban() {
                 </TabsTrigger>
                 <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
                   Xem tuần
-                </TabsTrigger>
-                <TabsTrigger value="stats" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
-                  Thống kê
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -170,14 +174,12 @@ function TaskKanban() {
               onGoToToday={handleGoToToday}
             />
           )}
-          {activeFilter !== 'stats' && (
-            <RecentTasks 
-              tasks={filteredTasksForSidebar} 
-              selectedTaskId={selectedTaskId}
-              onSelectTask={setSelectedTaskId}
-              activeFilter={activeFilter}
-            />
-          )}
+          <RecentTasks 
+            tasks={filteredTasksForSidebar} 
+            selectedTaskId={selectedTaskId}
+            onSelectTask={setSelectedTaskId}
+            activeFilter={activeFilter}
+          />
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
@@ -186,12 +188,10 @@ function TaskKanban() {
             <SidebarTrigger className="md:hidden" />
           </div>
           <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
-            {activeFilter === 'stats' ? (
-              <StatsView tasks={tasks} />
-            ) : selectedTask ? (
+            {selectedTask ? (
               <TaskDetail 
                 task={selectedTask} 
-                onEditTask={handleOpenDialog}
+                onEditTask={handleOpenTaskDialog}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
@@ -204,9 +204,14 @@ function TaskKanban() {
         </div>
       </SidebarInset>
       <TaskDialog
-        isOpen={isDialogOpen}
-        onOpenChange={handleCloseDialog}
+        isOpen={isTaskDialogOpen}
+        onOpenChange={handleCloseTaskDialog}
         taskToEdit={taskToEdit}
+      />
+      <StatsDialog 
+        tasks={tasks} 
+        isOpen={isStatsDialogOpen} 
+        onOpenChange={setIsStatsDialogOpen} 
       />
        <WelcomeDialog
         isOpen={showWelcomeDialog}
