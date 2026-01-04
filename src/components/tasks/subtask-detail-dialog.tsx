@@ -35,7 +35,7 @@ const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) =>
 
         return (
             <div 
-                className="relative cursor-zoom-in w-32 h-20"
+                className="relative cursor-zoom-in w-full h-20"
                 onClick={() => setIsZoomed(true)}
             >
                 <Image src={attachment.url} alt={attachment.name} fill className="object-cover rounded-md" />
