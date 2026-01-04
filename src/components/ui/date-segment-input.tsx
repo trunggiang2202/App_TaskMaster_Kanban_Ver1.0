@@ -25,67 +25,58 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
   React.useEffect(() => {
     if (value && /^\d{2}-\d{2}-\d{4}$/.test(value)) {
       const [currentDay, currentMonth, currentYear] = value.split('-');
-      const newDateFromValue = `${currentDay}-${currentMonth}-${currentYear}`;
-      const newDateFromState = `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
-      
-      if (newDateFromValue !== newDateFromState) {
-          if (day !== currentDay) setDay(currentDay || '');
-          if (month !== currentMonth) setMonth(currentMonth || '');
-          if (year !== currentYear) setYear(currentYear || '');
-      }
-    } else if (!value) {
+      if (currentDay !== day) setDay(currentDay);
+      if (currentMonth !== month) setMonth(currentMonth);
+      if (currentYear !== year) setYear(currentYear);
+    } else if (!value && (day || month || year)) {
       setDay('');
       setMonth('');
       setYear('');
     }
-  }, [value, day, month, year]);
+  }, [value]);
   
-  const triggerParentOnChange = React.useCallback((currentDay: string, currentMonth: string, currentYear: string) => {
+  const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
     if (currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
       const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
       if (value !== newDate) {
         onChange(newDate);
       }
     }
-  }, [onChange, value]);
+  };
 
 
   const handleSegmentChange = (segment: 'day' | 'month' | 'year', segmentValue: string) => {
     const isNumeric = /^\d*$/.test(segmentValue);
     if (!isNumeric) return;
 
-    let newDay = day, newMonth = month, newYear = year;
-
     if (segment === 'day') {
-      newDay = segmentValue;
       setDay(segmentValue);
       if (segmentValue.length === 2) monthRef.current?.focus();
+      triggerParentOnChange(segmentValue, month, year);
     } else if (segment === 'month') {
-      newMonth = segmentValue;
       setMonth(segmentValue);
       if (segmentValue.length === 2) yearRef.current?.focus();
+      triggerParentOnChange(day, segmentValue, year);
     } else if (segment === 'year') {
-      newYear = segmentValue;
       setYear(segmentValue);
+      triggerParentOnChange(day, month, segmentValue);
     }
-    
-    triggerParentOnChange(newDay, newMonth, newYear);
   };
   
   const handleBlur = (segment: 'day' | 'month') => {
-    let newDay = day, newMonth = month, newYear = year;
     if (segment === 'day') {
-        if (day.length === 1 && parseInt(day, 10) >= 0) {
-            newDay = day.padStart(2, '0');
+        if (day.length === 1) {
+            const newDay = day.padStart(2, '0');
             setDay(newDay);
+            triggerParentOnChange(newDay, month, year);
         }
     } else if (segment === 'month') {
-        if (month.length === 1 && parseInt(month, 10) >= 0) {
-            newMonth = month.padStart(2, '0');
+        if (month.length === 1) {
+            const newMonth = month.padStart(2, '0');
             setMonth(newMonth);
+            triggerParentOnChange(day, newMonth, year);
         }
     }
-    triggerParentOnChange(newDay, newMonth, newYear);
   };
 
 
