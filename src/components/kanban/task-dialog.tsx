@@ -71,14 +71,6 @@ const taskSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
-    const startDateTime = parseDateTime(data.startDate, data.startTime);
-    const endDateTime = parseDateTime(data.endDate, data.endTime);
-    if (!startDateTime || !endDateTime) return true; // Can't validate if dates are incomplete
-    return endDateTime > startDateTime;
-}, {
-    message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
-    path: ["endDate"],
-}).refine(data => {
   if (data.subtasks) {
     for (const subtask of data.subtasks) {
       if (subtask.title && subtask.title.trim() !== '') {
@@ -365,7 +357,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <FormLabel>Bắt đầu</FormLabel>
-                          <div className="border p-3 rounded-md space-y-3">
+                          <div className="border p-3 rounded-md grid gap-4">
                               <FormField
                                 control={form.control}
                                 name="startDate"
@@ -375,7 +367,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
                                       </FormControl>
-                                    <FormMessage className="h-4" />
+                                    <FormMessage />
                                   </FormItem>
                                 )}
                               />
@@ -388,7 +380,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5" />
                                       </FormControl>
-                                    <FormMessage className="h-4" />
+                                    <FormMessage />
                                   </FormItem>
                                 )}
                               />
@@ -396,7 +388,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         </div>
                         <div className="space-y-2">
                           <FormLabel>Kết thúc</FormLabel>
-                          <div className="border p-3 rounded-md space-y-3">
+                          <div className="border p-3 rounded-md grid gap-4">
                               <FormField
                                 control={form.control}
                                 name="endDate"
@@ -406,7 +398,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                       <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
                                     </FormControl>
-                                    <FormMessage className="h-4" />
+                                    <FormMessage />
                                   </FormItem>
                                 )}
                               />
@@ -419,7 +411,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5" />
                                       </FormControl>
-                                    <FormMessage className="h-4" />
+                                    <FormMessage />
                                   </FormItem>
                                 )}
                               />
@@ -445,7 +437,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   value={`item-${index}`} 
                                   key={field.id} 
                                   className={cn(
-                                    "bg-muted/30 rounded-md border border-l-4",
+                                    "bg-primary/5 rounded-md border border-l-4",
                                     getSubtaskBorderColor(index)
                                   )}
                                 >
@@ -535,7 +527,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                           <div className="space-y-2">
                                               <FormLabel>Bắt đầu</FormLabel>
-                                              <div className="border p-3 rounded-md space-y-3">
+                                              <div className="border p-3 rounded-md grid gap-4">
                                                   <FormField
                                                     control={form.control}
                                                     name={`subtasks.${index}.startDate`}
@@ -566,7 +558,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                           </div>
                                           <div className="space-y-2">
                                             <FormLabel>Kết thúc</FormLabel>
-                                            <div className="border p-3 rounded-md space-y-3">
+                                            <div className="border p-3 rounded-md grid gap-4">
                                                 <FormField
                                                   control={form.control}
                                                   name={`subtasks.${index}.endDate`}
