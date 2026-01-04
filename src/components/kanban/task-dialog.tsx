@@ -75,7 +75,7 @@ const taskSchema = z.object({
     const endDateTime = parseDateTime(data.endDate, data.endTime);
     return endDateTime && startDateTime && endDateTime > startDateTime;
 }, {
-    message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
+    message: " ",
     path: ["endDate"],
 }).refine(data => {
   if (data.subtasks) {
@@ -187,11 +187,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         form.reset({
           title: '',
           description: '',
-          startDate: ``,
+          startDate: `''-''-${currentYear}`,
           startTime: '',
-          endDate: ``,
+          endDate: `''-''-${currentYear}`,
           endTime: '',
-          subtasks: [{ title: "", description: "", startDate: ``, startTime: "", endDate: ``, endTime: "", attachments: [] }],
+          subtasks: [{ title: "", description: "", startDate: `''-''-${currentYear}`, startTime: "", endDate: `''-''-${currentYear}`, endTime: "", attachments: [] }],
         });
       }
     }
@@ -361,11 +361,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                               <FormField
                                 control={form.control}
                                 name="startDate"
-                                render={({ field }) => (
+                                render={({ field, fieldState }) => (
                                   <FormItem>
                                     <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                     <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} />
+                                        <DateSegmentInput value={field.value} onChange={field.onChange} aria-invalid={!!fieldState.error}/>
                                       </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -374,11 +374,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                               <FormField
                                 control={form.control}
                                 name="startTime"
-                                render={({ field }) => (
+                                render={({ field, fieldState }) => (
                                   <FormItem>
                                     <FormLabel>Giờ</FormLabel>
                                     <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5"/>
+                                        <Input type="time" {...field} className="bg-primary/5" aria-invalid={!!fieldState.error}/>
                                       </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -392,11 +392,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                               <FormField
                                 control={form.control}
                                 name="endDate"
-                                render={({ field }) => (
+                                render={({ field, fieldState }) => (
                                   <FormItem>
                                     <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                     <FormControl>
-                                      <DateSegmentInput value={field.value} onChange={field.onChange} />
+                                      <DateSegmentInput value={field.value} onChange={field.onChange} aria-invalid={!!fieldState.error || !!form.formState.errors.root} />
                                     </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -405,11 +405,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                               <FormField
                                 control={form.control}
                                 name="endTime"
-                                render={({ field }) => (
+                                render={({ field, fieldState }) => (
                                   <FormItem>
                                     <FormLabel>Giờ</FormLabel>
                                     <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5"/>
+                                        <Input type="time" {...field} className="bg-primary/5" aria-invalid={!!fieldState.error}/>
                                       </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -601,12 +601,13 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         size="sm"
                         className="mt-2"
                         onClick={() => {
+                            const currentYear = new Date().getFullYear();
                             append({ 
                                 title: "", 
                                 description: "", 
-                                startDate: "", 
+                                startDate: `''-''-${currentYear}`, 
                                 startTime: "", 
-                                endDate: "", 
+                                endDate: `''-''-${currentYear}`, 
                                 endTime: "", 
                                 attachments: [] 
                             })
@@ -641,5 +642,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
 
     
