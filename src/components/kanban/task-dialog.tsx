@@ -183,7 +183,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           })),
         });
       } else {
-        const currentYear = new Date().getFullYear();
+        const currentYear = new Date().getFullYear().toString();
         form.reset({
           title: '',
           description: '',
@@ -596,7 +596,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         size="sm"
                         className="mt-2"
                         onClick={() => {
-                            const currentYear = new Date().getFullYear();
+                            const currentYear = new Date().getFullYear().toString();
                             append({ 
                                 title: "", 
                                 description: "", 

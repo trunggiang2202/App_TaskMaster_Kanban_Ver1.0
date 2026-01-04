@@ -25,14 +25,14 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
 
   React.useEffect(() => {
     const [d = '', m = '', y = ''] = value ? value.split('-') : ['', '', ''];
-    if (d !== day) setDay(d);
-    if (m !== month) setMonth(m);
-    if (y !== year) setYear(y);
+    setDay(d.replace(/'/g, ''));
+    setMonth(m.replace(/'/g, ''));
+    setYear(y.replace(/'/g, ''));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
-      const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
+      const newDate = `${currentDay || "''"}-${currentMonth || "''"}-${currentYear || "''"}`;
       if (value !== newDate) {
         onChange(newDate);
       }
@@ -43,19 +43,28 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
     const isNumeric = /^\d*$/.test(segmentValue);
     if (!isNumeric) return;
 
+    let currentDay = day;
+    let currentMonth = month;
+    let currentYear = year;
+
     if (segment === 'day') {
-      const newDay = segmentValue;
-      setDay(newDay);
-      triggerParentOnChange(newDay, month, year);
+      currentDay = segmentValue;
+      setDay(currentDay);
     } else if (segment === 'month') {
-      const newMonth = segmentValue;
-      setMonth(newMonth);
-      triggerParentOnChange(day, newMonth, year);
+      currentMonth = segmentValue;
+      setMonth(currentMonth);
     } else if (segment === 'year') {
-      const newYear = segmentValue;
-      setYear(newYear);
-      triggerParentOnChange(day, month, newYear);
+      currentYear = segmentValue;
+      setYear(currentYear);
     }
+    
+    if (day === '' && month === '' && year === '' && segmentValue !== '') {
+        const fullYear = new Date().getFullYear().toString();
+        if (segment !== 'year') setYear(fullYear);
+        currentYear = fullYear;
+    }
+
+    triggerParentOnChange(currentDay, currentMonth, currentYear);
   };
   
   const handleBlur = (segment: 'day' | 'month' | 'year') => {
@@ -63,26 +72,29 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
     let currentMonth = month;
     let currentYear = year;
     
+    const daysInMonth = (m: number, y: number) => new Date(y, m, 0).getDate();
+    
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    const dayNum = parseInt(day, 10);
+
     if (segment === 'day') {
-        const dayNum = parseInt(day, 10);
         if (day.length === 1 && dayNum > 0) {
             currentDay = day.padStart(2, '0');
             setDay(currentDay);
-        } else if (isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
+        } else if (isNaN(dayNum) || dayNum === 0 || (monthNum && yearNum && dayNum > daysInMonth(monthNum, yearNum)) || dayNum > 31) {
             currentDay = '';
             setDay('');
         }
     } else if (segment === 'month') {
-        const monthNum = parseInt(month, 10);
         if (month.length === 1 && monthNum > 0) {
             currentMonth = month.padStart(2, '0');
             setMonth(currentMonth);
-        } else if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+        } else if (isNaN(monthNum) || monthNum === 0 || monthNum > 12) {
             currentMonth = '';
             setMonth('');
         }
     } else if (segment === 'year') {
-        const yearNum = parseInt(year, 10);
         if (year.length > 0 && (yearNum < 1900 || yearNum > 2100)) {
             currentYear = '';
             setYear('');
