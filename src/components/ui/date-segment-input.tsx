@@ -24,20 +24,28 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
 
   React.useEffect(() => {
     const formattedValue = `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year.padStart(4, '0')}`;
-    if (value !== formattedValue) {
-        const [d = '', m = '', y = ''] = value ? value.split('-') : [];
+    if (value !== formattedValue && value) {
+        const [d = '', m = '', y = ''] = value.split('-');
         if (d !== day) setDay(d);
         if (m !== month) setMonth(m);
         if (y !== year) setYear(y);
+    } else if (!value && (day || month || year)) {
+        setDay('');
+        setMonth('');
+        setYear('');
     }
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
-    const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
-    if (value !== newDate && currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
-      onChange(newDate);
-    } else if (!currentDay && !currentMonth && !currentYear && value) {
-      onChange('');
+    if (currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
+      const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
+      if (value !== newDate) {
+        onChange(newDate);
+      }
+    } else if (!currentDay && !currentMonth && !currentYear) {
+      if (value) {
+        onChange('');
+      }
     }
   };
 
@@ -47,31 +55,56 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
     if (!isNumeric) return;
 
     if (segment === 'day') {
-      setDay(segmentValue);
-      triggerParentOnChange(segmentValue, month, year);
+      const newDay = segmentValue;
+      setDay(newDay);
+      triggerParentOnChange(newDay, month, year);
     } else if (segment === 'month') {
-      setMonth(segmentValue);
-      triggerParentOnChange(day, segmentValue, year);
+      const newMonth = segmentValue;
+      setMonth(newMonth);
+      triggerParentOnChange(day, newMonth, year);
     } else if (segment === 'year') {
-      setYear(segmentValue);
-      triggerParentOnChange(day, month, segmentValue);
+      const newYear = segmentValue;
+      setYear(newYear);
+      triggerParentOnChange(day, month, newYear);
     }
   };
   
-  const handleBlur = (segment: 'day' | 'month') => {
+  const handleBlur = (segment: 'day' | 'month' | 'year') => {
+    let currentDay = day;
+    let currentMonth = month;
+    let currentYear = year;
+    
     if (segment === 'day') {
+        const dayNum = parseInt(day, 10);
+        const monthNum = parseInt(month, 10);
+        const yearNum = parseInt(year, 10);
+        const daysInMonth = (monthNum && yearNum) ? new Date(yearNum, monthNum, 0).getDate() : 31;
+
         if (day.length === 1) {
-            const newDay = day.padStart(2, '0');
-            setDay(newDay);
-            triggerParentOnChange(newDay, month, year);
+            currentDay = day.padStart(2, '0');
+            setDay(currentDay);
+        } else if (isNaN(dayNum) || dayNum < 1 || dayNum > daysInMonth) {
+            currentDay = '';
+            setDay('');
         }
     } else if (segment === 'month') {
+        const monthNum = parseInt(month, 10);
         if (month.length === 1) {
-            const newMonth = month.padStart(2, '0');
-            setMonth(newMonth);
-            triggerParentOnChange(day, newMonth, year);
+            currentMonth = month.padStart(2, '0');
+            setMonth(currentMonth);
+        } else if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+            currentMonth = '';
+            setMonth('');
+        }
+    } else if (segment === 'year') {
+        const yearNum = parseInt(year, 10);
+        if (year.length > 0 && (year.length < 4 || yearNum < 1900 || yearNum > 2100)) {
+            currentYear = '';
+            setYear('');
         }
     }
+
+    triggerParentOnChange(currentDay, currentMonth, currentYear);
   };
 
 
@@ -172,6 +205,7 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
             value={year}
             onChange={(e) => handleSegmentChange('year', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'year')}
+            onBlur={() => handleBlur('year')}
             placeholder="YYYY"
             maxLength={4}
             disabled={disabled}
