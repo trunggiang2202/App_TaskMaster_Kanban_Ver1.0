@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { format, isAfter, isBefore } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
     const [isZoomed, setIsZoomed] = React.useState(false);
@@ -198,6 +199,8 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
   const imageAttachments = attachments.filter(att => att.type === 'image');
   const fileAttachments = attachments.filter(att => att.type !== 'image');
 
+  const defaultTab = imageAttachments.length > 0 ? "images" : fileAttachments.length > 0 ? "files" : "images";
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
@@ -229,28 +232,32 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
 
             <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
-                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px] space-y-4">
+                 <div className="p-3 rounded-md border bg-muted/20 min-h-[120px]">
                     {attachments.length > 0 ? (
-                        <>
-                            {imageAttachments.length > 0 && (
-                                <div className="space-y-2">
-                                    <h4 className="text-sm font-semibold text-foreground">Ảnh ({imageAttachments.length})</h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                        {imageAttachments.map((att, index) => <AttachmentItem key={`img-${index}`} attachment={att} />)}
-                                    </div>
+                        <Tabs defaultValue={defaultTab} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="images" disabled={imageAttachments.length === 0}>
+                                    Ảnh ({imageAttachments.length})
+                                </TabsTrigger>
+                                <TabsTrigger value="files" disabled={fileAttachments.length === 0}>
+                                    Tệp ({fileAttachments.length})
+                                </TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="images">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-4">
+                                    {imageAttachments.map((att, index) => <AttachmentItem key={`img-${index}`} attachment={att} />)}
                                 </div>
-                            )}
-                            {fileAttachments.length > 0 && (
-                                <div className="space-y-2">
-                                    <h4 className="text-sm font-semibold text-foreground">Tệp ({fileAttachments.length})</h4>
-                                    <div className="space-y-2">
-                                        {fileAttachments.map((att, index) => <AttachmentItem key={`file-${index}`} attachment={att} />)}
-                                    </div>
+                            </TabsContent>
+                            <TabsContent value="files">
+                                <div className="space-y-2 pt-4">
+                                    {fileAttachments.map((att, index) => <AttachmentItem key={`file-${index}`} attachment={att} />)}
                                 </div>
-                            )}
-                        </>
+                            </TabsContent>
+                        </Tabs>
                     ) : (
-                        <p className="text-sm text-muted-foreground">Không có tệp đính kèm.</p>
+                        <div className="flex items-center justify-center h-full pt-4">
+                          <p className="text-sm text-muted-foreground">Không có tệp đính kèm.</p>
+                        </div>
                     )}
                 </div>
             </div>
