@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -122,6 +123,12 @@ const taskSchema = z.object({
     return true;
 }, {
     message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
+    path: ["subtasks"],
+}).refine(data => {
+    const hasAtLeastOneSubtask = data.subtasks && data.subtasks.some(st => st.title && st.title.trim() !== '');
+    return hasAtLeastOneSubtask;
+}, {
+    message: "Nhiệm vụ phải có ít nhất một công việc.",
     path: ["subtasks"],
 });
 
