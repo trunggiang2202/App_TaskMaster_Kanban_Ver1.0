@@ -314,7 +314,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     const startDate = parseDate(subtask.startDate, subtask.startTime, subtask.startPeriod);
     const endDate = parseDate(subtask.endDate, subtask.endTime, subtask.endPeriod);
 
-    if (!startDate || !endDate) return 'border-transparent';
+    if (!startDate || !endDate) return 'border-muted';
 
     if (isAfter(now, startDate)) { // In Progress
         if (isBefore(endDate, now)) { // Overdue
@@ -327,7 +327,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         return 'border-sky-500';
     }
     
-    return 'border-transparent';
+    return 'border-muted';
   };
 
 
@@ -348,7 +348,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col min-h-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 border bg-muted/20 p-1">
                 <TabsTrigger value="task">Nhiệm vụ</TabsTrigger>
                 <TabsTrigger value="subtasks">Công việc</TabsTrigger>
               </TabsList>
@@ -528,7 +528,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 value={`item-${index}`} 
                                 key={field.id} 
                                 className={cn(
-                                  "bg-muted/50 rounded-md border border-l-4",
+                                  "bg-muted/30 rounded-md border border-l-4",
                                   getSubtaskBorderColor(index)
                                 )}
                               >
@@ -767,8 +767,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 }
 
     
-    
-
     
 
     
