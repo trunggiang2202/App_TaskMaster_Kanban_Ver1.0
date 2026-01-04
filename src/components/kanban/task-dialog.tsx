@@ -62,13 +62,13 @@ const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
   startDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: "Định dạng ngày phải là DD-MM-YYYY",
+    message: " ",
   }),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
-  endDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: "Định dạng ngày phải là DD-MM-YYYY",
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
+  endDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4ah}$/), {
+    message: " ",
   }),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
     const startDateTime = parseDateTime(data.startDate, data.startTime);
@@ -142,8 +142,7 @@ interface TaskDialogProps {
 export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskDialogProps) {
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [activeTab, setActiveTab] = useState('task');
-  const [isTaskTabValid, setIsTaskTabValid] = useState(false);
-
+  
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -155,7 +154,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       endTime: '',
       subtasks: [],
     },
-    mode: 'onChange', // Validate on change to disable/enable button
+    mode: 'onChange', 
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -171,7 +170,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   useEffect(() => {
     if (isOpen) {
       setActiveTab('task'); // Reset to the first tab whenever the dialog opens
-      setIsTaskTabValid(false);
       if (taskToEdit) {
         form.reset({
           title: taskToEdit.title,
@@ -185,9 +183,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             return {
               title: st.title,
               description: st.description || '',
-              startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : `--${currentYear}`,
+              startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : `---${currentYear}`,
               startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
-              endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : `--${currentYear}`,
+              endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : `---${currentYear}`,
               endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
               attachments: st.attachments || [],
             };
@@ -210,16 +208,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      // When start date/time changes, check if end date/time needs to be updated
-      if (name === 'startDate' || name === 'startTime') {
-        const startDateTime = parseDateTime(value.startDate, value.startTime);
-        const endDateTime = parseDateTime(value.endDate, value.endTime);
-        
-        if (startDateTime && (!endDateTime || isBefore(endDateTime, startDateTime))) {
-          form.setValue('endDate', value.startDate!, { shouldValidate: true });
-          form.setValue('endTime', value.startTime!, { shouldValidate: true });
-        }
-      }
       // Always re-validate the schema when any date/time field changes
       if (name?.includes('Date') || name?.includes('Time')) {
         form.trigger();
@@ -286,12 +274,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   };
 
   const triggerValidationAndSwitchTab = async () => {
-    const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime"]);
+    const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description"]);
     if (result) {
-        setIsTaskTabValid(true);
         setActiveTab('subtasks');
-    } else {
-        setIsTaskTabValid(false);
     }
   };
 
@@ -329,6 +314,13 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     
     return 'border-muted';
   };
+
+  const isTaskTabValid = !form.formState.errors.title &&
+                         !form.formState.errors.startDate &&
+                         !form.formState.errors.startTime &&
+                         !form.formState.errors.endDate &&
+                         !form.formState.errors.endTime &&
+                         !form.formState.errors.root;
 
 
   return (
@@ -394,7 +386,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <DateSegmentInput value={field.value} onChange={field.onChange} />
                                       </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
@@ -407,7 +399,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5"/>
                                       </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
@@ -425,7 +417,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                       <DateSegmentInput value={field.value} onChange={field.onChange} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
@@ -438,13 +430,15 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5"/>
                                       </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
                           </div>
                         </div>
                     </div>
+                    {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
+                    {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
                   </Form>
               </TabsContent>
 
@@ -633,8 +627,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 description: "", 
                                 startDate: parentStartDate, 
                                 startTime: parentStartTime, 
-                                endDate: parentStartDate, 
-                                endTime: parentStartTime, 
+                                endDate: parentStartDate, _endTime: parentStartTime, 
                                 attachments: [] 
                             })
                         }}
@@ -655,11 +648,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           {activeTab === 'task' ? (
             <>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="button" onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
+              <Button type="button" onClick={triggerValidationAndSwitchTab} disabled={!isTaskTabValid}>Tiếp tục</Button>
             </>
           ) : (
             <>
-                <Button type="button" variant="outline" onClick={() => { setIsTaskTabValid(true); setActiveTab('task'); }}>Quay lại</Button>
+                <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
                 <Button type="button" onClick={form.handleSubmit(handleSubmit)} disabled={!form.formState.isValid}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
             </>
           )}

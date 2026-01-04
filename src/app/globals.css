@@ -82,6 +82,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  input[aria-invalid="true"] {
+    @apply border-destructive;
+  }
 }
 
 @layer utilities {
@@ -103,3 +106,5 @@
     background: hsl(var(--sidebar-accent) / 0.8);
   }
 }
+
+    
