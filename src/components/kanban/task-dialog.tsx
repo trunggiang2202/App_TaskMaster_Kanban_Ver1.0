@@ -27,6 +27,17 @@ import { cn } from '@/lib/utils';
 import { DateSegmentInput } from '@/components/ui/date-segment-input';
 import { useTasks } from '@/contexts/TaskContext';
 import { parseDateTime } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -438,6 +449,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                         <Accordion type="multiple" className="w-full space-y-2">
                           {fields.map((field, index) => {
                               const subtaskAttachments = form.watch(`subtasks.${index}.attachments`) || [];
+                              const subtaskTitle = form.watch(`subtasks.${index}.title`);
                               return (
                                 <AccordionItem 
                                   value={`item-${index}`} 
@@ -466,9 +478,27 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                         />
                                         <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
                                         </AccordionTrigger>
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
-                                          <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
+                                              <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                Hành động này sẽ xóa công việc <span className="font-bold">{subtaskTitle || 'không tên'}</span> vĩnh viễn.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                              <AlertDialogAction variant="destructive" onClick={() => remove(index)}>
+                                                Xóa
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                     <AccordionContent className="px-3 pb-3">
                                       <div className="space-y-4 p-4 rounded-md border bg-background">
@@ -650,3 +680,4 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
 }
 
     
+
