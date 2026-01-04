@@ -10,9 +10,10 @@ interface DateSegmentInputProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   className?: string;
+  'aria-invalid'?: boolean;
 }
 
-export function DateSegmentInput({ value, onChange, disabled, className }: DateSegmentInputProps) {
+export function DateSegmentInput({ value, onChange, disabled, className, ...props }: DateSegmentInputProps) {
   const [day, setDay] = React.useState('');
   const [month, setMonth] = React.useState('');
   const [year, setYear] = React.useState('');
@@ -27,21 +28,14 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
     if (d !== day) setDay(d);
     if (m !== month) setMonth(m);
     if (y !== year) setYear(y);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
-    if (currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
       const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
       if (value !== newDate) {
         onChange(newDate);
       }
-    } else if (value) {
-        // If not a full date, we pass up the partials for validation logic
-        const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
-        if (value !== newDate) {
-            onChange(newDate);
-        }
-    }
   };
 
 
@@ -71,14 +65,10 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
     
     if (segment === 'day') {
         const dayNum = parseInt(day, 10);
-        const monthNum = parseInt(month, 10);
-        const yearNum = parseInt(year, 10);
-        const daysInMonth = (monthNum && yearNum) ? new Date(yearNum, monthNum, 0).getDate() : 31;
-
         if (day.length === 1 && dayNum > 0) {
             currentDay = day.padStart(2, '0');
             setDay(currentDay);
-        } else if (isNaN(dayNum) || dayNum < 1 || dayNum > daysInMonth) {
+        } else if (isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
             currentDay = '';
             setDay('');
         }
@@ -167,8 +157,9 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
         ref={containerRef}
         onClick={handleContainerClick}
         className={cn(
-        "flex items-center h-10 w-full rounded-md border border-input bg-primary/5 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         !disabled && 'cursor-text',
+        props['aria-invalid'] && 'border-destructive',
         className
     )}>
         <Input

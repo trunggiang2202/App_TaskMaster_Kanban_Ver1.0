@@ -296,12 +296,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     return 'border-muted';
   };
 
-  const isTaskTabValid = !form.formState.errors.title &&
-                         !form.formState.errors.startDate &&
-                         !form.formState.errors.startTime &&
-                         !form.formState.errors.endDate &&
-                         !form.formState.errors.endTime &&
-                         !form.formState.errors.root;
+  const isTaskTabValid = Object.keys(form.formState.errors).filter(key => 
+    key === 'title' || key === 'startDate' || key === 'startTime' || key === 'endDate' || key === 'endTime' || key === 'root'
+  ).length === 0;
 
 
   return (
@@ -418,8 +415,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           </div>
                         </div>
                     </div>
-                    {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
-                    {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
                   </Form>
               </TabsContent>
 
@@ -642,7 +637,3 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
-
-    
-
-    
