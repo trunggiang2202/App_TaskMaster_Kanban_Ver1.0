@@ -98,7 +98,7 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
         }
     } else if (segment === 'year') {
         const yearNum = parseInt(year, 10);
-        if (year.length > 0 && (year.length < 4 || yearNum < 1900 || yearNum > 2100)) {
+        if (year.length > 0 && (yearNum < 1900 || yearNum > 2100)) {
             currentYear = '';
             setYear('');
         }
