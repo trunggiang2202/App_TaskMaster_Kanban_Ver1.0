@@ -498,7 +498,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                         <FormItem>
                                           <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
                                           <FormControl>
-                                            <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} className="bg-background/80" />
+                                            <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} className="bg-primary/5" />
                                           </FormControl>
                                           <FormMessage />
                                         </FormItem>
@@ -558,7 +558,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             render={({ field }) => (
                                               <FormItem>
                                                 <FormControl>
-                                                  <Input placeholder="DD-MM-YYYY" {...field} className="bg-background/80" />
+                                                  <Input placeholder="DD-MM-YYYY" {...field} className="bg-primary/5" />
                                                 </FormControl>
                                                 <FormMessage />
                                               </FormItem>
@@ -570,7 +570,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             render={({ field }) => (
                                               <FormItem>
                                                 <FormControl>
-                                                  <Input placeholder="HH:MM" {...field} className="w-24 bg-background/80" />
+                                                  <Input placeholder="HH:MM" {...field} className="w-24 bg-primary/5" />
                                                 </FormControl>
                                                 <FormMessage />
                                               </FormItem>
@@ -617,7 +617,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             render={({ field }) => (
                                               <FormItem>
                                                 <FormControl>
-                                                  <Input placeholder="DD-MM-YYYY" {...field} className="bg-background/80" />
+                                                  <Input placeholder="DD-MM-YYYY" {...field} className="bg-primary/5" />
                                                 </FormControl>
                                                 <FormMessage />
                                               </FormItem>
@@ -629,7 +629,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             render={({ field }) => (
                                               <FormItem>
                                                 <FormControl>
-                                                  <Input placeholder="HH:MM" {...field} className="w-24 bg-background/80" />
+                                                  <Input placeholder="HH:MM" {...field} className="w-24 bg-primary/5" />
                                                 </FormControl>
                                                 <FormMessage />
                                               </FormItem>
