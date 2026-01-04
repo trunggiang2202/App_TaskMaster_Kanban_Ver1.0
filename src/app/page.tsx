@@ -15,8 +15,9 @@ import { WelcomeDialog } from '@/components/welcome-dialog';
 import { getDailyQuote } from '@/lib/daily-quotes';
 import { WeekView } from '@/components/sidebar/week-view';
 import { TaskProvider, useTasks } from '@/contexts/TaskContext';
+import { StatsView } from '@/components/stats/StatsView';
 
-type FilterType = 'all' | 'today' | 'week';
+type FilterType = 'all' | 'today' | 'week' | 'stats';
 
 function TaskKanban() {
   const { tasks, selectedTaskId, setSelectedTaskId } = useTasks();
@@ -85,6 +86,7 @@ function TaskKanban() {
           })
         );
       case 'all':
+      case 'stats':
       default:
         return tasks;
     }
@@ -141,7 +143,7 @@ function TaskKanban() {
           <Separator className="my-2" />
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-sidebar-accent/60">
+              <TabsList className="grid w-full grid-cols-4 bg-sidebar-accent/60">
                 <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
                   Tất cả ({uncompletedTasksCount})
                 </TabsTrigger>
@@ -150,6 +152,9 @@ function TaskKanban() {
                 </TabsTrigger>
                 <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
                   Xem tuần
+                </TabsTrigger>
+                <TabsTrigger value="stats" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
+                  Thống kê
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -165,12 +170,14 @@ function TaskKanban() {
               onGoToToday={handleGoToToday}
             />
           )}
-          <RecentTasks 
-            tasks={filteredTasksForSidebar} 
-            selectedTaskId={selectedTaskId}
-            onSelectTask={setSelectedTaskId}
-            activeFilter={activeFilter}
-          />
+          {activeFilter !== 'stats' && (
+            <RecentTasks 
+              tasks={filteredTasksForSidebar} 
+              selectedTaskId={selectedTaskId}
+              onSelectTask={setSelectedTaskId}
+              activeFilter={activeFilter}
+            />
+          )}
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
@@ -179,7 +186,9 @@ function TaskKanban() {
             <SidebarTrigger className="md:hidden" />
           </div>
           <main className="flex-1 overflow-y-auto pt-12 md:pt-0">
-            {selectedTask ? (
+            {activeFilter === 'stats' ? (
+              <StatsView tasks={tasks} />
+            ) : selectedTask ? (
               <TaskDetail 
                 task={selectedTask} 
                 onEditTask={handleOpenDialog}
