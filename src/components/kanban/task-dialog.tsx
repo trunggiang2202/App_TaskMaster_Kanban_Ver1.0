@@ -636,7 +636,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           ) : (
             <>
                 <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
-                <Button type="button" onClick={form.handleSubmit(handleSubmit)} disabled={!form.formState.isValid}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                <Button type="button" onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
             </>
           )}
         </DialogFooter>
@@ -650,3 +650,4 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     
 
     
+
