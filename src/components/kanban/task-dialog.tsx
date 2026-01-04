@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Plus, Trash2, Settings2, Paperclip, X } from 'lucide-react';
+import { Plus, Trash2, Paperclip, X } from 'lucide-react';
 import type { Task, Subtask, Attachment } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
@@ -485,9 +485,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         {fields.map((field, index) => {
                             const subtaskAttachments = form.watch(`subtasks.${index}.attachments`) || [];
                             return (
-                              <div key={field.id} className="flex items-start gap-2 bg-muted/50 rounded-md p-1 pr-2">
-                                <AccordionItem value={`item-${index}`} className="w-full border-b-0">
-                                  <div className="flex items-center gap-2 w-full">
+                              <AccordionItem value={`item-${index}`} key={field.id} className="bg-muted/50 rounded-md border-b-0">
+                                  <div className="flex items-center w-full p-1 pr-2">
                                     <FormField
                                       control={form.control}
                                       name={`subtasks.${index}.title`}
@@ -497,7 +496,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             <Input 
                                               placeholder={`Công việc ${index + 1}`} 
                                               {...field}
-                                              className="border-none bg-primary/5 shadow-none focus-visible:ring-0" 
+                                              className="border-none bg-transparent shadow-none focus-visible:ring-0" 
                                             />
                                           </FormControl>
                                           <FormMessage className="pl-3" />
@@ -510,8 +509,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                         <Trash2 className="h-4 w-4 text-destructive" />
                                       </Button>
                                   </div>
-                                  <AccordionContent className="px-3 pt-2">
-                                    <div className="space-y-4">
+                                  <AccordionContent className="px-3 pb-3">
+                                    <div className="space-y-4 p-4 rounded-md border bg-background">
                                       <FormField
                                         control={form.control}
                                         name={`subtasks.${index}.description`}
@@ -691,7 +690,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     </div>
                                   </AccordionContent>
                                 </AccordionItem>
-                              </div>
                             )
                           })}
                       </Accordion>
