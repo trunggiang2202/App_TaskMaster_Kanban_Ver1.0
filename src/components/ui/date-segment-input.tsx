@@ -13,52 +13,78 @@ interface DateSegmentInputProps {
 }
 
 export function DateSegmentInput({ value, onChange, disabled, className }: DateSegmentInputProps) {
-  const [day, month, year] = React.useMemo(() => {
-    return value ? value.split('-') : ['', '', ''];
-  }, [value]);
+  const [day, setDay] = React.useState('');
+  const [month, setMonth] = React.useState('');
+  const [year, setYear] = React.useState('');
 
   const dayRef = React.useRef<HTMLInputElement>(null);
   const monthRef = React.useRef<HTMLInputElement>(null);
   const yearRef = React.useRef<HTMLInputElement>(null);
 
+  // Sync local state with parent value prop
+  React.useEffect(() => {
+    if (value) {
+      const parts = value.split('-');
+      setDay(parts[0] || '');
+      setMonth(parts[1] || '');
+      setYear(parts[2] || '');
+    } else {
+      setDay('');
+      setMonth('');
+      setYear('');
+    }
+  }, [value]);
+  
+  const triggerParentOnChange = React.useCallback(() => {
+    const newDate = `${day}-${month}-${year}`;
+    if (day.length === 2 && month.length === 2 && year.length === 4) {
+      onChange(newDate);
+    }
+  }, [day, month, year, onChange]);
+
+  React.useEffect(() => {
+    triggerParentOnChange();
+  }, [day, month, year, triggerParentOnChange]);
+
+
   const handleSegmentChange = (segment: 'day' | 'month' | 'year', segmentValue: string) => {
     const isNumeric = /^\d*$/.test(segmentValue);
     if (!isNumeric) return;
 
-    let newDay = day, newMonth = month, newYear = year;
-
     if (segment === 'day') {
-      newDay = segmentValue;
+      setDay(segmentValue);
       const dayNum = parseInt(segmentValue, 10);
       if (segmentValue.length === 2 || dayNum > 3) {
-        if (dayNum > 31) newDay = '31';
-        if (dayNum === 0) newDay = '01';
-        if (segmentValue.length === 1 && dayNum > 3) {
-            newDay = '0' + segmentValue;
-        }
         monthRef.current?.focus();
       }
     } else if (segment === 'month') {
-      newMonth = segmentValue;
+      setMonth(segmentValue);
       const monthNum = parseInt(segmentValue, 10);
       if (segmentValue.length === 2 || monthNum > 1) {
-        if (monthNum > 12) newMonth = '12';
-        if (monthNum === 0) newMonth = '01';
-        if (segmentValue.length === 1 && monthNum > 1) {
-            newMonth = '0' + segmentValue;
-        }
         yearRef.current?.focus();
       }
     } else if (segment === 'year') {
-      newYear = segmentValue;
+      setYear(segmentValue);
     }
-    
-    onChange(`${newDay}-${newMonth}-${newYear}`);
   };
+  
+  const handleBlur = (segment: 'day' | 'month' | 'year') => {
+    if (segment === 'day') {
+        if (day.length === 1 && parseInt(day, 10) > 0) {
+            setDay(day.padStart(2, '0'));
+        }
+    } else if (segment === 'month') {
+        if (month.length === 1 && parseInt(month, 10) > 0) {
+            setMonth(month.padStart(2, '0'));
+        }
+    }
+  };
+
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, segment: 'day' | 'month' | 'year') => {
     const target = e.target as HTMLInputElement;
     if (e.key === 'Backspace' && target.value === '') {
+      e.preventDefault();
       if (segment === 'year') monthRef.current?.focus();
       if (segment === 'month') dayRef.current?.focus();
     }
@@ -74,6 +100,7 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
             value={day}
             onChange={(e) => handleSegmentChange('day', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'day')}
+            onBlur={() => handleBlur('day')}
             placeholder="DD"
             maxLength={2}
             disabled={disabled}
@@ -85,6 +112,7 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
             value={month}
             onChange={(e) => handleSegmentChange('month', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'month')}
+            onBlur={() => handleBlur('month')}
             placeholder="MM"
             maxLength={2}
             disabled={disabled}
