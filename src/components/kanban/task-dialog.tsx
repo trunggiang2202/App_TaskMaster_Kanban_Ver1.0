@@ -123,8 +123,9 @@ const taskSchema = z.object({
     message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
     path: ["subtasks"],
 }).refine(data => {
-    const hasAtLeastOneSubtask = data.subtasks && data.subtasks.filter(st => st.title && st.title.trim() !== '').length > 0;
-    return hasAtLeastOneSubtask;
+    if (!data.subtasks || data.subtasks.length === 0) return true;
+    const hasAtLeastOneSubtaskWithTitle = data.subtasks.some(st => st.title && st.title.trim() !== '');
+    return hasAtLeastOneSubtaskWithTitle;
 }, {
     message: "Nhiệm vụ phải có ít nhất một công việc.",
     path: ["subtasks"],
@@ -164,7 +165,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   useEffect(() => {
     if (isOpen) {
       form.clearErrors();
-      setActiveTab('task'); // Reset to the first tab whenever the dialog opens
+      setActiveTab('task');
       if (taskToEdit) {
         form.reset({
           title: taskToEdit.title,
@@ -651,3 +652,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     
 
 
+
+
+    
