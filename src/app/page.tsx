@@ -213,7 +213,7 @@ export default function Home() {
             <Sparkles className="text-primary" />
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               Hi, Louis Giang
-              <span className="inline-block w-10 text-left">{loadingDots}</span>
+              <span className="inline-block text-left">{loadingDots}</span>
             </span>
             <span>{randomEmoji}</span>
           </h2>
