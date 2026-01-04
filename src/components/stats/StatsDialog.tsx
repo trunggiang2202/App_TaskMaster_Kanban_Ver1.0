@@ -94,7 +94,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
                 <ListTodo className="h-5 w-5 text-primary" />
                 <span className="font-semibold text-foreground">Tổng công việc</span>
             </div>
-            <span className="text-xl font-bold text-foreground">{stats.total}</span>
+            <span className="text-xl text-foreground">{stats.total}</span>
         </div>
         
         <div className="py-4">
@@ -114,7 +114,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
                       <span className="font-medium">{item.status}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-bold text-lg">{item.count}</TableCell>
+                  <TableCell className="text-right text-lg">{item.count}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
