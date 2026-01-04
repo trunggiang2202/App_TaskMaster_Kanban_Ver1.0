@@ -25,9 +25,14 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
   React.useEffect(() => {
     if (value && /^\d{2}-\d{2}-\d{4}$/.test(value)) {
       const [currentDay, currentMonth, currentYear] = value.split('-');
-      if (day !== currentDay) setDay(currentDay || '');
-      if (month !== currentMonth) setMonth(currentMonth || '');
-      if (year !== currentYear) setYear(currentYear || '');
+      const newDateFromValue = `${currentDay}-${currentMonth}-${currentYear}`;
+      const newDateFromState = `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+      
+      if (newDateFromValue !== newDateFromState) {
+          if (day !== currentDay) setDay(currentDay || '');
+          if (month !== currentMonth) setMonth(currentMonth || '');
+          if (year !== currentYear) setYear(currentYear || '');
+      }
     } else if (!value) {
       setDay('');
       setMonth('');
@@ -54,9 +59,11 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
     if (segment === 'day') {
       newDay = segmentValue;
       setDay(segmentValue);
+      if (segmentValue.length === 2) monthRef.current?.focus();
     } else if (segment === 'month') {
       newMonth = segmentValue;
       setMonth(segmentValue);
+      if (segmentValue.length === 2) yearRef.current?.focus();
     } else if (segment === 'year') {
       newYear = segmentValue;
       setYear(segmentValue);
