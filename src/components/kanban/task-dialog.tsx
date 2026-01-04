@@ -350,16 +350,16 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             {taskToEdit ? 'Cập nhật chi tiết nhiệm vụ của bạn.' : 'Điền vào các chi tiết cho nhiệm vụ mới của bạn. Bạn có thể thêm các công việc để chia nhỏ nó ra.'}
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <div className="flex-1 flex flex-col min-h-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-              <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
-                <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
-                <TabsTrigger value="subtasks" disabled={!isTaskTabValid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
-              </TabsList>
-              
-              <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
-                <TabsContent value="task" className="mt-0 py-4 space-y-4">
+        <div className="flex-1 flex flex-col min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
+              <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
+              <TabsTrigger value="subtasks" disabled={!isTaskTabValid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
+              <TabsContent value="task" className="mt-0 py-4 space-y-4">
+                  <Form {...form}>
                     <FormField
                       control={form.control}
                       name="title"
@@ -512,10 +512,12 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           </div>
                       </div>
                     </div>
-                </TabsContent>
+                  </Form>
+              </TabsContent>
 
-                <TabsContent value="subtasks" className="mt-0 space-y-2">
-                  <div className="px-3 pt-2 text-sm font-medium text-muted-foreground">
+              <TabsContent value="subtasks" className="mt-0 space-y-2">
+                <Form {...form}>
+                  <div className="px-1 pt-4 text-sm font-medium text-muted-foreground">
                     Danh sách công việc ({uncompletedSubtasksCount})
                   </div>
                   <div className="py-2 space-y-4">
@@ -752,11 +754,12 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     </div>
                     {form.formState.errors.subtasks && <FormMessage>{form.formState.errors.subtasks.message}</FormMessage>}
                   </div>
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
-        </Form>
+                </Form>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
+        
         <DialogFooter className="pt-4 mt-auto">
           {activeTab === 'task' ? (
             <>
@@ -775,4 +778,4 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   );
 }
 
-  
+    
