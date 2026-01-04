@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { isBefore, isAfter, startOfDay } from 'date-fns';
-import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
+import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface SubtaskStats {
   inProgress: number;
@@ -90,6 +91,15 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
             Tổng quan nhanh về tất cả các công việc con của bạn.
           </DialogDescription>
         </DialogHeader>
+
+        <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
+            <div className="flex items-center gap-3">
+                <ListTodo className="h-5 w-5 text-primary" />
+                <span className="font-semibold text-foreground">Tổng công việc</span>
+            </div>
+            <span className="text-xl font-bold text-foreground">{stats.total}</span>
+        </div>
+        
         <div className="py-4">
           <Table>
             <TableHeader>
