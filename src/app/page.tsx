@@ -6,7 +6,7 @@ import { initialTasks } from '@/lib/data';
 import type { Task } from '@/lib/types';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isToday, isAfter, isBefore, startOfDay, isSameDay, startOfWeek, addWeeks, subWeeks, isWithinInterval } from 'date-fns';
@@ -184,8 +184,9 @@ export default function Home() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
-          <h2 className="text-2xl font-bold font-headline bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
-            Hi, Đình Trung
+          <h2 className="flex items-center gap-2 text-2xl font-bold font-headline bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
+            <Sparkles className="text-amber-400" />
+            Hi, Louis Giang
           </h2>
         </SidebarHeader>
         <SidebarContent>
