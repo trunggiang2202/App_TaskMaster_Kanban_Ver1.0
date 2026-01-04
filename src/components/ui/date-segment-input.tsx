@@ -22,25 +22,38 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
   const yearRef = React.useRef<HTMLInputElement>(null);
 
   const handleSegmentChange = (segment: 'day' | 'month' | 'year', segmentValue: string) => {
-    let newDate = `${day}-${month}-${year}`;
+    const isNumeric = /^\d*$/.test(segmentValue);
+    if (!isNumeric) return;
+
+    let newDay = day, newMonth = month, newYear = year;
+
     if (segment === 'day') {
-      newDate = `${segmentValue}-${month}-${year}`;
-      if (segmentValue.length === 2) {
+      newDay = segmentValue;
+      const dayNum = parseInt(segmentValue, 10);
+      if (segmentValue.length === 2 || dayNum > 3) {
+        if (dayNum > 31) newDay = '31';
+        if (dayNum === 0) newDay = '01';
+        if (segmentValue.length === 1 && dayNum > 3) {
+            newDay = '0' + segmentValue;
+        }
         monthRef.current?.focus();
       }
     } else if (segment === 'month') {
-      newDate = `${day}-${segmentValue}-${year}`;
-      if (segmentValue.length === 2) {
+      newMonth = segmentValue;
+      const monthNum = parseInt(segmentValue, 10);
+      if (segmentValue.length === 2 || monthNum > 1) {
+        if (monthNum > 12) newMonth = '12';
+        if (monthNum === 0) newMonth = '01';
+        if (segmentValue.length === 1 && monthNum > 1) {
+            newMonth = '0' + segmentValue;
+        }
         yearRef.current?.focus();
       }
     } else if (segment === 'year') {
-      newDate = `${day}-${month}-${segmentValue}`;
+      newYear = segmentValue;
     }
     
-    // Only call onChange if the format might be valid, or is being cleared
-    if (newDate.length <= 10) {
-      onChange(newDate);
-    }
+    onChange(`${newDay}-${newMonth}-${newYear}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, segment: 'day' | 'month' | 'year') => {
@@ -53,7 +66,7 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
 
   return (
     <div className={cn(
-        "flex items-center h-10 w-full rounded-md border border-input bg-background text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "flex items-center h-10 w-full rounded-md border border-input bg-primary/5 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         className
     )}>
         <Input
