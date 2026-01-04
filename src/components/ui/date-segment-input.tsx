@@ -23,17 +23,10 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
   const yearRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    const formattedValue = `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year.padStart(4, '0')}`;
-    if (value !== formattedValue && value) {
-        const [d = '', m = '', y = ''] = value.split('-');
-        if (d !== day) setDay(d);
-        if (m !== month) setMonth(m);
-        if (y !== year) setYear(y);
-    } else if (!value && (day || month || year)) {
-        setDay('');
-        setMonth('');
-        setYear('');
-    }
+    const [d = '', m = '', y = ''] = value ? value.split('-') : ['', '', ''];
+    if (d !== day) setDay(d);
+    if (m !== month) setMonth(m);
+    if (y !== year) setYear(y);
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
@@ -42,10 +35,12 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
       if (value !== newDate) {
         onChange(newDate);
       }
-    } else if (!currentDay && !currentMonth && !currentYear) {
-      if (value) {
-        onChange('');
-      }
+    } else if (value) {
+        // If not a full date, we pass up the partials for validation logic
+        const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
+        if (value !== newDate) {
+            onChange(newDate);
+        }
     }
   };
 
@@ -80,7 +75,7 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
         const yearNum = parseInt(year, 10);
         const daysInMonth = (monthNum && yearNum) ? new Date(yearNum, monthNum, 0).getDate() : 31;
 
-        if (day.length === 1) {
+        if (day.length === 1 && dayNum > 0) {
             currentDay = day.padStart(2, '0');
             setDay(currentDay);
         } else if (isNaN(dayNum) || dayNum < 1 || dayNum > daysInMonth) {
@@ -89,7 +84,7 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
         }
     } else if (segment === 'month') {
         const monthNum = parseInt(month, 10);
-        if (month.length === 1) {
+        if (month.length === 1 && monthNum > 0) {
             currentMonth = month.padStart(2, '0');
             setMonth(currentMonth);
         } else if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {

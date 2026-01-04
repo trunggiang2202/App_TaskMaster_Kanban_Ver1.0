@@ -176,7 +176,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           description: taskToEdit.description || '',
           startDate: format(taskToEdit.startDate, 'dd-MM-yyyy'),
           startTime: format(taskToEdit.startDate, 'HH:mm'),
-          endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
+          endDate: format(taskTo-Edit.endDate, 'dd-MM-yyyy'),
           endTime: format(taskToEdit.endDate, 'HH:mm'),
           subtasks: taskToEdit.subtasks.map(st => {
             return {
@@ -191,14 +191,15 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           }),
         });
       } else {
+        const currentYear = new Date().getFullYear();
         form.reset({
           title: '',
           description: '',
-          startDate: '',
-          endDate: '',
+          startDate: `--${currentYear}`,
+          endDate: `--${currentYear}`,
           startTime: '',
           endTime: '',
-          subtasks: [{ title: "", description: "", startDate: "", startTime: "", endDate: "", endTime: "", attachments: [] }],
+          subtasks: [{ title: "", description: "", startDate: ``, startTime: "", endDate: ``, endTime: "", attachments: [] }],
         });
       }
     }
@@ -219,6 +220,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       // Always re-validate the endDate when any date/time field changes
       if (name?.includes('Date') || name?.includes('Time')) {
         form.trigger('endDate');
+        form.trigger('subtasks');
       }
     });
     return () => subscription.unsubscribe();
@@ -664,9 +666,3 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
-
-    
-
-    
-
-    
