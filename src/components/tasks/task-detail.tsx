@@ -185,7 +185,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
         <div className="flex flex-wrap items-center justify-between gap-4">
             <h1 className="text-3xl font-bold font-headline tracking-tight">{task.title}</h1>
             <div className="flex items-center gap-2 flex-shrink-0">
-                <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>
+                <Button variant="default" size="sm" onClick={() => onEditTask(task)}>
                 <Edit className="h-4 w-4 mr-2" />
                 Chỉnh sửa
                 </Button>
@@ -218,7 +218,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {kanbanColumns.map(column => (
                   <div key={column.title} className="flex flex-col">
-                    <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="flex items-center justify-center gap-2 mb-2 border-l-4" style={{borderColor: column.title === 'Chưa làm' ? 'var(--color-sky-500)' : column.title === 'Đang làm' ? 'var(--color-amber-500)' : 'var(--color-emerald-500)'}}>
                       <h3 className={`font-semibold text-sm ${column.titleColor}`}>{column.title} ({column.subtasks.length})</h3>
                     </div>
                     <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
