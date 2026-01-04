@@ -19,6 +19,8 @@ import { WeekView } from '@/components/sidebar/week-view';
 
 type FilterType = 'all' | 'today' | 'week';
 
+const emojis = ['👋', '😀', '😎', '🎉', '🚀', '🌟', '💡', '🔥', '💯', '😁', '🥳', '🤩'];
+
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks.map(t => {
     const task: Task = {...t, createdAt: new Date(t.createdAt) };
@@ -40,6 +42,7 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loadingDots, setLoadingDots] = useState('');
+  const [randomEmoji, setRandomEmoji] = useState('😁');
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
@@ -47,6 +50,10 @@ export default function Home() {
       setShowWelcomeDialog(true);
       localStorage.setItem('hasSeenWelcomeDialog', 'true');
     }
+    
+    // Select a random emoji on client-side mount to avoid hydration mismatch
+    const randomIcon = emojis[Math.floor(Math.random() * emojis.length)];
+    setRandomEmoji(randomIcon);
   }, []);
 
   useEffect(() => {
@@ -208,7 +215,7 @@ export default function Home() {
               Hi, Louis Giang
               <span className="inline-block w-10 text-left">{loadingDots}</span>
             </span>
-            <span>😁</span>
+            <span>{randomEmoji}</span>
           </h2>
         </SidebarHeader>
         <SidebarContent>
