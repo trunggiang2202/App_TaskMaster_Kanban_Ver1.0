@@ -17,17 +17,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Plus, Trash2, Paperclip, X, Clock } from 'lucide-react';
-import type { Task, Subtask, Attachment } from '@/lib/types';
-import { Separator } from '@/components/ui/separator';
-import { format, isAfter, isBefore, parse, addHours } from 'date-fns';
+import { Plus, Trash2, Paperclip, X } from 'lucide-react';
+import type { Task, Subtask } from '@/lib/types';
+import { isAfter } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from '@/lib/utils';
 import { DateSegmentInput } from '@/components/ui/date-segment-input';
-
+import { useTasks } from '@/contexts/TaskContext';
+import { parseDateTime } from '@/lib/utils';
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -44,19 +43,6 @@ const subtaskSchema = z.object({
   endTime: z.string().optional(),
   attachments: z.array(attachmentSchema).optional(),
 });
-
-const parseDateTime = (dateStr?: string, timeStr?: string) => {
-    if (!dateStr || !timeStr) return null;
-    try {
-        const [day, month, year] = dateStr.split('-').map(Number);
-        if (isNaN(day) || isNaN(month) || isNaN(year) || year < 1000) return null;
-        const [hour, minute] = timeStr.split(':').map(Number);
-        if (isNaN(hour) || isNaN(minute)) return null;
-        return new Date(year, month - 1, day, hour, minute);
-    } catch {
-        return null;
-    }
-};
 
 const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
@@ -75,12 +61,12 @@ const taskSchema = z.object({
     for (const subtask of data.subtasks) {
       if (subtask.title && subtask.title.trim() !== '') {
         if (!subtask.startDate || !subtask.startTime || !subtask.endDate || !subtask.endTime) {
-          return false; // Invalid if a subtask with a title is missing any deadline field
+          return false; 
         }
         const startSubtaskTime = parseDateTime(subtask.startDate, subtask.startTime);
         const endSubtaskTime = parseDateTime(subtask.endDate, subtask.endTime);
         if (!startSubtaskTime || !endSubtaskTime || endSubtaskTime <= startSubtaskTime) {
-            return false; // Subtask end time must be after start time
+            return false;
         }
       }
     }
@@ -94,7 +80,7 @@ const taskSchema = z.object({
     const taskEndDateTime = parseDateTime(data.endDate, data.endTime);
 
     if (!taskStartDateTime || !taskEndDateTime || !data.subtasks) {
-        return true; // Cannot validate if parent dates are invalid or no subtasks
+        return true; 
     }
 
     for (const subtask of data.subtasks) {
@@ -103,27 +89,17 @@ const taskSchema = z.object({
             const subtaskEndDateTime = parseDateTime(subtask.endDate, subtask.endTime);
 
             if (!subtaskStartDateTime || !subtaskEndDateTime) {
-                continue; // Already handled by previous refine
+                continue; 
             }
 
             if (subtaskStartDateTime < taskStartDateTime || subtaskEndDateTime > taskEndDateTime) {
-                return false; // Subtask deadline is outside parent task's deadline
+                return false; 
             }
         }
     }
     return true;
 }, {
     message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
-    path: ["subtasks"],
-}).refine(data => {
-    // This rule applies only if there are subtasks.
-    // It checks if there is at least one subtask with a title.
-    if (data.subtasks && data.subtasks.length > 0) {
-      return data.subtasks.some(st => st.title && st.title.trim() !== '');
-    }
-    return true; // No subtasks, so the rule passes.
-}, {
-    message: "Nhiệm vụ phải có ít nhất một công việc.",
     path: ["subtasks"],
 }).refine((data) => {
     const start = parseDateTime(data.startDate, data.startTime);
@@ -132,9 +108,20 @@ const taskSchema = z.object({
       return end > start;
     }
     return true;
-  }, {
+}, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"], 
+}).refine((data) => {
+    if (data.subtasks && data.subtasks.length > 0) {
+      const hasAtLeastOneSubtaskWithTitle = data.subtasks.some(st => st.title && st.title.trim() !== '');
+      if (!hasAtLeastOneSubtaskWithTitle) {
+          return false;
+      }
+    }
+    return true;
+}, {
+    message: "Nhiệm vụ phải có ít nhất một công việc.",
+    path: ["subtasks"],
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -142,11 +129,11 @@ type TaskFormData = z.infer<typeof taskSchema>;
 interface TaskDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSubmit: (task: Task) => void;
   taskToEdit?: Task;
 }
 
-export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskDialogProps) {
+export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps) {
+  const { addTask, updateTask } = useTasks();
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [activeTab, setActiveTab] = useState('task');
   
@@ -177,17 +164,17 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         form.reset({
           title: taskToEdit.title,
           description: taskToEdit.description || '',
-          startDate: format(taskToEdit.startDate, 'dd-MM-yyyy'),
-          startTime: format(taskToEdit.startDate, 'HH:mm'),
-          endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
-          endTime: format(taskToEdit.endDate, 'HH:mm'),
+          startDate: taskToEdit.startDate ? new Date(taskToEdit.startDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
+          startTime: taskToEdit.startDate ? new Date(taskToEdit.startDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
+          endDate: taskToEdit.endDate ? new Date(taskToEdit.endDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
+          endTime: taskToEdit.endDate ? new Date(taskToEdit.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
           subtasks: taskToEdit.subtasks.map(st => ({
               title: st.title,
               description: st.description || '',
-              startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
-              startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
-              endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
-              endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
+              startDate: st.startDate ? new Date(st.startDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
+              startTime: st.startDate ? new Date(st.startDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
+              endDate: st.endDate ? new Date(st.endDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
+              endTime: st.endDate ? new Date(st.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
               attachments: st.attachments || [],
           })),
         });
@@ -222,9 +209,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
     if (!taskStartDate || !taskEndDate) return;
 
-
     const newSubtasks: Subtask[] = data.subtasks ? data.subtasks
-      .filter(st => st.title && st.title.trim() !== '') // Only include subtasks with a title
+      .filter(st => st.title && st.title.trim() !== '')
       .map((st, index) => {
         const subtaskStartDate = parseDateTime(st.startDate, st.startTime);
         const subtaskEndDateTime = parseDateTime(st.endDate, st.endTime);
@@ -233,8 +219,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           title: st.title ?? '',
           description: st.description,
           completed: taskToEdit?.subtasks[index]?.completed || false,
-          startDate: subtaskStartDate,
-          endDate: subtaskEndDateTime,
+          startDate: subtaskStartDate as Date,
+          endDate: subtaskEndDateTime as Date,
           attachments: st.attachments,
         };
     }) : [];
@@ -249,10 +235,16 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       endDate: taskEndDate,
       subtasks: newSubtasks,
     };
-    onSubmit(task);
-  }, [onSubmit, taskToEdit]);
+    
+    if (taskToEdit) {
+      updateTask(task);
+    } else {
+      addTask(task);
+    }
+    onOpenChange(false);
+  }, [taskToEdit, addTask, updateTask, onOpenChange]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any, index: number) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
       const file = e.target.files?.[0];
       if (file) {
           const isImage = file.type.startsWith('image/');
@@ -261,13 +253,13 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             reader.onload = (readEvent) => {
                 const newAttachment = { name: file.name, url: readEvent.target?.result as string, type: 'image' as const };
                 const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
-                form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
+                form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment], { shouldValidate: true });
             };
             reader.readAsDataURL(file);
           } else {
             const newAttachment = { name: file.name, url: URL.createObjectURL(file), type: 'file' as const };
             const currentAttachments = form.getValues(`subtasks.${index}.attachments`) || [];
-            form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment]);
+            form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment], { shouldValidate: true });
           }
       }
   };
@@ -303,14 +295,14 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
     if (!startDate || !endDate) return 'border-muted';
 
-    if (isAfter(now, startDate)) { // In Progress
-        if (isBefore(endDate, now)) { // Overdue
+    if (isAfter(now, startDate)) { 
+        if (isAfter(now, endDate)) { 
             return 'border-destructive';
         }
-        return 'border-amber-500'; // In Progress
+        return 'border-amber-500';
     }
 
-    if (isBefore(now, startDate)) { // Not started
+    if (isAfter(startDate, now)) {
         return 'border-sky-500';
     }
     
@@ -382,7 +374,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     </FormControl>
                                     )}
                                 />
-                                <FormMessage className="h-4" />
+                                <FormMessage />
                                 </FormItem>
                                 <FormItem>
                                 <FormLabel>Giờ</FormLabel>
@@ -395,7 +387,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     </FormControl>
                                     )}
                                 />
-                                <FormMessage className="h-4" />
+                                <FormMessage />
                                 </FormItem>
                           </div>
                         </div>
@@ -413,7 +405,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     </FormControl>
                                     )}
                                 />
-                                <FormMessage className="h-4" />
+                                <FormMessage />
                                 </FormItem>
                                 <FormItem>
                                 <FormLabel>Giờ</FormLabel>
@@ -426,7 +418,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     </FormControl>
                                     )}
                                 />
-                                <FormMessage className="h-4" />
+                                <FormMessage />
                                 </FormItem>
                           </div>
                         </div>
@@ -496,7 +488,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                         <FormField
                                             control={form.control}
                                             name={`subtasks.${index}.attachments`}
-                                            render={({ field: subtaskField }) => (
+                                            render={() => (
                                                 <FormItem>
                                                     <Button type="button" variant="outline" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()}>
                                                         <Paperclip className="mr-2 h-4 w-4" />
@@ -507,7 +499,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                             type="file"
                                                             className="hidden"
                                                             ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
-                                                            onChange={(e) => handleFileChange(e, subtaskField, index)}
+                                                            onChange={(e) => handleFileChange(e, index)}
                                                         />
                                                     </FormControl>
                                                     <div className="mt-2 grid grid-cols-3 gap-2">
@@ -527,7 +519,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                                   className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" 
                                                                   onClick={() => {
                                                                       const current = form.getValues(`subtasks.${index}.attachments`) || [];
-                                                                      form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex));
+                                                                      form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex), { shouldValidate: true });
                                                                   }}>
                                                                   <X className="h-4 w-4" />
                                                               </Button>
@@ -553,7 +545,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                         </FormControl>
                                                       )}
                                                     />
-                                                    <FormMessage className="h-4" />
+                                                    <FormMessage />
                                                   </FormItem>
                                                   <FormItem>
                                                     <FormLabel>Giờ</FormLabel>
@@ -566,7 +558,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                         </FormControl>
                                                       )}
                                                     />
-                                                    <FormMessage className="h-4" />
+                                                    <FormMessage />
                                                   </FormItem>
                                               </div>
                                           </div>
@@ -584,7 +576,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                       </FormControl>
                                                     )}
                                                   />
-                                                  <FormMessage className="h-4" />
+                                                  <FormMessage />
                                                 </FormItem>
                                                 <FormItem>
                                                   <FormLabel>Giờ</FormLabel>
@@ -597,7 +589,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                       </FormControl>
                                                     )}
                                                   />
-                                                  <FormMessage className="h-4" />
+                                                  <FormMessage />
                                                 </FormItem>
                                             </div>
                                           </div>
@@ -656,10 +648,3 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
-
-
-    
-
-    
-
-    

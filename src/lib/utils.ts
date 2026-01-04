@@ -4,3 +4,16 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export const parseDateTime = (dateStr?: string, timeStr?: string) => {
+    if (!dateStr || !timeStr) return null;
+    try {
+        const [day, month, year] = dateStr.split('-').map(Number);
+        if (isNaN(day) || isNaN(month) || isNaN(year) || year < 1000) return null;
+        const [hour, minute] = timeStr.split(':').map(Number);
+        if (isNaN(hour) || isNaN(minute)) return null;
+        return new Date(year, month - 1, day, hour, minute);
+    } catch {
+        return null;
+    }
+};

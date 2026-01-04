@@ -2,14 +2,13 @@
 'use client';
 
 import * as React from 'react';
-import type { Task, Subtask, Attachment } from '@/lib/types';
+import type { Task, Subtask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { format, isAfter, isBefore } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { Calendar, Edit, Trash2, Circle, Check, Download, Paperclip, LoaderCircle, AlertTriangle } from 'lucide-react';
+import { isAfter, isBefore } from 'date-fns';
+import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -24,19 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
-
-const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
-  <a 
-    href={attachment.url} 
-    target="_blank" 
-    rel="noopener noreferrer" 
-    className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted/80 transition-colors text-sm"
-  >
-    <Paperclip className="h-4 w-4 text-muted-foreground" />
-    <span className="flex-1 truncate text-foreground">{attachment.name}</span>
-    <Download className="h-4 w-4 text-muted-foreground" />
-  </a>
-);
+import { useTasks } from '@/contexts/TaskContext';
 
 interface SubtaskItemProps {
     subtask: Subtask;
@@ -115,10 +102,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
 
 interface TaskDetailProps {
   task: Task;
-  onUpdateTask: (task: Task) => void;
-  onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
-  onSubtaskToggle: (taskId: string, subtaskId: string) => void;
 }
 
 type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong';
@@ -131,7 +115,8 @@ const initialCategorizedSubtasks: CategorizedSubtasks = {
   'Xong': [],
 };
 
-export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTask, onSubtaskToggle }: TaskDetailProps) {
+export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
+  const { deleteTask, toggleSubtask } = useTasks();
   const [selectedSubtask, setSelectedSubtask] = React.useState<Subtask | null>(null);
   const [isSubtaskDetailOpen, setIsSubtaskDetailOpen] = React.useState(false);
   const [categorizedSubtasks, setCategorizedSubtasks] = React.useState<CategorizedSubtasks>(initialCategorizedSubtasks);
@@ -167,10 +152,10 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
       setCategorizedSubtasks(categories);
     };
 
-    categorize(); // Initial categorization
-    const intervalId = setInterval(categorize, 1000); // Re-categorize every second
+    categorize();
+    const intervalId = setInterval(categorize, 60000); // Re-categorize every minute
 
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, [task.subtasks]);
 
   const now = new Date();
@@ -219,7 +204,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Hủy</AlertDialogCancel>
-                      <AlertDialogAction variant="destructive" onClick={() => onDeleteTask(task.id)}>
+                      <AlertDialogAction variant="destructive" onClick={() => deleteTask(task.id)}>
                         Xóa
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -269,7 +254,7 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                               <CardContent className="p-3">
                                 <SubtaskItem 
                                     subtask={st}
-                                    onToggle={(subtaskId) => onSubtaskToggle(task.id, subtaskId)}
+                                    onToggle={(subtaskId) => toggleSubtask(task.id, subtaskId)}
                                     onTitleClick={() => handleSubtaskClick(st)}
                                     isClickable={column.isClickable}
                                     isInProgress={column.title === 'Đang làm' && !st.completed}

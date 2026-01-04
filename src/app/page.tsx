@@ -1,41 +1,28 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { initialTasks } from '@/lib/data';
-import type { Task } from '@/lib/types';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus, Sparkles } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isToday, isAfter, isBefore, startOfDay, isSameDay, startOfWeek, addWeeks, subWeeks, isWithinInterval } from 'date-fns';
+import { isAfter, isBefore, startOfDay, subWeeks, addWeeks } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
 import { WelcomeDialog } from '@/components/welcome-dialog';
 import { getDailyQuote } from '@/lib/daily-quotes';
 import { WeekView } from '@/components/sidebar/week-view';
+import { TaskProvider, useTasks } from '@/contexts/TaskContext';
 
 type FilterType = 'all' | 'today' | 'week';
 
-export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>(() => initialTasks.map(t => {
-    const task: Task = {...t, createdAt: new Date(t.createdAt) };
-    if (t.startDate) task.startDate = new Date(t.startDate);
-    if (t.endDate) task.endDate = new Date(t.endDate);
-    task.subtasks = t.subtasks.map(st => {
-        const subtask = {...st};
-        if (st.startDate) subtask.startDate = new Date(st.startDate);
-        if (st.endDate) subtask.endDate = new Date(st.endDate);
-        return subtask;
-    });
-    return task;
-  }));
+function TaskKanban() {
+  const { tasks, selectedTaskId, setSelectedTaskId } = useTasks();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState<Task | undefined>(undefined);
+  const [taskToEdit, setTaskToEdit] = useState<import('@/lib/types').Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(tasks[0]?.id || null);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -49,7 +36,7 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
+  useState(() => {
     let dotCount = 0;
     const interval = setInterval(() => {
       dotCount = (dotCount + 1) % 6; // Cycle from 0 to 5
@@ -57,9 +44,9 @@ export default function Home() {
     }, 700); 
 
     return () => clearInterval(interval);
-  }, []);
+  });
 
-  const handleOpenDialog = useCallback((task?: Task) => {
+  const handleOpenDialog = useCallback((task?: import('@/lib/types').Task) => {
     setTaskToEdit(task);
     setIsDialogOpen(true);
   }, []);
@@ -69,77 +56,14 @@ export default function Home() {
     setIsDialogOpen(false);
   }, []);
 
-  const handleSubmitTask = useCallback((taskData: Task) => {
-    if (taskToEdit) {
-      // Update existing task
-      setTasks(prevTasks =>
-        prevTasks.map(task => (task.id === taskData.id ? taskData : task))
-      );
-    } else {
-      // Add new task
-      setTasks(prevTasks => [taskData, ...prevTasks]);
-    }
-    handleCloseDialog();
-  }, [taskToEdit, handleCloseDialog]);
-  
-  const deleteTask = useCallback((taskId: string) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
-    if (selectedTaskId === taskId) {
-      setSelectedTaskId(null);
-    }
-  }, [selectedTaskId]);
-
-  const updateTask = useCallback((updatedTask: Task) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task => (task.id === updatedTask.id ? updatedTask : task))
-    );
-  }, []);
-  
-  const handleTaskStatusChange = useCallback((taskId: string, status: Task['status']) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task => (task.id === taskId ? { ...task, status } : task))
-    );
-  }, []);
-  
-  const handleSubtaskToggle = useCallback((taskId: string, subtaskId: string) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task => {
-        if (task.id === taskId) {
-          // First, toggle the specified subtask's completion status
-          const updatedSubtasks = task.subtasks.map(subtask =>
-            subtask.id === subtaskId
-              ? { ...subtask, completed: !subtask.completed }
-              : subtask
-          );
-
-          // After updating, check if all subtasks are now completed
-          const allSubtasksDone = updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed);
-
-          // Determine the new parent task status
-          let newStatus = task.status;
-          if (allSubtasksDone) {
-            newStatus = 'Done';
-          } else if (task.status === 'Done' && !allSubtasksDone) {
-            // If the parent was 'Done' but now a subtask is not, revert it
-            newStatus = 'In Progress';
-          }
-
-          return { ...task, subtasks: updatedSubtasks, status: newStatus };
-        }
-        return task;
-      })
-    );
-  }, []);
-
-  const hasInProgressSubtasks = useCallback((task: Task) => {
+  const hasInProgressSubtasks = useCallback((task: import('@/lib/types').Task) => {
     if (task.status === 'Done') return false;
-    // A task is for "Today" if it has subtasks that are not completed,
-    // and today's date is between the subtask's start and end date.
+    const today = startOfDay(new Date());
     return task.subtasks.some(st => 
       !st.completed && 
       st.startDate && 
       st.endDate &&
-      isWithinInterval(startOfDay(new Date()), { start: startOfDay(st.startDate), end: startOfDay(st.endDate) })
+      !isAfter(today, startOfDay(st.endDate)) && !isBefore(today, startOfDay(st.startDate))
     );
   }, []);
   
@@ -259,10 +183,7 @@ export default function Home() {
             {selectedTask ? (
               <TaskDetail 
                 task={selectedTask} 
-                onUpdateTask={updateTask}
-                onDeleteTask={deleteTask}
                 onEditTask={handleOpenDialog}
-                onSubtaskToggle={handleSubtaskToggle}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
@@ -277,7 +198,6 @@ export default function Home() {
       <TaskDialog
         isOpen={isDialogOpen}
         onOpenChange={handleCloseDialog}
-        onSubmit={handleSubmitTask}
         taskToEdit={taskToEdit}
       />
        <WelcomeDialog
@@ -288,4 +208,12 @@ export default function Home() {
       />
     </SidebarProvider>
   );
+}
+
+export default function Home() {
+  return (
+    <TaskProvider>
+      <TaskKanban />
+    </TaskProvider>
+  )
 }
