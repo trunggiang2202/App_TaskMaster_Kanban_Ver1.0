@@ -125,7 +125,8 @@ const taskSchema = z.object({
 }).refine(data => {
     if (!data.subtasks || data.subtasks.length === 0) return true;
     const hasAtLeastOneSubtaskWithTitle = data.subtasks.some(st => st.title && st.title.trim() !== '');
-    return hasAtLeastOneSubtaskWithTitle;
+    if (!hasAtLeastOneSubtaskWithTitle) return false;
+    return true;
 }, {
     message: "Nhiệm vụ phải có ít nhất một công việc.",
     path: ["subtasks"],
@@ -185,20 +186,20 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           })),
         });
       } else {
-        const currentYear = new Date().getFullYear();
+        const currentYear = String(new Date().getFullYear());
         form.reset({
           title: '',
           description: '',
-          startDate: String(currentYear),
+          startDate: currentYear,
           startTime: '00:00',
-          endDate: String(currentYear),
+          endDate: currentYear,
           endTime: '13:00',
           subtasks: [{ 
             title: "", 
             description: "", 
-            startDate: String(currentYear),
+            startDate: currentYear,
             startTime: '00:00', 
-            endDate: String(currentYear),
+            endDate: currentYear,
             endTime: '01:00', 
             attachments: [] 
           }],
@@ -648,3 +649,4 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
