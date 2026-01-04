@@ -24,64 +24,91 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
 
   React.useEffect(() => {
     if (value && /^\d{2}-\d{2}-\d{4}$/.test(value)) {
-      const parts = value.split('-');
-      setDay(parts[0] || '');
-      setMonth(parts[1] || '');
-      setYear(parts[2] || '');
+      const [currentDay, currentMonth, currentYear] = value.split('-');
+      if (day !== currentDay) setDay(currentDay || '');
+      if (month !== currentMonth) setMonth(currentMonth || '');
+      if (year !== currentYear) setYear(currentYear || '');
     } else if (!value) {
       setDay('');
       setMonth('');
       setYear('');
     }
-  }, [value]);
+  }, [value, day, month, year]);
   
   const triggerParentOnChange = React.useCallback((currentDay: string, currentMonth: string, currentYear: string) => {
     if (currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
       const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
-      onChange(newDate);
+      if (value !== newDate) {
+        onChange(newDate);
+      }
     }
-  }, [onChange]);
+  }, [onChange, value]);
 
 
   const handleSegmentChange = (segment: 'day' | 'month' | 'year', segmentValue: string) => {
     const isNumeric = /^\d*$/.test(segmentValue);
     if (!isNumeric) return;
 
+    let newDay = day, newMonth = month, newYear = year;
+
     if (segment === 'day') {
+      newDay = segmentValue;
       setDay(segmentValue);
-      triggerParentOnChange(segmentValue, month, year);
     } else if (segment === 'month') {
+      newMonth = segmentValue;
       setMonth(segmentValue);
-      triggerParentOnChange(day, segmentValue, year);
     } else if (segment === 'year') {
+      newYear = segmentValue;
       setYear(segmentValue);
-      triggerParentOnChange(day, month, segmentValue);
     }
+    
+    triggerParentOnChange(newDay, newMonth, newYear);
   };
   
   const handleBlur = (segment: 'day' | 'month') => {
+    let newDay = day, newMonth = month, newYear = year;
     if (segment === 'day') {
         if (day.length === 1 && parseInt(day, 10) >= 0) {
-            const newDay = day.padStart(2, '0');
+            newDay = day.padStart(2, '0');
             setDay(newDay);
-            triggerParentOnChange(newDay, month, year);
         }
     } else if (segment === 'month') {
         if (month.length === 1 && parseInt(month, 10) >= 0) {
-            const newMonth = month.padStart(2, '0');
+            newMonth = month.padStart(2, '0');
             setMonth(newMonth);
-            triggerParentOnChange(day, newMonth, year);
         }
     }
+    triggerParentOnChange(newDay, newMonth, newYear);
   };
 
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, segment: 'day' | 'month' | 'year') => {
     const target = e.target as HTMLInputElement;
+
+    if (e.key === 'ArrowRight') {
+        if (target.selectionStart === target.value.length) {
+            e.preventDefault();
+            if (segment === 'day') monthRef.current?.focus();
+            if (segment === 'month') yearRef.current?.focus();
+        }
+    }
+
+    if (e.key === 'ArrowLeft') {
+        if (target.selectionStart === 0) {
+            e.preventDefault();
+            if (segment === 'year') monthRef.current?.focus();
+            if (segment === 'month') dayRef.current?.focus();
+        }
+    }
+
     if (e.key === 'Backspace' && target.value === '') {
       e.preventDefault();
-      if (segment === 'year') monthRef.current?.focus();
-      if (segment === 'month') dayRef.current?.focus();
+      if (segment === 'year') {
+        monthRef.current?.focus();
+      }
+      if (segment === 'month') {
+        dayRef.current?.focus();
+      }
     }
   }
 
