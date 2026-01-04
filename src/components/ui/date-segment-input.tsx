@@ -10,7 +10,6 @@ interface DateSegmentInputProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   className?: string;
-  'aria-invalid'?: boolean;
 }
 
 export function DateSegmentInput({ value, onChange, disabled, className, ...props }: DateSegmentInputProps) {
@@ -24,18 +23,21 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
   const yearRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    const [d = '', m = '', y = ''] = value ? value.split('-') : ['', '', ''];
-    setDay(d.replace(/'/g, ''));
-    setMonth(m.replace(/'/g, ''));
-    setYear(y.replace(/'/g, ''));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (value) {
+      const [d = '', m = '', y = ''] = value.split('-');
+      setDay(d);
+      setMonth(m);
+      setYear(y);
+    } else {
+        setDay('');
+        setMonth('');
+        setYear(new Date().getFullYear().toString());
+    }
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
       const newDate = `${currentDay || "''"}-${currentMonth || "''"}-${currentYear || "''"}`;
-      if (value !== newDate) {
-        onChange(newDate);
-      }
+      onChange(newDate);
   };
 
 
@@ -165,9 +167,10 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
         className={cn(
         "flex items-center h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         !disabled && 'cursor-text',
-        props['aria-invalid'] && 'border-destructive',
         className
-    )}>
+    )}
+    {...props}
+    >
         <Input
             ref={dayRef}
             value={day}

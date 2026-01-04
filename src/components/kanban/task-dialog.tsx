@@ -187,11 +187,11 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         form.reset({
           title: '',
           description: '',
-          startDate: `''-''-${currentYear}`,
+          startDate: '',
           startTime: '',
-          endDate: `''-''-${currentYear}`,
+          endDate: '',
           endTime: '',
-          subtasks: [{ title: "", description: "", startDate: `''-''-${currentYear}`, startTime: "", endDate: `''-''-${currentYear}`, endTime: "", attachments: [] }],
+          subtasks: [{ title: "", description: "", startDate: '', startTime: "", endDate: '', endTime: "", attachments: [] }],
         });
       }
     }
@@ -363,7 +363,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem>
                                     <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                     <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} aria-invalid={!!fieldState.error}/>
+                                        <DateSegmentInput value={field.value} onChange={field.onChange} />
                                       </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -376,7 +376,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem>
                                     <FormLabel>Giờ</FormLabel>
                                     <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5" aria-invalid={!!fieldState.error}/>
+                                        <Input type="time" {...field} className="bg-primary/5" />
                                       </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -394,7 +394,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem>
                                     <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                     <FormControl>
-                                      <DateSegmentInput value={field.value} onChange={field.onChange} aria-invalid={!!fieldState.error || !!form.formState.errors.root} />
+                                      <DateSegmentInput value={field.value} onChange={field.onChange} />
                                     </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -407,7 +407,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   <FormItem>
                                     <FormLabel>Giờ</FormLabel>
                                     <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5" aria-invalid={!!fieldState.error}/>
+                                        <Input type="time" {...field} className="bg-primary/5" />
                                       </FormControl>
                                     <FormMessage className="h-4" />
                                   </FormItem>
@@ -416,6 +416,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           </div>
                         </div>
                     </div>
+                     {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
                   </Form>
               </TabsContent>
 
@@ -625,7 +626,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           {activeTab === 'task' ? (
             <>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="button" onClick={triggerValidationAndSwitchTab} disabled={isTaskTabInvalid}>Tiếp tục</Button>
+              <Button type="button" onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
             </>
           ) : (
             <>
