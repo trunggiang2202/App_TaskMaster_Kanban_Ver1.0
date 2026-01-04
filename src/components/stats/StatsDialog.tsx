@@ -60,25 +60,21 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
       status: 'Đang làm', 
       count: stats.inProgress, 
       icon: <Clock className="h-5 w-5 text-amber-500" />,
-      description: 'Các công việc đang trong thời gian thực hiện.'
     },
     { 
       status: 'Sắp làm', 
       count: stats.upcoming, 
       icon: <Circle className="h-5 w-5 text-sky-500" />,
-      description: 'Các công việc chưa đến ngày bắt đầu.'
     },
     { 
       status: 'Đã xong', 
       count: stats.done, 
       icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />,
-      description: 'Các công việc đã được đánh dấu hoàn thành.'
     },
     { 
       status: 'Quá hạn', 
       count: stats.overdue, 
       icon: <AlertTriangle className="h-5 w-5 text-destructive" />,
-      description: 'Các công việc chưa hoàn thành nhưng đã qua ngày kết thúc.'
     },
   ];
 
@@ -108,19 +104,12 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {item.icon}
-                      <div className="flex flex-col">
-                        <span className="font-medium">{item.status}</span>
-                        <span className="text-xs text-muted-foreground">{item.description}</span>
-                      </div>
+                      <span className="font-medium">{item.status}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-bold text-lg">{item.count}</TableCell>
                 </TableRow>
               ))}
-              <TableRow className="bg-muted/50 font-semibold">
-                <TableCell>Tổng cộng</TableCell>
-                <TableCell className="text-right font-bold text-lg">{stats.total}</TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </div>
