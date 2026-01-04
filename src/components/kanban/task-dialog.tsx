@@ -151,8 +151,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       description: '',
       startDate: '',
       endDate: '',
-      startTime: '09:00',
-      endTime: '17:00',
+      startTime: '',
+      endTime: '',
       subtasks: [],
     },
     mode: 'onChange', // Validate on change to disable/enable button
@@ -191,17 +191,14 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           }),
         });
       } else {
-        const now = new Date();
-        const startDate = format(now, 'dd-MM-yyyy');
-        const startTime = format(now, 'HH:mm');
         form.reset({
           title: '',
           description: '',
-          startDate: startDate,
-          endDate: startDate,
-          startTime: startTime,
-          endTime: startTime,
-          subtasks: [{ title: "", description: "", startDate: startDate, startTime: startTime, endDate: startDate, endTime: startTime, attachments: [] }],
+          startDate: '',
+          endDate: '',
+          startTime: '',
+          endTime: '',
+          subtasks: [{ title: "", description: "", startDate: "", startTime: "", endDate: "", endTime: "", attachments: [] }],
         });
       }
     }
@@ -662,6 +659,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
 
     
 
