@@ -93,20 +93,9 @@ function TaskProgress({ task }: { task: Task }) {
   }, [task.startDate, task.endDate, task.status]);
   
   const now = new Date();
-  const isOverdue = !task.completed && isAfter(now, task.endDate);
-  const isInProgress = isAfter(now, task.startDate) && isBefore(now, task.endDate);
+  const isOverdue = task.status !== 'Done' && isAfter(now, task.endDate);
   const isUpcoming = isBefore(now, task.startDate);
-  const isWarning = isInProgress && timeProgress < 20;
-
-  const getProgressColor = () => {
-    if (isOverdue) {
-      return 'bg-sidebar-accent'; // Grey for overdue
-    }
-    if (isWarning) {
-      return 'bg-destructive'; // Red for warning
-    }
-    return 'bg-emerald-500'; // Green for normal
-  };
+  const isWarning = !isOverdue && timeProgress < 20;
 
   const getTimeLeftColor = () => {
     if (task.status === 'Done') return 'text-emerald-500';
@@ -126,19 +115,24 @@ function TaskProgress({ task }: { task: Task }) {
             <span>Bắt đầu: {formattedStartDate}</span>
             {!isUpcoming && <span className="font-semibold">(Đã bắt đầu)</span>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
             <Calendar size={12} />
             <span>Kết thúc: {formattedEndDate}</span>
+            {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
           </div>
         </div>
-        <div className="flex justify-between items-center text-xs">
-          <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
-            <Clock size={12} /> 
-            {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
-            {isUpcoming && <span className="font-normal text-sidebar-foreground/70">(Chưa bắt đầu)</span>}
-          </span>
-        </div>
-        <Progress value={timeProgress} className={`h-1.5 ${getProgressColor()}`} />
+        {!isOverdue && (
+            <>
+                <div className="flex justify-between items-center text-xs">
+                  <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
+                    <Clock size={12} /> 
+                    {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
+                    {isUpcoming && <span className="font-normal text-sidebar-foreground/70">(Chưa bắt đầu)</span>}
+                  </span>
+                </div>
+                <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={isWarning ? 'bg-destructive' : 'bg-emerald-500'} />
+            </>
+        )}
     </div>
   );
 }

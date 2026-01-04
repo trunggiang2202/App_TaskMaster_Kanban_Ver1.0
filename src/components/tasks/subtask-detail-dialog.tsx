@@ -122,14 +122,8 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
 
   const now = new Date();
   const isUpcoming = isBefore(now, startDate);
-  const isOverdue = timeProgress === 0 && !completed;
-  const isWarning = timeProgress < 20 && !completed;
-
-  const getProgressColor = () => {
-    if (completed) return 'bg-emerald-500';
-    if (isOverdue || isWarning) return 'bg-destructive';
-    return 'bg-emerald-500';
-  };
+  const isOverdue = !completed && isAfter(now, endDate);
+  const isWarning = !isOverdue && timeProgress < 20 && !completed;
 
   const getTimeLeftColor = () => {
     if (completed) return 'text-emerald-500';
@@ -149,14 +143,21 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
               Bắt đầu: {formattedStart}
               {!isUpcoming && <span className="font-semibold">(Đã bắt đầu)</span>}
             </p>
-            <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Kết thúc: {formattedEnd}</p>
-            <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
-                <Clock className="h-4 w-4" /> 
-                {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
-                {isUpcoming && <span className="font-normal text-muted-foreground">(Chưa bắt đầu)</span>}
+            <p className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
+              <Calendar className="h-4 w-4" /> Kết thúc: {formattedEnd}
+              {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
             </p>
+            {!isOverdue && (
+                <>
+                    <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
+                        <Clock className="h-4 w-4" /> 
+                        {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
+                        {isUpcoming && <span className="font-normal text-muted-foreground">(Chưa bắt đầu)</span>}
+                    </p>
+                    <Progress value={timeProgress} className="h-1.5" indicatorClassName={isWarning ? 'bg-destructive' : 'bg-emerald-500'} />
+                </>
+            )}
         </div>
-        <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
     </div>
   );
 }
