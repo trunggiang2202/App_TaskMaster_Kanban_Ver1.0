@@ -43,7 +43,7 @@ export default function Home() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loadingDots, setLoadingDots] = useState('');
   const [currentEmoji, setCurrentEmoji] = useState('😁');
-  const [showEmoji, setShowEmoji] = useState(true);
+  const [showEmoji, setShowEmoji] = useState(false);
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
@@ -56,20 +56,25 @@ export default function Home() {
   useEffect(() => {
     let dotCount = 0;
     const interval = setInterval(() => {
-      dotCount = (dotCount % 4) + 1; // Cycle from 1 to 4
-      
-      if (dotCount <= 3) {
-        setShowEmoji(false); // Hide emoji while dots are loading
-        setLoadingDots('.'.repeat(dotCount));
-      } else { // dotCount is 4
-        setLoadingDots(''); // Reset dots
-        // Pick a new random emoji
+      dotCount = (dotCount % 5); // Cycle from 0 to 4
+
+      if (dotCount < 3) {
+        // Loading dots phase
+        setShowEmoji(false);
+        setLoadingDots('.'.repeat(dotCount + 1));
+      } else if (dotCount === 3) {
+        // Emoji display phase
         const randomIcon = emojis[Math.floor(Math.random() * emojis.length)];
         setCurrentEmoji(randomIcon);
-        setShowEmoji(true); // Show the new emoji
+        setShowEmoji(true);
+      } else { // dotCount is 4
+        // Reset phase
+        setShowEmoji(false);
+        setLoadingDots('');
       }
-    }, 800); // Change state every 800ms
-  
+      dotCount++;
+    }, 700); // Tweak timing as needed
+
     return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
