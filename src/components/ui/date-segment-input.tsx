@@ -173,7 +173,7 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
     >
         <Input
             ref={dayRef}
-            value={day}
+            value={day || ''}
             onChange={(e) => handleSegmentChange('day', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'day')}
             onBlur={() => handleBlur('day')}
@@ -185,7 +185,7 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
         <span className="text-muted-foreground">-</span>
         <Input
             ref={monthRef}
-            value={month}
+            value={month || ''}
             onChange={(e) => handleSegmentChange('month', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'month')}
             onBlur={() => handleBlur('month')}
@@ -197,7 +197,7 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
         <span className="text-muted-foreground">-</span>
         <Input
             ref={yearRef}
-            value={year}
+            value={year || ''}
             onChange={(e) => handleSegmentChange('year', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'year')}
             onBlur={() => handleBlur('year')}
