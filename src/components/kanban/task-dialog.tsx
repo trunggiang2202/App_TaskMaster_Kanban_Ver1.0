@@ -73,7 +73,8 @@ const taskSchema = z.object({
 }).refine(data => {
     const startDateTime = parseDateTime(data.startDate, data.startTime);
     const endDateTime = parseDateTime(data.endDate, data.endTime);
-    return endDateTime && startDateTime && endDateTime > startDateTime;
+    if (!startDateTime || !endDateTime) return true; // Can't validate if dates are incomplete
+    return endDateTime > startDateTime;
 }, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"],
@@ -456,7 +457,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                           <FormItem className="flex-grow">
                                             <FormControl>
                                               <Input 
-                                                placeholder={`Công việc ${index + 1}`} 
+                                                placeholder="Nhập tên công việc" 
                                                 {...field}
                                                 className="border-none bg-transparent shadow-none focus-visible:ring-0" 
                                               />
