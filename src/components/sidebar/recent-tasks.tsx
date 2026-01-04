@@ -194,24 +194,37 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
   return (
     <SidebarGroup>
       <div className="space-y-3 px-2">
-        {recentTasks.map(task => (
-          <div 
-            key={task.id}
-            onClick={() => onSelectTask(task.id)}
-            className={cn(
-                'p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors bg-sidebar-accent/50',
-                selectedTaskId === task.id ? 'ring-2 ring-sidebar-primary' : 'border border-transparent'
-            )}
-          >
-            <div className="flex justify-between items-start">
-              <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
+        {recentTasks.map(task => {
+          const completedSubtasks = task.subtasks.filter(st => st.completed).length;
+          const totalSubtasks = task.subtasks.length;
+          const progress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : (task.status === 'Done' ? 100 : 0);
+
+          return (
+            <div 
+              key={task.id}
+              onClick={() => onSelectTask(task.id)}
+              className={cn(
+                  'p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors bg-sidebar-accent/50 hover:bg-sidebar-accent/80',
+                  selectedTaskId === task.id ? 'ring-2 ring-sidebar-primary bg-sidebar-accent' : 'border border-transparent'
+              )}
+            >
+              <div className="flex justify-between items-start">
+                <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
+              </div>
+              
+              {totalSubtasks > 0 && (
+                <div className="text-xs text-sidebar-foreground/70">
+                    {Math.round(progress)}% đã hoàn thành
+                </div>
+              )}
+
+              <TaskProgress 
+                task={task} 
+              />
+              {activeFilter === 'today' && <TodaySubtasksInfo task={task} />}
             </div>
-            <TaskProgress 
-              task={task} 
-            />
-            {activeFilter === 'today' && <TodaySubtasksInfo task={task} />}
-          </div>
-        ))}
+          )
+        })}
          {recentTasks.length === 0 && (
           <p className="text-sm text-center text-sidebar-foreground/60 py-4">
             {activeFilter === 'today' ? 'Không có nhiệm vụ nào cho hôm nay' : 
