@@ -23,24 +23,21 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
   const yearRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (value && /^\d{2}-\d{2}-\d{4}$/.test(value)) {
-      const [currentDay, currentMonth, currentYear] = value.split('-');
-      if (currentDay !== day) setDay(currentDay);
-      if (currentMonth !== month) setMonth(currentMonth);
-      if (currentYear !== year) setYear(currentYear);
-    } else if (!value && (day || month || year)) {
-      setDay('');
-      setMonth('');
-      setYear('');
+    const formattedValue = `${day.padStart(2, '0')}-${month.padStart(2, '0')}-${year.padStart(4, '0')}`;
+    if (value !== formattedValue) {
+        const [d = '', m = '', y = ''] = value ? value.split('-') : [];
+        if (d !== day) setDay(d);
+        if (m !== month) setMonth(m);
+        if (y !== year) setYear(y);
     }
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
-    if (currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
-      const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
-      if (value !== newDate) {
-        onChange(newDate);
-      }
+    const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
+    if (value !== newDate && currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
+      onChange(newDate);
+    } else if (!currentDay && !currentMonth && !currentYear && value) {
+      onChange('');
     }
   };
 
@@ -51,11 +48,9 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
 
     if (segment === 'day') {
       setDay(segmentValue);
-      if (segmentValue.length === 2) monthRef.current?.focus();
       triggerParentOnChange(segmentValue, month, year);
     } else if (segment === 'month') {
       setMonth(segmentValue);
-      if (segmentValue.length === 2) yearRef.current?.focus();
       triggerParentOnChange(day, segmentValue, year);
     } else if (segment === 'year') {
       setYear(segmentValue);
