@@ -62,13 +62,13 @@ const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
   startDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: " ",
+    message: "Định dạng ngày phải là DD-MM-YYYY",
   }),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   endDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: " ",
+    message: "Định dạng ngày phải là DD-MM-YYYY",
   }),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
     const startDateTime = parseDateTime(data.startDate, data.startTime);
@@ -184,13 +184,14 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         });
       } else {
         const now = new Date();
+        const currentYear = now.getFullYear();
         const endDateDefault = addHours(now, 1);
         form.reset({
           title: '',
           description: '',
-          startDate: format(now, 'dd-MM-yyyy'),
+          startDate: `''-''-${currentYear}`,
           startTime: format(now, 'HH:mm'),
-          endDate: format(endDateDefault, 'dd-MM-yyyy'),
+          endDate: `''-''-${currentYear}`,
           endTime: format(endDateDefault, 'HH:mm'),
           subtasks: [{ 
             title: "", 
@@ -649,5 +650,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
 
     
