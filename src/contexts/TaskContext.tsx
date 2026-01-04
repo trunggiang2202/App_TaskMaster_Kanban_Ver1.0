@@ -68,12 +68,23 @@ const getInitialTasks = (): Task[] => {
 
 
 export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
-  const [tasks, setTasks] = useState<Task[]>(getInitialTasks);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(tasks[0]?.id || null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const initialData = getInitialTasks();
+    setTasks(initialData);
+    if (initialData.length > 0) {
+      setSelectedTaskId(initialData[0].id)
+    }
+  }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
+      // Avoid saving empty tasks array on initial server render
+      if (tasks.length > 0 || localStorage.getItem('tasks')) {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+      }
     } catch (error) {
       console.error('Failed to save tasks to localStorage:', error);
     }
@@ -81,7 +92,13 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
 
   const addTask = useCallback((taskData: Task) => {
-    setTasks(prevTasks => [taskData, ...prevTasks]);
+    setTasks(prevTasks => {
+      const newTasks = [taskData, ...prevTasks];
+      if (prevTasks.length === 0) {
+        setSelectedTaskId(taskData.id);
+      }
+      return newTasks;
+    });
   }, []);
 
   const updateTask = useCallback((updatedTask: Task) => {
