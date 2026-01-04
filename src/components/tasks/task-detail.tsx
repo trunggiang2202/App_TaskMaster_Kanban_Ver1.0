@@ -48,7 +48,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     const renderIcon = () => {
         if (subtask.completed) {
             return (
-                <div className="h-5 w-5 flex items-center justify-center bg-primary rounded-full">
+                <div className="h-5 w-5 flex items-center justify-center bg-emerald-500 rounded-full">
                     <Check className="h-3 w-3 text-primary-foreground" />
                 </div>
             );
