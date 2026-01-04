@@ -69,7 +69,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
     },
     { 
       status: 'Đã xong', 
-      count: stats.done, 
+      count: stats.done,
       icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />,
     },
     { 
@@ -87,9 +87,6 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
             <TrendingUp className="h-6 w-6" />
             Thống kê công việc
           </DialogTitle>
-          <DialogDescription>
-            Tổng quan nhanh về tất cả các công việc con của bạn.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
