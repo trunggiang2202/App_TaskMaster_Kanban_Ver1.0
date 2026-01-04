@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { isBefore, isAfter, startOfDay } from 'date-fns';
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface SubtaskStats {
   inProgress: number;
@@ -86,37 +86,36 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
             Thống kê công việc
           </DialogTitle>
         </DialogHeader>
-
-        <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-            <div className="flex items-center gap-3">
-                <ListTodo className="h-5 w-5 text-primary" />
-                <span className="font-semibold text-foreground">Tổng công việc</span>
-            </div>
-            <span className="text-xl text-foreground">{stats.total}</span>
-        </div>
         
-        <div className="py-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Số lượng</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {statsData.map((item) => (
-                <TableRow key={item.status}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      {item.icon}
-                      <span className="font-medium">{item.status}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right text-lg">{item.count}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="space-y-4 py-2">
+            <div className="flex items-center justify-between p-2">
+                <div className="flex items-center gap-3">
+                    <ListTodo className="h-5 w-5 text-primary" />
+                    <span className="font-semibold text-foreground">Tổng công việc</span>
+                </div>
+                <span className="text-foreground">{stats.total}</span>
+            </div>
+
+            <Separator />
+
+            <div className="px-2 space-y-3">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Trạng thái</span>
+                    <span>Số lượng</span>
+                </div>
+                {statsData.map((item, index) => (
+                    <React.Fragment key={item.status}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                {item.icon}
+                                <span className="font-medium text-foreground">{item.status}</span>
+                            </div>
+                            <span className="text-foreground">{item.count}</span>
+                        </div>
+                        {index < statsData.length -1 && <Separator />}
+                    </React.Fragment>
+                ))}
+            </div>
         </div>
       </DialogContent>
     </Dialog>
