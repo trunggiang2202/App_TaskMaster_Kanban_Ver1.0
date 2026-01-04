@@ -20,7 +20,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Plus, Trash2, Paperclip, X, Clock } from 'lucide-react';
 import type { Task, Subtask, Attachment } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
-import { format, isAfter, isBefore, parse } from 'date-fns';
+import { format, isAfter, isBefore, parse, addHours } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -183,15 +183,24 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           })),
         });
       } else {
-        const currentYear = new Date().getFullYear().toString();
+        const now = new Date();
+        const endDateDefault = addHours(now, 1);
         form.reset({
           title: '',
           description: '',
-          startDate: `''-''-${currentYear}`,
-          startTime: '',
-          endDate: `''-''-${currentYear}`,
-          endTime: '',
-          subtasks: [{ title: "", description: "", startDate: `''-''-${currentYear}`, startTime: "", endDate: `''-''-${currentYear}`, endTime: "", attachments: [] }],
+          startDate: format(now, 'dd-MM-yyyy'),
+          startTime: format(now, 'HH:mm'),
+          endDate: format(endDateDefault, 'dd-MM-yyyy'),
+          endTime: format(endDateDefault, 'HH:mm'),
+          subtasks: [{ 
+            title: "", 
+            description: "", 
+            startDate: format(now, 'dd-MM-yyyy'), 
+            startTime: format(now, 'HH:mm'), 
+            endDate: format(endDateDefault, 'dd-MM-yyyy'), 
+            endTime: format(endDateDefault, 'HH:mm'), 
+            attachments: [] 
+          }],
         });
       }
     }
@@ -598,14 +607,15 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         size="sm"
                         className="mt-2"
                         onClick={() => {
-                            const currentYear = new Date().getFullYear().toString();
+                            const now = new Date();
+                            const endDateDefault = addHours(now, 1);
                             append({ 
                                 title: "", 
                                 description: "", 
-                                startDate: `''-''-${currentYear}`, 
-                                startTime: "", 
-                                endDate: `''-''-${currentYear}`, 
-                                endTime: "", 
+                                startDate: format(now, 'dd-MM-yyyy'), 
+                                startTime: format(now, 'HH:mm'), 
+                                endDate: format(endDateDefault, 'dd-MM-yyyy'), 
+                                endTime: format(endDateDefault, 'HH:mm'), 
                                 attachments: [] 
                             })
                         }}
@@ -639,3 +649,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
