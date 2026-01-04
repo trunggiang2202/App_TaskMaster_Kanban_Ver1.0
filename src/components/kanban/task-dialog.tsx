@@ -20,11 +20,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Plus, Trash2, Paperclip, X } from 'lucide-react';
 import type { Task, Subtask, Attachment } from '@/lib/types';
 import { Separator } from '@/components/ui/separator';
-import { format } from 'date-fns';
+import { format, isAfter, isBefore, parse } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from '@/lib/utils';
 
 
 const attachmentSchema = z.object({
@@ -303,6 +304,31 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       }).length
     : (subtasksFromForm || []).filter(st => st.title && st.title.trim() !== '').length;
 
+  const getSubtaskBorderColor = (index: number) => {
+    const subtask = form.watch(`subtasks.${index}`);
+    const now = new Date();
+
+    const isCompleted = taskToEdit?.subtasks[index]?.completed || false;
+    if (isCompleted) return 'border-emerald-500';
+
+    const startDate = parseDate(subtask.startDate, subtask.startTime, subtask.startPeriod);
+    const endDate = parseDate(subtask.endDate, subtask.endTime, subtask.endPeriod);
+
+    if (!startDate || !endDate) return 'border-transparent';
+
+    if (isAfter(now, startDate)) { // In Progress
+        if (isBefore(endDate, now)) { // Overdue
+            return 'border-destructive';
+        }
+        return 'border-amber-500'; // In Progress
+    }
+
+    if (isBefore(now, startDate)) { // Not started
+        return 'border-sky-500';
+    }
+    
+    return 'border-transparent';
+  };
 
 
   return (
@@ -498,7 +524,14 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         {fields.map((field, index) => {
                             const subtaskAttachments = form.watch(`subtasks.${index}.attachments`) || [];
                             return (
-                              <AccordionItem value={`item-${index}`} key={field.id} className="bg-muted/50 rounded-md border-b-0">
+                              <AccordionItem 
+                                value={`item-${index}`} 
+                                key={field.id} 
+                                className={cn(
+                                  "bg-muted/50 rounded-md border-b-0 border-l-4",
+                                  getSubtaskBorderColor(index)
+                                )}
+                              >
                                   <div className="flex items-center w-full p-1 pr-2">
                                     <FormField
                                       control={form.control}
@@ -734,4 +767,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 }
 
     
+    
+
     
