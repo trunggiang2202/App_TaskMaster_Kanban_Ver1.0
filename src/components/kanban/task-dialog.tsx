@@ -326,7 +326,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         <FormItem>
                           <FormLabel>Tên nhiệm vụ</FormLabel>
                           <FormControl>
-                            <Input placeholder="Launch new marketing campaign" {...field} className="bg-primary/5"/>
+                            <Input placeholder="Tên nhiệm vụ" {...field} className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -505,7 +505,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                       )}
                                       />
                                       <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                                        <Settings2 className="h-4 w-4" />
                                       </AccordionTrigger>
                                       <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8">
                                         <Trash2 className="h-4 w-4 text-destructive" />
