@@ -17,11 +17,11 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
   const [month, setMonth] = React.useState('');
   const [year, setYear] = React.useState('');
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const dayRef = React.useRef<HTMLInputElement>(null);
   const monthRef = React.useRef<HTMLInputElement>(null);
   const yearRef = React.useRef<HTMLInputElement>(null);
 
-  // Sync local state with parent value prop
   React.useEffect(() => {
     if (value && /^\d{2}-\d{2}-\d{4}$/.test(value)) {
       const parts = value.split('-');
@@ -61,13 +61,13 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
   
   const handleBlur = (segment: 'day' | 'month') => {
     if (segment === 'day') {
-        if (day.length === 1 && parseInt(day, 10) > 0) {
+        if (day.length === 1 && parseInt(day, 10) >= 0) {
             const newDay = day.padStart(2, '0');
             setDay(newDay);
             triggerParentOnChange(newDay, month, year);
         }
     } else if (segment === 'month') {
-        if (month.length === 1 && parseInt(month, 10) > 0) {
+        if (month.length === 1 && parseInt(month, 10) >= 0) {
             const newMonth = month.padStart(2, '0');
             setMonth(newMonth);
             triggerParentOnChange(day, newMonth, year);
@@ -85,9 +85,42 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
     }
   }
 
+  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) return;
+
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT') {
+      return; 
+    }
+    
+    if (containerRef.current && dayRef.current && monthRef.current && yearRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const clickX = e.clientX - containerRect.left;
+
+        const dayRect = dayRef.current.getBoundingClientRect();
+        const monthRect = monthRef.current.getBoundingClientRect();
+
+        const dayBoundary = (dayRect.right - containerRect.left);
+        const monthBoundary = (monthRect.right - containerRect.left);
+
+        if (clickX < dayBoundary) {
+            dayRef.current.focus();
+        } else if (clickX < monthBoundary) {
+            monthRef.current.focus();
+        } else {
+            yearRef.current.focus();
+        }
+    }
+  };
+
+
   return (
-    <div className={cn(
+    <div 
+        ref={containerRef}
+        onClick={handleContainerClick}
+        className={cn(
         "flex items-center h-10 w-full rounded-md border border-input bg-primary/5 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        !disabled && 'cursor-text',
         className
     )}>
         <Input
