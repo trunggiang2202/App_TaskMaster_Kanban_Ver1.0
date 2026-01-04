@@ -209,8 +209,9 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
 
         {totalSubtasks > 0 && (
           <div className="p-4 rounded-md border bg-muted/20 space-y-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
+              <span className="text-sm font-medium text-muted-foreground">{Math.round(subtaskProgress)}% đã hoàn thành</span>
             </div>
             <div className="space-y-4">
               <Progress value={subtaskProgress} className="h-2" />
