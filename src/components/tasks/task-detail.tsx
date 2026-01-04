@@ -176,13 +176,13 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
   const now = new Date();
 
   const getSubtaskStyling = (subtask: Subtask, columnTitle: SubtaskStatus) => {
-    if (subtask.completed) return 'border-emerald-500 hover:bg-emerald-500/5';
+    if (subtask.completed) return 'border-l-4 border-emerald-500 hover:bg-emerald-500/5';
     if (columnTitle === 'Đang làm' && subtask.endDate && isBefore(subtask.endDate, now)) {
-      return 'border-destructive hover:bg-destructive/5';
+      return 'border-l-4 border-destructive hover:bg-destructive/5';
     }
-    if (columnTitle === 'Đang làm') return 'border-amber-500 hover:bg-amber-500/5';
-    if (columnTitle === 'Chưa làm') return 'border-sky-500 hover:bg-sky-500/5';
-    return 'border-muted hover:bg-muted/50';
+    if (columnTitle === 'Đang làm') return 'border-l-4 border-amber-500 hover:bg-amber-500/5';
+    if (columnTitle === 'Chưa làm') return 'border-l-4 border-sky-500 hover:bg-sky-500/5';
+    return 'border-l-4 border-muted hover:bg-muted/50';
   };
 
   const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
