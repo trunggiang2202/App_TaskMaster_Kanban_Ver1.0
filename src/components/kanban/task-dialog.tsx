@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -184,8 +184,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           })),
         });
       } else {
-        const now = new Date();
-        const currentYear = now.getFullYear();
+        const currentYear = new Date().getFullYear();
         form.reset({
           title: '',
           description: '',
@@ -196,9 +195,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           subtasks: [{ 
             title: "", 
             description: "", 
-            startDate: format(now, 'dd-MM-yyyy'), 
+            startDate: format(new Date(), 'dd-MM-yyyy'), 
             startTime: '00:00', 
-            endDate: format(addHours(now, 1), 'dd-MM-yyyy'), 
+            endDate: format(addHours(new Date(), 1), 'dd-MM-yyyy'), 
             endTime: '01:00', 
             attachments: [] 
           }],
@@ -208,7 +207,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   }, [taskToEdit, form, isOpen]);
 
 
-  function handleSubmit(data: TaskFormData) {
+  const handleSubmit = useCallback((data: TaskFormData) => {
     const taskStartDate = parseDateTime(data.startDate, data.startTime);
     const taskEndDate = parseDateTime(data.endDate, data.endTime);
 
@@ -242,7 +241,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       subtasks: newSubtasks,
     };
     onSubmit(task);
-  }
+  }, [onSubmit, taskToEdit]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: any, index: number) => {
       const file = e.target.files?.[0];
@@ -609,9 +608,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 title: "", 
                                 description: "", 
                                 startDate: format(now, 'dd-MM-yyyy'), 
-                                startTime: format(now, 'HH:mm'), 
+                                startTime: '00:00', 
                                 endDate: format(endDateDefault, 'dd-MM-yyyy'), 
-                                endTime: format(endDateDefault, 'HH:mm'), 
+                                endTime: '01:00', 
                                 attachments: [] 
                             })
                         }}

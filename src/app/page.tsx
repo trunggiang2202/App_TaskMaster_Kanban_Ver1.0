@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { initialTasks } from '@/lib/data';
 import type { Task } from '@/lib/types';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -37,8 +37,8 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(tasks[0]?.id || null);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(() => new Date());
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [loadingDots, setLoadingDots] = useState('');
 
   useEffect(() => {
@@ -59,17 +59,17 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleOpenDialog = (task?: Task) => {
+  const handleOpenDialog = useCallback((task?: Task) => {
     setTaskToEdit(task);
     setIsDialogOpen(true);
-  };
+  }, []);
   
-  const handleCloseDialog = () => {
+  const handleCloseDialog = useCallback(() => {
     setTaskToEdit(undefined);
     setIsDialogOpen(false);
-  };
+  }, []);
 
-  const handleSubmitTask = (taskData: Task) => {
+  const handleSubmitTask = useCallback((taskData: Task) => {
     if (taskToEdit) {
       // Update existing task
       setTasks(prevTasks =>
@@ -80,28 +80,28 @@ export default function Home() {
       setTasks(prevTasks => [taskData, ...prevTasks]);
     }
     handleCloseDialog();
-  };
+  }, [taskToEdit, handleCloseDialog]);
   
-  const deleteTask = (taskId: string) => {
+  const deleteTask = useCallback((taskId: string) => {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
     if (selectedTaskId === taskId) {
       setSelectedTaskId(null);
     }
-  };
+  }, [selectedTaskId]);
 
-  const updateTask = (updatedTask: Task) => {
+  const updateTask = useCallback((updatedTask: Task) => {
     setTasks(prevTasks =>
       prevTasks.map(task => (task.id === updatedTask.id ? updatedTask : task))
     );
-  };
+  }, []);
   
-  const handleTaskStatusChange = (taskId: string, status: Task['status']) => {
+  const handleTaskStatusChange = useCallback((taskId: string, status: Task['status']) => {
     setTasks(prevTasks =>
       prevTasks.map(task => (task.id === taskId ? { ...task, status } : task))
     );
-  };
+  }, []);
   
-  const handleSubtaskToggle = (taskId: string, subtaskId: string) => {
+  const handleSubtaskToggle = useCallback((taskId: string, subtaskId: string) => {
     setTasks(prevTasks =>
       prevTasks.map(task => {
         if (task.id === taskId) {
@@ -129,9 +129,9 @@ export default function Home() {
         return task;
       })
     );
-  };
+  }, []);
 
-  const hasInProgressSubtasks = (task: Task) => {
+  const hasInProgressSubtasks = useCallback((task: Task) => {
     if (task.status === 'Done') return false;
     // A task is for "Today" if it has subtasks that are not completed,
     // and today's date is between the subtask's start and end date.
@@ -141,12 +141,12 @@ export default function Home() {
       st.endDate &&
       isWithinInterval(startOfDay(new Date()), { start: startOfDay(st.startDate), end: startOfDay(st.endDate) })
     );
-  };
+  }, []);
   
-  const todaysTasks = tasks.filter(hasInProgressSubtasks);
-  const uncompletedTasksCount = tasks.filter(task => task.status !== 'Done').length;
+  const todaysTasks = useMemo(() => tasks.filter(hasInProgressSubtasks), [tasks, hasInProgressSubtasks]);
+  const uncompletedTasksCount = useMemo(() => tasks.filter(task => task.status !== 'Done').length, [tasks]);
 
-  const getFilteredTasks = () => {
+  const filteredTasksForSidebar = useMemo(() => {
     const sDay = startOfDay(selectedDay);
     switch(activeFilter) {
       case 'today':
@@ -164,13 +164,11 @@ export default function Home() {
       default:
         return tasks;
     }
-  };
+  }, [activeFilter, tasks, selectedDay, todaysTasks]);
 
-  const filteredTasksForSidebar = getFilteredTasks();
+  const selectedTask = useMemo(() => tasks.find(task => task.id === selectedTaskId), [tasks, selectedTaskId]);
 
-  const selectedTask = tasks.find(task => task.id === selectedTaskId);
-
-  const todaysSubtaskCount = tasks.reduce((count, task) => {
+  const todaysSubtaskCount = useMemo(() => tasks.reduce((count, task) => {
     if (task.status === 'Done') {
       return count;
     }
@@ -184,15 +182,16 @@ export default function Home() {
         return false;
     });
     return count + inProgressSubtasks.length;
-  }, 0);
+  }, 0), [tasks]);
 
 
-  const handlePrevWeek = () => setCurrentDate(prev => subWeeks(prev, 1));
-  const handleNextWeek = () => setCurrentDate(prev => addWeeks(prev, 1));
-  const handleGoToToday = () => {
-    setCurrentDate(new Date());
-    setSelectedDay(new Date());
-  };
+  const handlePrevWeek = useCallback(() => setCurrentDate(prev => subWeeks(prev, 1)), []);
+  const handleNextWeek = useCallback(() => setCurrentDate(prev => addWeeks(prev, 1)), []);
+  const handleGoToToday = useCallback(() => {
+    const today = new Date();
+    setCurrentDate(today);
+    setSelectedDay(today);
+  }, []);
 
 
   return (
