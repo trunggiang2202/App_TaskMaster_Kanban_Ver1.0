@@ -306,7 +306,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                   <FormItem>
                     <FormLabel>Nhiệm vụ</FormLabel>
                     <FormControl>
-                      <Input placeholder="ví dụ: Hoàn thành báo cáo dự án" {...field} className="bg-muted/20"/>
+                      <Input placeholder="ví dụ: Hoàn thành báo cáo dự án" {...field} className="bg-muted/40"/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -319,7 +319,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                   <FormItem>
                     <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} className="bg-muted/20"/>
+                      <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} className="bg-muted/40"/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -337,7 +337,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           <FormItem>
                             <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                             <FormControl>
-                                <Input placeholder="31-12-2024" {...field} className="bg-muted/20"/>
+                                <Input placeholder="31-12-2024" {...field} className="bg-muted/40"/>
                               </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -350,7 +350,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           <FormItem>
                             <FormLabel>Giờ</FormLabel>
                             <FormControl>
-                                <Input placeholder="09:00" {...field} className="w-24 bg-muted/20"/>
+                                <Input placeholder="09:00" {...field} className="w-24 bg-muted/40"/>
                               </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -401,7 +401,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           <FormItem>
                             <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                             <FormControl>
-                                <Input placeholder="31-12-2024" {...field} className="bg-muted/20"/>
+                                <Input placeholder="31-12-2024" {...field} className="bg-muted/40"/>
                               </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -414,7 +414,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           <FormItem>
                             <FormLabel>Giờ</FormLabel>
                             <FormControl>
-                                <Input placeholder="05:00" {...field} className="w-24 bg-muted/20"/>
+                                <Input placeholder="05:00" {...field} className="w-24 bg-muted/40"/>
                               </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -699,6 +699,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
 
     
 
