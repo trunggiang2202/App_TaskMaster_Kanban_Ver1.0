@@ -42,7 +42,11 @@ export default function Home() {
   const [loadingDots, setLoadingDots] = useState('');
 
   useEffect(() => {
-    setShowWelcomeDialog(true);
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
+    if (!hasSeenWelcome) {
+      setShowWelcomeDialog(true);
+      localStorage.setItem('hasSeenWelcomeDialog', 'true');
+    }
   }, []);
 
   useEffect(() => {
@@ -198,11 +202,11 @@ export default function Home() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
-          <h2 className="flex items-center gap-2 text-2xl font-bold font-headline bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
-            <Sparkles className="text-amber-400" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold font-headline text-primary">
+            <Sparkles className="text-primary" />
             Hi, Louis Giang
             <span className="inline-block w-10 text-left">{loadingDots}</span>
-            <Sparkles className="text-amber-400" />
+            <Sparkles className="text-primary" />
           </h2>
         </SidebarHeader>
         <SidebarContent>
