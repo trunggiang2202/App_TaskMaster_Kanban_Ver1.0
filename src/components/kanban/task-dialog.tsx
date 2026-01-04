@@ -348,7 +348,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col min-h-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-              <TabsList className="grid w-full grid-cols-2 bg-muted/60 p-1">
+              <TabsList className="grid w-full grid-cols-2 bg-muted p-1">
                 <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
                 <TabsTrigger value="subtasks" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
               </TabsList>
