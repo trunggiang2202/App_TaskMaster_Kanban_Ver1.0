@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -222,7 +222,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         const subtaskEndDateTime = parseDateTime(st.endDate, st.endTime);
         return {
           id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
-          title: st.title,
+          title: st.title ?? '',
           description: st.description,
           completed: taskToEdit?.subtasks[index]?.completed || false,
           startDate: subtaskStartDate,
@@ -272,13 +272,16 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   };
 
   const subtasksFromForm = form.watch('subtasks');
-  const uncompletedSubtasksCount = taskToEdit
-    ? taskToEdit.subtasks.filter((st, index) => {
-        const formSubtask = subtasksFromForm?.[index];
-        // A subtask is uncompleted if it's not marked as completed AND it exists in the form with a title
-        return !st.completed && formSubtask && formSubtask.title && formSubtask.title.trim() !== '';
-      }).length
-    : (subtasksFromForm || []).filter(st => st.title && st.title.trim() !== '').length;
+  
+  const uncompletedSubtasksCount = useMemo(() => {
+    const allSubtasks = taskToEdit?.subtasks || [];
+    return (subtasksFromForm || []).filter((st, index) => {
+      const originalSubtask = allSubtasks[index];
+      const isCompleted = originalSubtask ? originalSubtask.completed : false;
+      return !isCompleted && st.title && st.title.trim() !== '';
+    }).length;
+  }, [subtasksFromForm, taskToEdit]);
+
 
   const getSubtaskBorderColor = (index: number) => {
     const subtask = form.watch(`subtasks.${index}`);
@@ -474,7 +477,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                           name={`subtasks.${index}.description`}
                                           render={({ field }) => (
                                             <FormItem>
-                                              <h4 className="text-xs font-medium text-muted-foreground">Mô tả (Tùy chọn)</h4>
+                                              <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                                               <FormControl>
                                                 <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} className="bg-primary/5" />
                                               </FormControl>
@@ -603,7 +606,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         size="sm"
                         className="mt-2"
                         onClick={() => {
-                            const currentYear = String(new Date().getFullYear());
+                            const now = new Date();
+                            const currentYear = String(now.getFullYear());
                             append({ 
                                 title: "", 
                                 description: "", 
@@ -644,16 +648,3 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
-
-    
-
-    
-
-    
-
-
-
-
-    
-
-    
