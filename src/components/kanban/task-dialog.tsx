@@ -39,25 +39,16 @@ const subtaskSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
-  startPeriod: z.enum(['AM', 'PM']).optional(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
-  endPeriod: z.enum(['AM', 'PM']).optional(),
   attachments: z.array(attachmentSchema).optional(),
 });
 
-const convertTo24Hour = (time: string, period: 'AM' | 'PM') => {
-    let [hours, minutes] = time.split(':').map(Number);
-    if (period === 'PM' && hours < 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-};
-
-const parseDateTime = (dateStr: string, timeStr: string, period: 'AM' | 'PM') => {
+const parseDateTime = (dateStr: string, timeStr: string) => {
+    if (!dateStr || !timeStr) return null;
     try {
-        const time24 = convertTo24Hour(timeStr, period);
         const [day, month, year] = dateStr.split('-').map(Number);
-        const [hour, minute] = time24.split(':').map(Number);
+        const [hour, minute] = timeStr.split(':').map(Number);
         return new Date(year, month - 1, day, hour, minute);
     } catch {
         return null;
@@ -68,15 +59,13 @@ const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
   startDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
-  startTime: z.string().regex(/^\d{1,2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
-  startPeriod: z.enum(['AM', 'PM']),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   endDate: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Định dạng ngày phải là DD-MM-YYYY"),
-  endTime: z.string().regex(/^\d{1,2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
-  endPeriod: z.enum(['AM', 'PM']),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Định dạng giờ phải là HH:MM"),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
-    const startDateTime = parseDateTime(data.startDate, data.startTime, data.startPeriod);
-    const endDateTime = parseDateTime(data.endDate, data.endTime, data.endPeriod);
+    const startDateTime = parseDateTime(data.startDate, data.startTime);
+    const endDateTime = parseDateTime(data.endDate, data.endTime);
     return endDateTime && startDateTime && endDateTime > startDateTime;
 }, {
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
@@ -85,11 +74,11 @@ const taskSchema = z.object({
   if (data.subtasks) {
     for (const subtask of data.subtasks) {
       if (subtask.title && subtask.title.trim() !== '') {
-        if (!subtask.startDate || !subtask.startTime || !subtask.startPeriod || !subtask.endDate || !subtask.endTime || !subtask.endPeriod) {
+        if (!subtask.startDate || !subtask.startTime || !subtask.endDate || !subtask.endTime) {
           return false; // Invalid if a subtask with a title is missing any deadline field
         }
-        const startSubtaskTime = parseDateTime(subtask.startDate, subtask.startTime, subtask.startPeriod);
-        const endSubtaskTime = parseDateTime(subtask.endDate, subtask.endTime, subtask.endPeriod);
+        const startSubtaskTime = parseDateTime(subtask.startDate, subtask.startTime);
+        const endSubtaskTime = parseDateTime(subtask.endDate, subtask.endTime);
         if (!startSubtaskTime || !endSubtaskTime || endSubtaskTime <= startSubtaskTime) {
             return false; // Subtask end time must be after start time
         }
@@ -98,20 +87,20 @@ const taskSchema = z.object({
   }
   return true;
 }, {
-  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ/AM-PM bắt đầu và kết thúc, và thời gian kết thúc phải sau thời gian bắt đầu).",
+  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ bắt đầu và kết thúc, và thời gian kết thúc phải sau thời gian bắt đầu).",
   path: ["subtasks"],
 }).refine(data => {
-    const taskStartDateTime = parseDateTime(data.startDate, data.startTime, data.startPeriod);
-    const taskEndDateTime = parseDateTime(data.endDate, data.endTime, data.endPeriod);
+    const taskStartDateTime = parseDateTime(data.startDate, data.startTime);
+    const taskEndDateTime = parseDateTime(data.endDate, data.endTime);
 
     if (!taskStartDateTime || !taskEndDateTime || !data.subtasks) {
         return true; // Cannot validate if parent dates are invalid or no subtasks
     }
 
     for (const subtask of data.subtasks) {
-        if (subtask.title && subtask.title.trim() !== '' && subtask.startDate && subtask.startTime && subtask.startPeriod && subtask.endDate && subtask.endTime && subtask.endPeriod) {
-            const subtaskStartDateTime = parseDateTime(subtask.startDate, subtask.startTime, subtask.startPeriod);
-            const subtaskEndDateTime = parseDateTime(subtask.endDate, subtask.endTime, subtask.endPeriod);
+        if (subtask.title && subtask.title.trim() !== '' && subtask.startDate && subtask.startTime && subtask.endDate && subtask.endTime) {
+            const subtaskStartDateTime = parseDateTime(subtask.startDate, subtask.startTime);
+            const subtaskEndDateTime = parseDateTime(subtask.endDate, subtask.endTime);
 
             if (!subtaskStartDateTime || !subtaskEndDateTime) {
                 continue; // Already handled by previous refine
@@ -148,17 +137,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   const [activeTab, setActiveTab] = useState('task');
   const [isTaskTabValid, setIsTaskTabValid] = useState(false);
 
-  const convertTo12Hour = (date: Date) => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const hours12 = hours % 12 || 12;
-    return {
-      time: `${hours12}:${String(minutes).padStart(2, '0')}`,
-      period: ampm as 'AM' | 'PM'
-    };
-  };
-
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -167,9 +145,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       startDate: '',
       endDate: '',
       startTime: '09:00',
-      startPeriod: 'AM',
-      endTime: '05:00',
-      endPeriod: 'PM',
+      endTime: '17:00',
       subtasks: [],
     },
     mode: 'onChange', // Validate on change to disable/enable button
@@ -185,29 +161,21 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       setActiveTab('task'); // Reset to the first tab whenever the dialog opens
       setIsTaskTabValid(false);
       if (taskToEdit) {
-        const start = convertTo12Hour(taskToEdit.startDate);
-        const end = convertTo12Hour(taskToEdit.endDate);
         form.reset({
           title: taskToEdit.title,
           description: taskToEdit.description || '',
           startDate: format(taskToEdit.startDate, 'dd-MM-yyyy'),
-          startTime: start.time,
-          startPeriod: start.period,
+          startTime: format(taskToEdit.startDate, 'HH:mm'),
           endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
-          endTime: end.time,
-          endPeriod: end.period,
+          endTime: format(taskToEdit.endDate, 'HH:mm'),
           subtasks: taskToEdit.subtasks.map(st => {
-            const subStart = st.startDate ? convertTo12Hour(st.startDate) : { time: '', period: 'AM' as const };
-            const subEnd = st.endDate ? convertTo12Hour(st.endDate) : { time: '', period: 'PM' as const };
             return {
               title: st.title,
               description: st.description || '',
               startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
-              startTime: subStart.time,
-              startPeriod: subStart.period,
+              startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
               endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
-              endTime: subEnd.time,
-              endPeriod: subEnd.period,
+              endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
               attachments: st.attachments || [],
             };
           }),
@@ -219,24 +187,22 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           startDate: '',
           endDate: '',
           startTime: '09:00',
-          startPeriod: 'AM',
-          endTime: '05:00',
-          endPeriod: 'PM',
-          subtasks: [{ title: "", description: "", startDate: '', startTime: '09:00', startPeriod: 'AM', endDate: '', endTime: '05:00', endPeriod: 'PM', attachments: [] }],
+          endTime: '17:00',
+          subtasks: [{ title: "", description: "", startDate: '', startTime: '09:00', endDate: '', endTime: '17:00', attachments: [] }],
         });
       }
     }
   }, [taskToEdit, form, isOpen]);
 
-  const parseDate = (dateStr?: string, timeStr?: string, period?: 'AM' | 'PM'): Date | undefined => {
-    if (!dateStr || !timeStr || !period) return undefined;
-    const dt = parseDateTime(dateStr, timeStr, period);
+  const parseDate = (dateStr?: string, timeStr?: string): Date | undefined => {
+    if (!dateStr || !timeStr) return undefined;
+    const dt = parseDateTime(dateStr, timeStr);
     return dt ?? undefined;
   };
 
   function handleSubmit(data: TaskFormData) {
-    const taskStartDate = parseDate(data.startDate, data.startTime, data.startPeriod);
-    const taskEndDate = parseDate(data.endDate, data.endTime, data.endPeriod);
+    const taskStartDate = parseDate(data.startDate, data.startTime);
+    const taskEndDate = parseDate(data.endDate, data.endTime);
 
     if (!taskStartDate || !taskEndDate) return;
 
@@ -244,8 +210,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     const newSubtasks: Subtask[] = data.subtasks ? data.subtasks
       .filter(st => st.title && st.title.trim() !== '') // Only include subtasks with a title
       .map((st, index) => {
-        const subtaskStartDate = parseDate(st.startDate, st.startTime, st.startPeriod);
-        const subtaskEndDate = parseDate(st.endDate, st.endTime, st.endPeriod);
+        const subtaskStartDate = parseDate(st.startDate, st.startTime);
+        const subtaskEndDate = parseDate(st.endDate, st.endTime);
         return {
           id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
           title: st.title,
@@ -291,7 +257,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   };
 
   const triggerValidationAndSwitchTab = async () => {
-    const result = await form.trigger(["title", "startDate", "startTime", "startPeriod", "endDate", "endTime", "endPeriod"]);
+    const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime"]);
     if (result) {
         setIsTaskTabValid(true);
         setActiveTab('subtasks');
@@ -316,8 +282,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     const isCompleted = taskToEdit?.subtasks[index]?.completed || false;
     if (isCompleted) return 'border-emerald-500';
 
-    const startDate = parseDate(subtask.startDate, subtask.startTime, subtask.startPeriod);
-    const endDate = parseDate(subtask.endDate, subtask.endTime, subtask.endPeriod);
+    const startDate = parseDate(subtask.startDate, subtask.startTime);
+    const endDate = parseDate(subtask.endDate, subtask.endTime);
 
     if (!startDate || !endDate) return 'border-muted';
 
@@ -389,7 +355,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     <div className="space-y-2">
                       <FormLabel>Bắt đầu</FormLabel>
                       <div className="border p-3 rounded-md">
-                          <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                          <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                             <FormField
                               control={form.control}
                               name="startDate"
@@ -410,49 +376,19 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 <FormItem>
                                   <FormLabel>Giờ</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="09:00" {...field} className="w-24 bg-primary/5"/>
+                                      <Input type="time" {...field} className="w-32 bg-primary/5"/>
                                     </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="startPeriod"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <RadioGroup
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                        className="flex flex-col space-y-1"
-                                        value={field.value}
-                                      >
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="AM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">AM</FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="PM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">PM</FormLabel>
-                                        </FormItem>
-                                      </RadioGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
                           </div>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <FormLabel>Kết thúc</FormLabel>
                       <div className="border p-3 rounded-md">
-                          <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                          <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                             <FormField
                               control={form.control}
                               name="endDate"
@@ -473,42 +409,12 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 <FormItem>
                                   <FormLabel>Giờ</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="05:00" {...field} className="w-24 bg-primary/5"/>
+                                      <Input type="time" {...field} className="w-32 bg-primary/5"/>
                                     </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="endPeriod"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <RadioGroup
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                        className="flex flex-col space-y-1"
-                                        value={field.value}
-                                      >
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="AM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">AM</FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="PM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">PM</FormLabel>
-                                        </FormItem>
-                                      </RadioGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
                           </div>
                       </div>
                     </div>
@@ -619,7 +525,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                         />
                                         <div className="space-y-2">
                                             <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
-                                            <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                                            <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                                               <FormField
                                                 control={form.control}
                                                 name={`subtasks.${index}.startDate`}
@@ -638,37 +544,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                 render={({ field }) => (
                                                   <FormItem>
                                                     <FormControl>
-                                                      <Input placeholder="HH:MM" {...field} className="w-24 bg-primary/5" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                  </FormItem>
-                                                )}
-                                              />
-                                              <FormField
-                                                control={form.control}
-                                                name={`subtasks.${index}.startPeriod`}
-                                                render={({ field }) => (
-                                                  <FormItem>
-                                                    <FormControl>
-                                                        <RadioGroup
-                                                        onValueChange={field.onChange}
-                                                        defaultValue={field.value}
-                                                        className="flex flex-col space-y-1"
-                                                        value={field.value}
-                                                        >
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl>
-                                                            <RadioGroupItem value="AM" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">AM</FormLabel>
-                                                        </FormItem>
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl>
-                                                            <RadioGroupItem value="PM" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">PM</FormLabel>
-                                                        </FormItem>
-                                                        </RadioGroup>
+                                                      <Input type="time" {...field} className="w-32 bg-primary/5" />
                                                     </FormControl>
                                                     <FormMessage />
                                                   </FormItem>
@@ -678,7 +554,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                           </div>
                                           <div className="space-y-2">
                                             <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
-                                            <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                                            <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                                               <FormField
                                                 control={form.control}
                                                 name={`subtasks.${index}.endDate`}
@@ -697,37 +573,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                 render={({ field }) => (
                                                   <FormItem>
                                                     <FormControl>
-                                                      <Input placeholder="HH:MM" {...field} className="w-24 bg-primary/5" />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                  </FormItem>
-                                                )}
-                                              />
-                                              <FormField
-                                                control={form.control}
-                                                name={`subtasks.${index}.endPeriod`}
-                                                render={({ field }) => (
-                                                  <FormItem>
-                                                    <FormControl>
-                                                        <RadioGroup
-                                                        onValueChange={field.onChange}
-                                                        defaultValue={field.value}
-                                                        className="flex flex-col space-y-1"
-                                                        value={field.value}
-                                                        >
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl>
-                                                            <RadioGroupItem value="AM" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">AM</FormLabel>
-                                                        </FormItem>
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl>
-                                                            <RadioGroupItem value="PM" />
-                                                            </FormControl>
-                                                            <FormLabel className="font-normal">PM</FormLabel>
-                                                        </FormItem>
-                                                        </RadioGroup>
+                                                      <Input type="time" {...field} className="w-32 bg-primary/5" />
                                                     </FormControl>
                                                     <FormMessage />
                                                   </FormItem>
@@ -746,7 +592,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         variant="outline"
                         size="sm"
                         className="mt-2"
-                        onClick={() => append({ title: "", description: "", startDate: '', startTime: '09:00', startPeriod: 'AM', endDate: '', endTime: '05:00', endPeriod: 'PM', attachments: [] })}
+                        onClick={() => append({ title: "", description: "", startDate: '', startTime: '09:00', endDate: '', endTime: '17:00', attachments: [] })}
                       >
                         <Plus className="mr-2 h-4 w-4" />
                         Thêm Công việc
