@@ -343,7 +343,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       }
       onOpenChange(open);
     }}>
-      <DialogContent className="sm:max-w-[625px] flex flex-col max-h-[90vh]" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-[625px] flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
           <DialogDescription>
