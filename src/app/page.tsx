@@ -42,7 +42,8 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loadingDots, setLoadingDots] = useState('');
-  const [randomEmoji, setRandomEmoji] = useState('😁');
+  const [currentEmoji, setCurrentEmoji] = useState('😁');
+  const [showEmoji, setShowEmoji] = useState(true);
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
@@ -50,21 +51,24 @@ export default function Home() {
       setShowWelcomeDialog(true);
       localStorage.setItem('hasSeenWelcomeDialog', 'true');
     }
-    
-    // Select a random emoji on client-side mount to avoid hydration mismatch
-    const randomIcon = emojis[Math.floor(Math.random() * emojis.length)];
-    setRandomEmoji(randomIcon);
   }, []);
 
   useEffect(() => {
+    let dotCount = 0;
     const interval = setInterval(() => {
-      setLoadingDots(dots => {
-        if (dots.length >= 3) {
-          return '.';
-        }
-        return dots + '.';
-      });
-    }, 500); // Change dots every 500ms
+      dotCount = (dotCount % 4) + 1; // Cycle from 1 to 4
+      
+      if (dotCount <= 3) {
+        setShowEmoji(false); // Hide emoji while dots are loading
+        setLoadingDots('.'.repeat(dotCount));
+      } else { // dotCount is 4
+        setLoadingDots(''); // Reset dots
+        // Pick a new random emoji
+        const randomIcon = emojis[Math.floor(Math.random() * emojis.length)];
+        setCurrentEmoji(randomIcon);
+        setShowEmoji(true); // Show the new emoji
+      }
+    }, 800); // Change state every 800ms
   
     return () => clearInterval(interval); // Cleanup on unmount
   }, []);
@@ -213,9 +217,11 @@ export default function Home() {
             <Sparkles className="text-primary" />
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               Hi, Louis Giang
-              <span className="inline-block text-left">{loadingDots}</span>
+              <span className="inline-block text-left w-6">{loadingDots}</span>
             </span>
-            <span>{randomEmoji}</span>
+            <span className={`transition-opacity duration-300 ${showEmoji ? 'opacity-100' : 'opacity-0'}`}>
+              {currentEmoji}
+            </span>
           </h2>
         </SidebarHeader>
         <SidebarContent>
