@@ -187,6 +187,7 @@ export default function Home() {
           <h2 className="flex items-center gap-2 text-2xl font-bold font-headline bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
             <Sparkles className="text-amber-400" />
             Hi, Louis Giang
+            <Sparkles className="text-amber-400" />
           </h2>
         </SidebarHeader>
         <SidebarContent>
