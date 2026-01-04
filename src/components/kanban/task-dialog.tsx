@@ -125,7 +125,7 @@ const taskSchema = z.object({
     message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
     path: ["subtasks"],
 }).refine(data => {
-    const hasAtLeastOneSubtask = data.subtasks && data.subtasks.some(st => st.title && st.title.trim() !== '');
+    const hasAtLeastOneSubtask = data.subtasks && data.subtasks.filter(st => st.title && st.title.trim() !== '').length > 0;
     return hasAtLeastOneSubtask;
 }, {
     message: "Nhiệm vụ phải có ít nhất một công việc.",
@@ -215,7 +215,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         startPeriod: 'AM',
         endTime: '05:00',
         endPeriod: 'PM',
-        subtasks: [],
+        subtasks: [{ title: "", description: "", startDate: '', startTime: '09:00', startPeriod: 'AM', endDate: '', endTime: '05:00', endPeriod: 'PM', attachments: [] }],
       });
     }
   }, [taskToEdit, form, isOpen]);
@@ -365,7 +365,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 <RadioGroup
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
-                                  className="flex items-center space-x-2"
+                                  className="flex flex-col space-y-1"
                                   value={field.value}
                                 >
                                   <FormItem className="flex items-center space-x-2 space-y-0">
@@ -429,7 +429,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 <RadioGroup
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
-                                  className="flex items-center space-x-2"
+                                  className="flex flex-col space-y-1"
                                   value={field.value}
                                 >
                                   <FormItem className="flex items-center space-x-2 space-y-0">
@@ -585,7 +585,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                     <RadioGroup
                                                     onValueChange={field.onChange}
                                                     defaultValue={field.value}
-                                                    className="flex items-center space-x-2"
+                                                    className="flex flex-col space-y-1"
                                                     value={field.value}
                                                     >
                                                     <FormItem className="flex items-center space-x-2 space-y-0">
@@ -644,7 +644,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                     <RadioGroup
                                                     onValueChange={field.onChange}
                                                     defaultValue={field.value}
-                                                    className="flex items-center space-x-2"
+                                                    className="flex flex-col space-y-1"
                                                     value={field.value}
                                                     >
                                                     <FormItem className="flex items-center space-x-2 space-y-0">
@@ -679,7 +679,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     variant="outline"
                     size="sm"
                     className="mt-2"
-                    onClick={() => append({ title: "", description: "", startDate: '', startTime: '', startPeriod: 'AM', endDate: '', endTime: '', endPeriod: 'PM', attachments: [] })}
+                    onClick={() => append({ title: "", description: "", startDate: '', startTime: '09:00', startPeriod: 'AM', endDate: '', endTime: '05:00', endPeriod: 'PM', attachments: [] })}
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Thêm Công việc
@@ -699,5 +699,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
 
     
