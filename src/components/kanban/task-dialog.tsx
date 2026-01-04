@@ -165,6 +165,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   
   const watchedStartDate = form.watch('startDate');
   const watchedStartTime = form.watch('startTime');
+  const watchedEndDate = form.watch('endDate');
+  const watchedEndTime = form.watch('endTime');
 
   useEffect(() => {
     if (isOpen) {
@@ -176,15 +178,16 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           description: taskToEdit.description || '',
           startDate: format(taskToEdit.startDate, 'dd-MM-yyyy'),
           startTime: format(taskToEdit.startDate, 'HH:mm'),
-          endDate: format(taskTo-Edit.endDate, 'dd-MM-yyyy'),
+          endDate: format(taskToEdit.endDate, 'dd-MM-yyyy'),
           endTime: format(taskToEdit.endDate, 'HH:mm'),
           subtasks: taskToEdit.subtasks.map(st => {
+            const currentYear = new Date().getFullYear();
             return {
               title: st.title,
               description: st.description || '',
-              startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : '',
+              startDate: st.startDate ? format(st.startDate, 'dd-MM-yyyy') : `--${currentYear}`,
               startTime: st.startDate ? format(st.startDate, 'HH:mm') : '',
-              endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : '',
+              endDate: st.endDate ? format(st.endDate, 'dd-MM-yyyy') : `--${currentYear}`,
               endTime: st.endDate ? format(st.endDate, 'HH:mm') : '',
               attachments: st.attachments || [],
             };
@@ -199,7 +202,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           endDate: `--${currentYear}`,
           startTime: '',
           endTime: '',
-          subtasks: [{ title: "", description: "", startDate: ``, startTime: "", endDate: ``, endTime: "", attachments: [] }],
+          subtasks: [{ title: "", description: "", startDate: `--${currentYear}`, startTime: "", endDate: `--${currentYear}`, endTime: "", attachments: [] }],
         });
       }
     }
@@ -217,10 +220,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           form.setValue('endTime', value.startTime!, { shouldValidate: true });
         }
       }
-      // Always re-validate the endDate when any date/time field changes
+      // Always re-validate the schema when any date/time field changes
       if (name?.includes('Date') || name?.includes('Time')) {
-        form.trigger('endDate');
-        form.trigger('subtasks');
+        form.trigger();
       }
     });
     return () => subscription.unsubscribe();
@@ -666,3 +668,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
