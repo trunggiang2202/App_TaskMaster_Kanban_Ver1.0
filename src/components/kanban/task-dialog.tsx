@@ -545,40 +545,46 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             )}
                                         />
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <h4 className="text-xs font-medium text-muted-foreground">Bắt đầu</h4>
-                                                <FormField
-                                                  control={form.control}
-                                                  name={`subtasks.${index}.startDate`}
-                                                  render={({ field }) => (
-                                                    <FormItem>
-                                                      <FormControl>
-                                                        <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} />
-                                                      </FormControl>
-                                                      <FormMessage />
-                                                    </FormItem>
-                                                  )}
-                                                />
-                                                <FormField
-                                                  control={form.control}
-                                                  name={`subtasks.${index}.startTime`}
-                                                  render={({ field }) => (
-                                                    <FormItem>
-                                                      <FormControl>
-                                                        <Input type="time" {...field} className="w-full bg-primary/5" />
-                                                      </FormControl>
-                                                      <FormMessage />
-                                                    </FormItem>
-                                                  )}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                              <h4 className="text-xs font-medium text-muted-foreground">Kết thúc</h4>
+                                          <div className="space-y-2">
+                                              <FormLabel>Bắt đầu</FormLabel>
+                                              <div className="border p-3 rounded-md space-y-3">
+                                                  <FormField
+                                                    control={form.control}
+                                                    name={`subtasks.${index}.startDate`}
+                                                    render={({ field }) => (
+                                                      <FormItem>
+                                                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                                        <FormControl>
+                                                          <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                      </FormItem>
+                                                    )}
+                                                  />
+                                                  <FormField
+                                                    control={form.control}
+                                                    name={`subtasks.${index}.startTime`}
+                                                    render={({ field }) => (
+                                                      <FormItem>
+                                                        <FormLabel>Giờ</FormLabel>
+                                                        <FormControl>
+                                                          <Input type="time" {...field} className="w-full bg-primary/5" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                      </FormItem>
+                                                    )}
+                                                  />
+                                              </div>
+                                          </div>
+                                          <div className="space-y-2">
+                                            <FormLabel>Kết thúc</FormLabel>
+                                            <div className="border p-3 rounded-md space-y-3">
                                                 <FormField
                                                   control={form.control}
                                                   name={`subtasks.${index}.endDate`}
                                                   render={({ field }) => (
                                                     <FormItem>
+                                                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                                       <FormControl>
                                                         <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} />
                                                       </FormControl>
@@ -591,6 +597,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                   name={`subtasks.${index}.endTime`}
                                                   render={({ field }) => (
                                                     <FormItem>
+                                                      <FormLabel>Giờ</FormLabel>
                                                       <FormControl>
                                                         <Input type="time" {...field} className="w-full bg-primary/5" />
                                                       </FormControl>
@@ -599,6 +606,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                   )}
                                                 />
                                             </div>
+                                          </div>
                                         </div>
                                       </div>
                                     </AccordionContent>
@@ -654,5 +662,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
 
     
