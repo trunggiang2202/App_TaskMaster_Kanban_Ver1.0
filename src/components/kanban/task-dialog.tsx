@@ -23,7 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 const attachmentSchema = z.object({
@@ -361,17 +361,27 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           name="startPeriod"
                           render={({ field }) => (
                             <FormItem>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="w-[80px]">
-                                    <SelectValue placeholder="AM/PM" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="AM">AM</SelectItem>
-                                  <SelectItem value="PM">PM</SelectItem>
-                                </SelectContent>
-                              </Select>
+                               <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex items-center space-x-2"
+                                  value={field.value}
+                                >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <RadioGroupItem value="AM" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">AM</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <RadioGroupItem value="PM" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">PM</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -415,17 +425,27 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                           name="endPeriod"
                           render={({ field }) => (
                             <FormItem>
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="w-[80px]">
-                                    <SelectValue placeholder="AM/PM" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="AM">AM</SelectItem>
-                                  <SelectItem value="PM">PM</SelectItem>
-                                </SelectContent>
-                              </Select>
+                               <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex items-center space-x-2"
+                                  value={field.value}
+                                >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <RadioGroupItem value="AM" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">AM</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <RadioGroupItem value="PM" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">PM</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -561,17 +581,27 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             name={`subtasks.${index}.startPeriod`}
                                             render={({ field }) => (
                                               <FormItem>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                  <FormControl>
-                                                    <SelectTrigger className="w-[80px]">
-                                                      <SelectValue placeholder="AM/PM" />
-                                                    </SelectTrigger>
-                                                  </FormControl>
-                                                  <SelectContent>
-                                                    <SelectItem value="AM">AM</SelectItem>
-                                                    <SelectItem value="PM">PM</SelectItem>
-                                                  </SelectContent>
-                                                </Select>
+                                                <FormControl>
+                                                    <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                    className="flex items-center space-x-2"
+                                                    value={field.value}
+                                                    >
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl>
+                                                        <RadioGroupItem value="AM" />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">AM</FormLabel>
+                                                    </FormItem>
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl>
+                                                        <RadioGroupItem value="PM" />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">PM</FormLabel>
+                                                    </FormItem>
+                                                    </RadioGroup>
+                                                </FormControl>
                                                 <FormMessage />
                                               </FormItem>
                                             )}
@@ -610,17 +640,27 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                             name={`subtasks.${index}.endPeriod`}
                                             render={({ field }) => (
                                               <FormItem>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                  <FormControl>
-                                                    <SelectTrigger className="w-[80px]">
-                                                      <SelectValue placeholder="AM/PM" />
-                                                    </SelectTrigger>
-                                                  </FormControl>
-                                                  <SelectContent>
-                                                    <SelectItem value="AM">AM</SelectItem>
-                                                    <SelectItem value="PM">PM</SelectItem>
-                                                  </SelectContent>
-                                                </Select>
+                                                 <FormControl>
+                                                    <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                    className="flex items-center space-x-2"
+                                                    value={field.value}
+                                                    >
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl>
+                                                        <RadioGroupItem value="AM" />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">AM</FormLabel>
+                                                    </FormItem>
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl>
+                                                        <RadioGroupItem value="PM" />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">PM</FormLabel>
+                                                    </FormItem>
+                                                    </RadioGroup>
+                                                </FormControl>
                                                 <FormMessage />
                                               </FormItem>
                                             )}
@@ -659,3 +699,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
