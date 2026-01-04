@@ -4,7 +4,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks } from 'date-fns';
@@ -123,7 +123,6 @@ function TaskKanban() {
       <Sidebar>
         <SidebarHeader className="p-4">
           <h2 className="flex items-center gap-2 text-2xl font-bold font-headline">
-            <Sparkles className="text-primary" />
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               Hi, Louis Giang
               <span className="inline-block text-left w-12">{loadingDots}</span>
