@@ -13,7 +13,7 @@ import {
 import { Paperclip, Download, Calendar, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
-import { format, isAfter } from 'date-fns';
+import { format, isAfter, isBefore } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
@@ -119,6 +119,8 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     return null;
   }
 
+  const now = new Date();
+  const isUpcoming = isBefore(now, startDate);
   const isOverdue = timeProgress === 0 && !completed;
   const isWarning = timeProgress < 20 && !completed;
 
@@ -131,6 +133,7 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
   const getTimeLeftColor = () => {
     if (completed) return 'text-emerald-500';
     if (isOverdue || isWarning) return 'text-destructive';
+    if (isUpcoming) return 'text-sky-500';
     return 'text-muted-foreground';
   };
 
@@ -144,7 +147,8 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
             <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedEnd}</p>
             <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
                 <Clock className="h-4 w-4" /> 
-                {subtask.startDate && isAfter(new Date(), subtask.startDate) ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
+                {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
+                {isUpcoming && <span className="font-normal text-muted-foreground">(Chưa bắt đầu)</span>}
             </p>
         </div>
         <Progress value={timeProgress} className="h-1.5" indicatorClassName={getProgressColor()} />
