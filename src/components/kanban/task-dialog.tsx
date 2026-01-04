@@ -350,168 +350,162 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
               <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
                 <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
-                <TabsTrigger value="subtasks" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
+                <TabsTrigger value="subtasks" disabled={activeTab === 'task'} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="task" className="flex-1 flex flex-col min-h-0 space-y-4 pt-4">
-                  <div className="flex-1 overflow-y-auto pr-6 -mr-6 py-2 custom-scrollbar space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tên nhiệm vụ</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Tên nhiệm vụ" {...field} className="bg-primary/5"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} className="bg-primary/5"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="space-y-2">
-                      <FormLabel>Bắt đầu</FormLabel>
-                      <div className="border p-3 rounded-md">
-                          <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
-                            <FormField
+              <TabsContent value="task" className="flex-1 overflow-y-auto pr-6 -mr-6 py-4 custom-scrollbar space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tên nhiệm vụ</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Tên nhiệm vụ" {...field} className="bg-primary/5"/>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} className="bg-primary/5"/>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="space-y-2">
+                    <FormLabel>Bắt đầu</FormLabel>
+                    <div className="border p-3 rounded-md">
+                        <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                          <FormField
+                            control={form.control}
+                            name="startDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="31-12-2024" {...field} className="bg-primary/5"/>
+                                  </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="startTime"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Giờ</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="09:00" {...field} className="w-24 bg-primary/5"/>
+                                  </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
                               control={form.control}
-                              name="startDate"
+                              name="startPeriod"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="31-12-2024" {...field} className="bg-primary/5"/>
-                                    </FormControl>
+                                    <RadioGroup
+                                      onValueChange={field.onChange}
+                                      defaultValue={field.value}
+                                      className="flex flex-col space-y-1"
+                                      value={field.value}
+                                    >
+                                      <FormItem className="flex items-center space-x-2 space-y-0">
+                                        <FormControl>
+                                          <RadioGroupItem value="AM" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">AM</FormLabel>
+                                      </FormItem>
+                                      <FormItem className="flex items-center space-x-2 space-y-0">
+                                        <FormControl>
+                                          <RadioGroupItem value="PM" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">PM</FormLabel>
+                                      </FormItem>
+                                    </RadioGroup>
+                                  </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
-                            <FormField
-                              control={form.control}
-                              name="startTime"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Giờ</FormLabel>
-                                  <FormControl>
-                                      <Input placeholder="09:00" {...field} className="w-24 bg-primary/5"/>
-                                    </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="startPeriod"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <RadioGroup
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                        className="flex flex-col space-y-1"
-                                        value={field.value}
-                                      >
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="AM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">AM</FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="PM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">PM</FormLabel>
-                                        </FormItem>
-                                      </RadioGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                          </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <FormLabel>Kết thúc</FormLabel>
-                      <div className="border p-3 rounded-md">
-                          <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
-                            <FormField
-                              control={form.control}
-                              name="endDate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                                  <FormControl>
-                                      <Input placeholder="31-12-2024" {...field} className="bg-primary/5"/>
-                                    </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="endTime"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Giờ</FormLabel>
-                                  <FormControl>
-                                      <Input placeholder="05:00" {...field} className="w-24 bg-primary/5"/>
-                                    </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="endPeriod"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <RadioGroup
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                        className="flex flex-col space-y-1"
-                                        value={field.value}
-                                      >
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="AM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">AM</FormLabel>
-                                        </FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl>
-                                            <RadioGroupItem value="PM" />
-                                          </FormControl>
-                                          <FormLabel className="font-normal">PM</FormLabel>
-                                        </FormItem>
-                                      </RadioGroup>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                          </div>
-                      </div>
+                        </div>
                     </div>
                   </div>
-                  <DialogFooter className="pt-4 mt-auto">
-                    <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-                    <Button type="button" onClick={triggerValidation}>Tiếp tục</Button>
-                  </DialogFooter>
+                  <div className="space-y-2">
+                    <FormLabel>Kết thúc</FormLabel>
+                    <div className="border p-3 rounded-md">
+                        <div className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+                          <FormField
+                            control={form.control}
+                            name="endDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="31-12-2024" {...field} className="bg-primary/5"/>
+                                  </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="endTime"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Giờ</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="05:00" {...field} className="w-24 bg-primary/5"/>
+                                  </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="endPeriod"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <RadioGroup
+                                      onValueChange={field.onChange}
+                                      defaultValue={field.value}
+                                      className="flex flex-col space-y-1"
+                                      value={field.value}
+                                    >
+                                      <FormItem className="flex items-center space-x-2 space-y-0">
+                                        <FormControl>
+                                          <RadioGroupItem value="AM" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">AM</FormLabel>
+                                      </FormItem>
+                                      <FormItem className="flex items-center space-x-2 space-y-0">
+                                        <FormControl>
+                                          <RadioGroupItem value="PM" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">PM</FormLabel>
+                                      </FormItem>
+                                    </RadioGroup>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
+                    </div>
+                  </div>
               </TabsContent>
 
               <TabsContent value="subtasks" className="flex-1 flex flex-col min-h-0 space-y-2">
@@ -752,29 +746,27 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                   </div>
                   {form.formState.errors.subtasks && <FormMessage>{form.formState.errors.subtasks.message}</FormMessage>}
                 </div>
-
-                <DialogFooter className="pt-4 mt-auto">
-                   <Button type="button" variant="outline" onClick={() => setActiveTab('task')}>Quay lại</Button>
-                   <Button type="submit" disabled={!form.formState.isValid}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
-                </DialogFooter>
               </TabsContent>
             </Tabs>
+            
+            <DialogFooter className="pt-4 mt-auto">
+              {activeTab === 'task' ? (
+                <>
+                  <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
+                  <Button type="button" onClick={triggerValidation}>Tiếp tục</Button>
+                </>
+              ) : (
+                <>
+                   <Button type="button" variant="outline" onClick={() => setActiveTab('task')}>Quay lại</Button>
+                   <Button type="submit" disabled={!form.formState.isValid}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                </>
+              )}
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
-    
-
-    
-
-    
-
-    
-
-    
 
     
