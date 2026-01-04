@@ -106,14 +106,15 @@ function TaskProgress({ task }: { task: Task }) {
 
   const formattedStartDate = format(task.startDate, 'p, dd/MM/yyyy', { locale: vi });
   const formattedEndDate = format(task.endDate, 'p, dd/MM/yyyy', { locale: vi });
+  const isStarted = !isUpcoming && !isOverdue && task.status !== 'Done';
   
   return (
     <div className="space-y-2">
        <div className="space-y-1 text-xs text-sidebar-foreground/70">
-          <div className={cn("flex items-center gap-2", !isUpcoming && task.status !== 'Done' && "text-emerald-500")}>
+          <div className={cn("flex items-center gap-2", isStarted && "text-emerald-500")}>
             <Calendar size={12} />
             <span>Bắt đầu: {formattedStartDate}</span>
-            {!isUpcoming && task.status !== 'Done' && <span className="font-semibold">(Đã bắt đầu)</span>}
+            {isStarted && <span className="font-semibold">(Đã bắt đầu)</span>}
           </div>
           {task.status === 'Done' ? (
             <div className="flex items-center gap-2 font-semibold text-emerald-500">

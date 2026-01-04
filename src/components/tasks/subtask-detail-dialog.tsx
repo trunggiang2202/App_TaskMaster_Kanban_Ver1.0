@@ -124,6 +124,7 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
   const isUpcoming = isBefore(now, startDate);
   const isOverdue = !completed && isAfter(now, endDate);
   const isWarning = !isOverdue && timeProgress < 20 && !completed;
+  const isStarted = !isUpcoming && !isOverdue && !completed;
 
   const getTimeLeftColor = () => {
     if (completed) return 'text-emerald-500';
@@ -138,10 +139,10 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
   return (
     <div className="space-y-3">
         <div className="space-y-1 text-sm text-foreground">
-            <p className={cn("flex items-center gap-2", !isUpcoming && !completed && "text-emerald-500 font-semibold")}>
+            <p className={cn("flex items-center gap-2", isStarted && "text-emerald-500 font-semibold")}>
               <Calendar className="h-4 w-4" /> 
               Bắt đầu: {formattedStart}
-              {!isUpcoming && !completed && <span className="font-semibold">(Đã bắt đầu)</span>}
+              {isStarted && <span className="font-semibold">(Đã bắt đầu)</span>}
             </p>
             {completed ? (
                  <p className="flex items-center gap-2 font-semibold text-emerald-500">
