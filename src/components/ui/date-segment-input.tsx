@@ -31,12 +31,12 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
     } else {
         setDay('');
         setMonth('');
-        setYear(new Date().getFullYear().toString());
+        setYear('');
     }
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
-      const newDate = `${currentDay || "''"}-${currentMonth || "''"}-${currentYear || "''"}`;
+      const newDate = `${currentDay || ''}-${currentMonth || ''}-${currentYear || ''}`;
       onChange(newDate);
   };
 
