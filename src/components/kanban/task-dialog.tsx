@@ -206,14 +206,19 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
+      // When start date/time changes, check if end date/time needs to be updated
       if (name === 'startDate' || name === 'startTime') {
-        const currentStartDate = parseDateTime(value.startDate, value.startTime);
-        const currentEndDate = parseDateTime(value.endDate, value.endTime);
+        const startDateTime = parseDateTime(value.startDate, value.startTime);
+        const endDateTime = parseDateTime(value.endDate, value.endTime);
         
-        if (currentStartDate && (!currentEndDate || isBefore(currentEndDate, currentStartDate))) {
+        if (startDateTime && (!endDateTime || isBefore(endDateTime, startDateTime))) {
           form.setValue('endDate', value.startDate!, { shouldValidate: true });
           form.setValue('endTime', value.startTime!, { shouldValidate: true });
         }
+      }
+      // Always re-validate the endDate when any date/time field changes
+      if (name?.includes('Date') || name?.includes('Time')) {
+        form.trigger('endDate');
       }
     });
     return () => subscription.unsubscribe();
