@@ -18,16 +18,27 @@ import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
+    const [isZoomed, setIsZoomed] = React.useState(false);
+
     if (attachment.type === 'image') {
+        if (isZoomed) {
+            return (
+                <div 
+                    className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 cursor-zoom-out"
+                    onClick={() => setIsZoomed(false)}
+                >
+                    <Image src={attachment.url} alt={attachment.name} width={1200} height={900} className="max-w-[90vw] max-h-[90vh] object-contain" />
+                </div>
+            );
+        }
+
         return (
-            <a 
-                href={attachment.url} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="block relative"
+            <div 
+                className="relative cursor-zoom-in w-32 h-20"
+                onClick={() => setIsZoomed(true)}
             >
-                <Image src={attachment.url} alt={attachment.name} width={400} height={300} className="w-full h-auto object-cover rounded-md" />
-            </a>
+                <Image src={attachment.url} alt={attachment.name} fill className="object-cover rounded-md" />
+            </div>
         );
     }
     
@@ -216,7 +227,7 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
                 <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
                 <div className="p-3 rounded-md border bg-muted/20 min-h-[60px]">
                     {subtask.attachments && subtask.attachments.length > 0 ? (
-                        <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2">
                             {subtask.attachments.map((att, index) => <AttachmentItem key={index} attachment={att} />)}
                         </div>
                     ) : (
