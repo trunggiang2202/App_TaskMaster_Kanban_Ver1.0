@@ -195,10 +195,6 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
     <SidebarGroup>
       <div className="space-y-3 px-2">
         {recentTasks.map(task => {
-          const completedSubtasks = task.subtasks.filter(st => st.completed).length;
-          const totalSubtasks = task.subtasks.length;
-          const progress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : (task.status === 'Done' ? 100 : 0);
-
           return (
             <div 
               key={task.id}
@@ -212,12 +208,6 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
                 <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
               </div>
               
-              {totalSubtasks > 0 && (
-                <div className="text-xs text-sidebar-foreground/70">
-                    {Math.round(progress)}% đã hoàn thành
-                </div>
-              )}
-
               <TaskProgress 
                 task={task} 
               />
