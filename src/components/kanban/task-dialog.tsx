@@ -123,6 +123,16 @@ const taskSchema = z.object({
 }, {
     message: "Nhiệm vụ phải có ít nhất một công việc.",
     path: ["subtasks"],
+}).refine((data) => {
+    const start = parseDateTime(data.startDate, data.startTime);
+    const end = parseDateTime(data.endDate, data.endTime);
+    if (start && end) {
+      return end > start;
+    }
+    return true;
+  }, {
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
+    path: ["endDate"], 
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -140,6 +150,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
+    mode: 'all',
     defaultValues: {
       title: '',
       description: '',
@@ -183,16 +194,16 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         form.reset({
           title: '',
           description: '',
-          startDate: currentYear,
+          startDate: format(new Date(), 'dd-MM-yyyy'),
           startTime: '00:00',
-          endDate: currentYear,
+          endDate: format(new Date(), 'dd-MM-yyyy'),
           endTime: '13:00',
           subtasks: [{ 
             title: "", 
             description: "", 
-            startDate: currentYear,
+            startDate: format(new Date(), 'dd-MM-yyyy'),
             startTime: '00:00', 
-            endDate: currentYear,
+            endDate: format(new Date(), 'dd-MM-yyyy'),
             endTime: '01:00', 
             attachments: [] 
           }],
@@ -303,11 +314,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     return 'border-muted';
   };
 
-
   const isTaskTabInvalid = Object.keys(form.formState.errors).some(key =>
     ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root'].includes(key)
   );
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -357,64 +366,64 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <FormLabel>Bắt đầu</FormLabel>
-                          <div className="border p-3 rounded-md grid gap-4">
-                              <FormField
-                                control={form.control}
-                                name="startDate"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                           <div className="border p-3 rounded-md grid gap-4">
+                                <FormItem>
+                                <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="startDate"
+                                    render={({ field }) => (
                                     <FormControl>
                                         <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
-                                      </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="startTime"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Giờ</FormLabel>
+                                    </FormControl>
+                                    )}
+                                />
+                                <FormMessage className="h-4" />
+                                </FormItem>
+                                <FormItem>
+                                <FormLabel>Giờ</FormLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="startTime"
+                                    render={({ field }) => (
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5" />
-                                      </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                                    </FormControl>
+                                    )}
+                                />
+                                <FormMessage className="h-4" />
+                                </FormItem>
                           </div>
                         </div>
                         <div className="space-y-2">
                           <FormLabel>Kết thúc</FormLabel>
-                          <div className="border p-3 rounded-md grid gap-4">
-                              <FormField
-                                control={form.control}
-                                name="endDate"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                           <div className="border p-3 rounded-md grid gap-4">
+                                <FormItem>
+                                <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="endDate"
+                                    render={({ field }) => (
                                     <FormControl>
-                                      <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
+                                        <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
                                     </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="endTime"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Giờ</FormLabel>
+                                    )}
+                                />
+                                <FormMessage className="h-4" />
+                                </FormItem>
+                                <FormItem>
+                                <FormLabel>Giờ</FormLabel>
+                                <FormField
+                                    control={form.control}
+                                    name="endTime"
+                                    render={({ field }) => (
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5" />
-                                      </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                                    </FormControl>
+                                    )}
+                                />
+                                <FormMessage className="h-4" />
+                                </FormItem>
                           </div>
                         </div>
                     </div>
@@ -437,7 +446,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                   value={`item-${index}`} 
                                   key={field.id} 
                                   className={cn(
-                                    "bg-primary/5 rounded-md border border-l-4",
+                                    "border rounded-md border-l-4 bg-primary/5",
                                     getSubtaskBorderColor(index)
                                   )}
                                 >
@@ -528,63 +537,63 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                           <div className="space-y-2">
                                               <FormLabel>Bắt đầu</FormLabel>
                                               <div className="border p-3 rounded-md grid gap-4">
-                                                  <FormField
-                                                    control={form.control}
-                                                    name={`subtasks.${index}.startDate`}
-                                                    render={({ field }) => (
-                                                      <FormItem>
-                                                        <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                                  <FormItem>
+                                                    <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                                    <FormField
+                                                      control={form.control}
+                                                      name={`subtasks.${index}.startDate`}
+                                                      render={({ field }) => (
                                                         <FormControl>
                                                           <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5" />
                                                         </FormControl>
-                                                        <FormMessage />
-                                                      </FormItem>
-                                                    )}
-                                                  />
-                                                  <FormField
-                                                    control={form.control}
-                                                    name={`subtasks.${index}.startTime`}
-                                                    render={({ field }) => (
-                                                      <FormItem>
-                                                        <FormLabel>Giờ</FormLabel>
+                                                      )}
+                                                    />
+                                                    <FormMessage className="h-4" />
+                                                  </FormItem>
+                                                  <FormItem>
+                                                    <FormLabel>Giờ</FormLabel>
+                                                    <FormField
+                                                      control={form.control}
+                                                      name={`subtasks.${index}.startTime`}
+                                                      render={({ field }) => (
                                                         <FormControl>
                                                           <Input type="time" {...field} className="w-full bg-primary/5" />
                                                         </FormControl>
-                                                        <FormMessage />
-                                                      </FormItem>
-                                                    )}
-                                                  />
+                                                      )}
+                                                    />
+                                                    <FormMessage className="h-4" />
+                                                  </FormItem>
                                               </div>
                                           </div>
                                           <div className="space-y-2">
                                             <FormLabel>Kết thúc</FormLabel>
                                             <div className="border p-3 rounded-md grid gap-4">
-                                                <FormField
-                                                  control={form.control}
-                                                  name={`subtasks.${index}.endDate`}
-                                                  render={({ field }) => (
-                                                    <FormItem>
-                                                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                                <FormItem>
+                                                  <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                                  <FormField
+                                                    control={form.control}
+                                                    name={`subtasks.${index}.endDate`}
+                                                    render={({ field }) => (
                                                       <FormControl>
                                                         <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5" />
                                                       </FormControl>
-                                                      <FormMessage />
-                                                    </FormItem>
-                                                  )}
-                                                />
-                                                <FormField
-                                                  control={form.control}
-                                                  name={`subtasks.${index}.endTime`}
-                                                  render={({ field }) => (
-                                                    <FormItem>
-                                                      <FormLabel>Giờ</FormLabel>
+                                                    )}
+                                                  />
+                                                  <FormMessage className="h-4" />
+                                                </FormItem>
+                                                <FormItem>
+                                                  <FormLabel>Giờ</FormLabel>
+                                                  <FormField
+                                                    control={form.control}
+                                                    name={`subtasks.${index}.endTime`}
+                                                    render={({ field }) => (
                                                       <FormControl>
                                                         <Input type="time" {...field} className="w-full bg-primary/5" />
                                                       </FormControl>
-                                                      <FormMessage />
-                                                    </FormItem>
-                                                  )}
-                                                />
+                                                    )}
+                                                  />
+                                                  <FormMessage className="h-4" />
+                                                </FormItem>
                                             </div>
                                           </div>
                                         </div>
@@ -605,9 +614,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                             append({ 
                                 title: "", 
                                 description: "", 
-                                startDate: currentYear,
+                                startDate: format(now, 'dd-MM-yyyy'),
                                 startTime: '00:00', 
-                                endDate: currentYear,
+                                endDate: format(now, 'dd-MM-yyyy'),
                                 endTime: '01:00', 
                                 attachments: [] 
                             })
@@ -634,7 +643,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           ) : (
             <>
                 <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
-                <Button type="button" onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
             </>
           )}
         </DialogFooter>
@@ -643,3 +652,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   );
 }
 
+
+    
