@@ -36,7 +36,7 @@ const attachmentSchema = z.object({
 });
 
 const subtaskSchema = z.object({
-  title: z.string(),
+  title: z.string().optional(),
   description: z.string().optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
@@ -195,9 +195,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           subtasks: [{ 
             title: "", 
             description: "", 
-            startDate: format(new Date(), 'dd-MM-yyyy'), 
+            startDate: String(currentYear),
             startTime: '00:00', 
-            endDate: format(addHours(new Date(), 1), 'dd-MM-yyyy'), 
+            endDate: String(currentYear),
             endTime: '01:00', 
             attachments: [] 
           }],
@@ -218,14 +218,14 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       .filter(st => st.title && st.title.trim() !== '') // Only include subtasks with a title
       .map((st, index) => {
         const subtaskStartDate = parseDateTime(st.startDate, st.startTime);
-        const subtaskEndDate = parseDateTime(st.endDate, st.endTime);
+        const subtaskEndDateTime = parseDateTime(st.endDate, st.endTime);
         return {
           id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
           title: st.title,
           description: st.description,
           completed: taskToEdit?.subtasks[index]?.completed || false,
           startDate: subtaskStartDate,
-          endDate: subtaskEndDate,
+          endDate: subtaskEndDateTime,
           attachments: st.attachments,
         };
     }) : [];
@@ -537,7 +537,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                       <FormItem>
                                                         <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                                         <FormControl>
-                                                          <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} />
+                                                          <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5" />
                                                         </FormControl>
                                                         <FormMessage />
                                                       </FormItem>
@@ -568,7 +568,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                     <FormItem>
                                                       <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                                       <FormControl>
-                                                        <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} />
+                                                        <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5" />
                                                       </FormControl>
                                                       <FormMessage />
                                                     </FormItem>
@@ -602,14 +602,13 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         size="sm"
                         className="mt-2"
                         onClick={() => {
-                            const now = new Date();
-                            const endDateDefault = addHours(now, 1);
+                            const currentYear = String(new Date().getFullYear());
                             append({ 
                                 title: "", 
                                 description: "", 
-                                startDate: format(now, 'dd-MM-yyyy'), 
+                                startDate: currentYear,
                                 startTime: '00:00', 
-                                endDate: format(endDateDefault, 'dd-MM-yyyy'), 
+                                endDate: currentYear,
                                 endTime: '01:00', 
                                 attachments: [] 
                             })
@@ -650,4 +649,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     
 
     
+
 
