@@ -24,10 +24,16 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
 
   React.useEffect(() => {
     if (value) {
-      const [d, m, y] = value.split('-');
-      setDay(d === '_' ? '' : d);
-      setMonth(m === '_' ? '' : m);
-      setYear(y === '_' ? '' : y);
+      if (value.match(/^\d{4}$/)) { // If only year is passed
+        setDay('');
+        setMonth('');
+        setYear(value);
+      } else {
+        const [d, m, y] = value.split('-');
+        setDay(d === '__' ? '' : d);
+        setMonth(m === '__' ? '' : m);
+        setYear(y === '__' ? '' : y);
+      }
     } else {
         setDay('');
         setMonth('');
@@ -36,7 +42,7 @@ export function DateSegmentInput({ value, onChange, disabled, className, ...prop
   }, [value]);
   
   const triggerParentOnChange = (currentDay: string, currentMonth: string, currentYear: string) => {
-      const newDate = `${currentDay || '_'}-${currentMonth || '_'}-${currentYear || '_'}`;
+      const newDate = `${currentDay || '__'}-${currentMonth || '__'}-${currentYear || '__'}`;
       onChange(newDate);
   };
 

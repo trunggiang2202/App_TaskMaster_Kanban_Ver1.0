@@ -189,9 +189,9 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         form.reset({
           title: '',
           description: '',
-          startDate: `__-__-${currentYear}`,
+          startDate: String(currentYear),
           startTime: format(now, 'HH:mm'),
-          endDate: `__-__-${currentYear}`,
+          endDate: String(currentYear),
           endTime: format(endDateDefault, 'HH:mm'),
           subtasks: [{ 
             title: "", 
