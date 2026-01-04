@@ -198,21 +198,6 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   }, [taskToEdit, form, isOpen]);
 
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
-        if (
-            name === 'startDate' ||
-            name === 'startTime' ||
-            name === 'endDate' ||
-            name === 'endTime'
-        ) {
-            form.trigger();
-        }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-
   function handleSubmit(data: TaskFormData) {
     const taskStartDate = parseDateTime(data.startDate, data.startTime);
     const taskEndDate = parseDateTime(data.endDate, data.endTime);
@@ -656,3 +641,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
