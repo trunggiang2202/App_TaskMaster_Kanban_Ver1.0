@@ -184,7 +184,9 @@ export default function Home() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
-          <h2 className="text-2xl font-bold text-sidebar-foreground font-headline">TaskMaster</h2>
+          <h2 className="text-2xl font-bold font-headline bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
+            Hi, Đình Trung
+          </h2>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
