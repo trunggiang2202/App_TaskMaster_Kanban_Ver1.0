@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Task, Subtask, Status, Attachment } from '@/lib/types';
+import type { Task, Subtask, Attachment } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -12,6 +12,17 @@ import { vi } from 'date-fns/locale';
 import { Calendar, Edit, Trash2, Circle, Check, Download, Paperclip, LoaderCircle, AlertTriangle } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
   <a 
@@ -186,13 +197,33 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
             <h1 className="text-3xl font-bold font-headline tracking-tight">{task.title}</h1>
             <div className="flex items-center gap-2 flex-shrink-0">
                 <Button variant="default" size="sm" onClick={() => onEditTask(task)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Chỉnh sửa
+                  <Edit className="h-4 w-4 mr-2" />
+                  Chỉnh sửa
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => onDeleteTask(task.id)}>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Xóa
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Xóa
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn nhiệm vụ
+                        <span className="font-bold"> {task.title} </span>
+                        và tất cả dữ liệu liên quan khỏi máy chủ của chúng tôi.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Hủy</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onDeleteTask(task.id)}>
+                        Xóa
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
         
