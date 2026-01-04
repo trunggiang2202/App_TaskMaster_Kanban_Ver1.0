@@ -139,10 +139,10 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
   return (
     <div className="space-y-3">
         <div className="space-y-1 text-sm text-foreground">
-            <p className={cn("flex items-center gap-2", isStarted && "text-emerald-500 font-semibold")}>
+            <p className={cn("flex items-center gap-2", isStarted && !isOverdue && "text-emerald-500 font-semibold")}>
               <Calendar className="h-4 w-4" /> 
               Bắt đầu: {formattedStart}
-              {isStarted && <span className="font-semibold">(Đã bắt đầu)</span>}
+              {isStarted && !isOverdue && <span className="font-semibold">(Đã bắt đầu)</span>}
             </p>
             {completed ? (
                  <p className="flex items-center gap-2 font-semibold text-emerald-500">
@@ -162,7 +162,7 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
                         {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
                         {isUpcoming && <span className="font-normal text-muted-foreground">(Chưa bắt đầu)</span>}
                     </p>
-                    <Progress value={timeProgress} className="h-1.5" indicatorClassName={isWarning ? 'bg-destructive' : 'bg-emerald-500'} />
+                    <Progress value={timeProgress} className="h-1.5" indicatorClassName={isWarning ? 'bg-destructive' : 'bg-primary'} />
                 </>
             )}
         </div>

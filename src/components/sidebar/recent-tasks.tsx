@@ -111,10 +111,10 @@ function TaskProgress({ task }: { task: Task }) {
   return (
     <div className="space-y-2">
        <div className="space-y-1 text-xs text-sidebar-foreground/70">
-          <div className={cn("flex items-center gap-2", isStarted && "text-emerald-500")}>
+          <div className={cn("flex items-center gap-2", isStarted && !isOverdue && "text-emerald-500")}>
             <Calendar size={12} />
             <span>Bắt đầu: {formattedStartDate}</span>
-            {isStarted && <span className="font-semibold">(Đã bắt đầu)</span>}
+            {isStarted && !isOverdue && <span className="font-semibold">(Đã bắt đầu)</span>}
           </div>
           {task.status === 'Done' ? (
             <div className="flex items-center gap-2 font-semibold text-emerald-500">
@@ -138,7 +138,7 @@ function TaskProgress({ task }: { task: Task }) {
                     {isUpcoming && <span className="font-normal text-sidebar-foreground/70">(Chưa bắt đầu)</span>}
                   </span>
                 </div>
-                <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={isWarning ? 'bg-destructive' : 'bg-emerald-500'} />
+                <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={isWarning ? 'bg-destructive' : 'bg-primary'} />
             </>
         )}
     </div>
