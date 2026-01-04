@@ -64,7 +64,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
 
     const iconElement = (
       <div 
-        className={`h-5 w-5 mt-0.5 shrink-0 ${canComplete ? 'cursor-pointer' : 'cursor-not-allowed'}`} 
+        className={`h-5 w-5 mt-0.5 shrink-0 transition-transform hover:scale-125 ${canComplete ? 'cursor-pointer' : 'cursor-not-allowed'}`} 
         onClick={handleToggle}
       >
         {renderIcon()}
