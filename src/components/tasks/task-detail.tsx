@@ -95,7 +95,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                         <Tooltip>
                             <TooltipTrigger asChild>{iconElement}</TooltipTrigger>
                             <TooltipContent>
-                                <p>Cần đặt deadline để hoàn thành</p>
+                                <p>Chưa bắt đầu deadline</p>
                             </TooltipContent>
                         </Tooltip>
                     ) : (
