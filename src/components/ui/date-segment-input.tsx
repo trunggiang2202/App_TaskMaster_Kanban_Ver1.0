@@ -23,28 +23,24 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
 
   // Sync local state with parent value prop
   React.useEffect(() => {
-    if (value) {
+    if (value && /^\d{2}-\d{2}-\d{4}$/.test(value)) {
       const parts = value.split('-');
       setDay(parts[0] || '');
       setMonth(parts[1] || '');
       setYear(parts[2] || '');
-    } else {
+    } else if (!value) {
       setDay('');
       setMonth('');
       setYear('');
     }
   }, [value]);
   
-  const triggerParentOnChange = React.useCallback(() => {
-    const newDate = `${day}-${month}-${year}`;
-    if (day.length === 2 && month.length === 2 && year.length === 4) {
+  const triggerParentOnChange = React.useCallback((currentDay: string, currentMonth: string, currentYear: string) => {
+    if (currentDay.length === 2 && currentMonth.length === 2 && currentYear.length === 4) {
+      const newDate = `${currentDay}-${currentMonth}-${currentYear}`;
       onChange(newDate);
     }
-  }, [day, month, year, onChange]);
-
-  React.useEffect(() => {
-    triggerParentOnChange();
-  }, [day, month, year, triggerParentOnChange]);
+  }, [onChange]);
 
 
   const handleSegmentChange = (segment: 'day' | 'month' | 'year', segmentValue: string) => {
@@ -53,29 +49,28 @@ export function DateSegmentInput({ value, onChange, disabled, className }: DateS
 
     if (segment === 'day') {
       setDay(segmentValue);
-      const dayNum = parseInt(segmentValue, 10);
-      if (segmentValue.length === 2 || dayNum > 3) {
-        monthRef.current?.focus();
-      }
+      triggerParentOnChange(segmentValue, month, year);
     } else if (segment === 'month') {
       setMonth(segmentValue);
-      const monthNum = parseInt(segmentValue, 10);
-      if (segmentValue.length === 2 || monthNum > 1) {
-        yearRef.current?.focus();
-      }
+      triggerParentOnChange(day, segmentValue, year);
     } else if (segment === 'year') {
       setYear(segmentValue);
+      triggerParentOnChange(day, month, segmentValue);
     }
   };
   
-  const handleBlur = (segment: 'day' | 'month' | 'year') => {
+  const handleBlur = (segment: 'day' | 'month') => {
     if (segment === 'day') {
         if (day.length === 1 && parseInt(day, 10) > 0) {
-            setDay(day.padStart(2, '0'));
+            const newDay = day.padStart(2, '0');
+            setDay(newDay);
+            triggerParentOnChange(newDay, month, year);
         }
     } else if (segment === 'month') {
         if (month.length === 1 && parseInt(month, 10) > 0) {
-            setMonth(month.padStart(2, '0'));
+            const newMonth = month.padStart(2, '0');
+            setMonth(newMonth);
+            triggerParentOnChange(day, newMonth, year);
         }
     }
   };
