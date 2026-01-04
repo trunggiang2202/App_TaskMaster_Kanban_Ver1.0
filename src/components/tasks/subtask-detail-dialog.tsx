@@ -193,6 +193,10 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
   if (!subtask) {
     return null;
   }
+  
+  const attachments = subtask.attachments || [];
+  const imageAttachments = attachments.filter(att => att.type === 'image');
+  const fileAttachments = attachments.filter(att => att.type !== 'image');
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -225,11 +229,20 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
 
             <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
-                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px]">
-                    {subtask.attachments && subtask.attachments.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                            {subtask.attachments.map((att, index) => <AttachmentItem key={index} attachment={att} />)}
-                        </div>
+                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px] space-y-3">
+                    {attachments.length > 0 ? (
+                        <>
+                            {imageAttachments.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                    {imageAttachments.map((att, index) => <AttachmentItem key={`img-${index}`} attachment={att} />)}
+                                </div>
+                            )}
+                            {fileAttachments.length > 0 && (
+                                <div className="space-y-2">
+                                    {fileAttachments.map((att, index) => <AttachmentItem key={`file-${index}`} attachment={att} />)}
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <p className="text-sm text-muted-foreground">Không có tệp đính kèm.</p>
                     )}
