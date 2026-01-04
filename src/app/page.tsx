@@ -19,8 +19,6 @@ import { WeekView } from '@/components/sidebar/week-view';
 
 type FilterType = 'all' | 'today' | 'week';
 
-const emojis = ['👋', '😀', '😎', '🎉', '🚀', '🌟', '💡', '🔥', '💯', '😁', '🥳', '🤩'];
-
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks.map(t => {
     const task: Task = {...t, createdAt: new Date(t.createdAt) };
@@ -42,8 +40,6 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loadingDots, setLoadingDots] = useState('');
-  const [currentEmoji, setCurrentEmoji] = useState('😁');
-  const [showEmoji, setShowEmoji] = useState(false);
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
@@ -56,26 +52,11 @@ export default function Home() {
   useEffect(() => {
     let dotCount = 0;
     const interval = setInterval(() => {
-      dotCount = (dotCount % 5); // Cycle from 0 to 4
+      dotCount = (dotCount + 1) % 6; // Cycle from 0 to 5
+      setLoadingDots('.'.repeat(dotCount));
+    }, 700); 
 
-      if (dotCount < 3) {
-        // Loading dots phase
-        setShowEmoji(false);
-        setLoadingDots('.'.repeat(dotCount + 1));
-      } else if (dotCount === 3) {
-        // Emoji display phase
-        const randomIcon = emojis[Math.floor(Math.random() * emojis.length)];
-        setCurrentEmoji(randomIcon);
-        setShowEmoji(true);
-      } else { // dotCount is 4
-        // Reset phase
-        setShowEmoji(false);
-        setLoadingDots('');
-      }
-      dotCount++;
-    }, 700); // Tweak timing as needed
-
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const handleOpenDialog = (task?: Task) => {
@@ -222,10 +203,7 @@ export default function Home() {
             <Sparkles className="text-primary" />
             <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               Hi, Louis Giang
-              <span className="inline-block text-left w-6">{loadingDots}</span>
-            </span>
-            <span className={`transition-opacity duration-300 ${showEmoji ? 'opacity-100' : 'opacity-0'}`}>
-              {currentEmoji}
+              <span className="inline-block text-left w-12">{loadingDots}</span>
             </span>
           </h2>
         </SidebarHeader>
