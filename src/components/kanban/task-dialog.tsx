@@ -185,21 +185,20 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
       } else {
         const now = new Date();
         const currentYear = now.getFullYear();
-        const endDateDefault = addHours(now, 1);
         form.reset({
           title: '',
           description: '',
           startDate: String(currentYear),
-          startTime: format(now, 'HH:mm'),
+          startTime: '00:00',
           endDate: String(currentYear),
-          endTime: format(endDateDefault, 'HH:mm'),
+          endTime: '01:00',
           subtasks: [{ 
             title: "", 
             description: "", 
             startDate: format(now, 'dd-MM-yyyy'), 
-            startTime: format(now, 'HH:mm'), 
-            endDate: format(endDateDefault, 'dd-MM-yyyy'), 
-            endTime: format(endDateDefault, 'HH:mm'), 
+            startTime: '00:00', 
+            endDate: format(addHours(now, 1), 'dd-MM-yyyy'), 
+            endTime: '01:00', 
             attachments: [] 
           }],
         });
@@ -375,7 +374,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <DateSegmentInput value={field.value} onChange={field.onChange} />
                                       </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
@@ -388,7 +387,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5" />
                                       </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
@@ -406,7 +405,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                       <DateSegmentInput value={field.value} onChange={field.onChange} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
@@ -419,7 +418,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                     <FormControl>
                                         <Input type="time" {...field} className="bg-primary/5" />
                                       </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className="h-4" />
                                   </FormItem>
                                 )}
                               />
