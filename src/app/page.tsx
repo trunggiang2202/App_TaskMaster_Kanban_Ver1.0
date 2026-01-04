@@ -202,10 +202,12 @@ export default function Home() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
-          <h2 className="flex items-center gap-2 text-2xl font-bold font-headline text-primary">
+          <h2 className="flex items-center gap-2 text-2xl font-bold font-headline">
             <Sparkles className="text-primary" />
-            Hi, Louis Giang
-            <span className="inline-block w-10 text-left">{loadingDots}</span>
+            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+              Hi, Louis Giang
+              <span className="inline-block w-10 text-left">{loadingDots}</span>
+            </span>
             <Sparkles className="text-primary" />
           </h2>
         </SidebarHeader>
