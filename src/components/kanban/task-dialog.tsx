@@ -191,7 +191,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
           startDate: String(currentYear),
           startTime: '00:00',
           endDate: String(currentYear),
-          endTime: '01:00',
+          endTime: '13:00',
           subtasks: [{ 
             title: "", 
             description: "", 
@@ -649,3 +649,5 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
     </Dialog>
   );
 }
+
+    
