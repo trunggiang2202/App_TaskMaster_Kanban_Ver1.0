@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => (
   <a 
@@ -257,7 +258,14 @@ export default function TaskDetail({ task, onUpdateTask, onDeleteTask, onEditTas
                         column.subtasks.map(st => {
                           const isOverdue = column.title === 'Đang làm' && !st.completed && !!st.endDate && isBefore(st.endDate, now);
                           return (
-                            <Card key={st.id} className={`bg-background shadow-sm border ${getSubtaskBorderColor(st, column.title)}`}>
+                            <Card 
+                                key={st.id} 
+                                className={cn(
+                                    "bg-background shadow-sm border transition-colors cursor-pointer hover:bg-muted/50",
+                                    getSubtaskBorderColor(st, column.title)
+                                )}
+                                onClick={() => handleSubtaskClick(st)}
+                            >
                               <CardContent className="p-3">
                                 <SubtaskItem 
                                     subtask={st}
