@@ -528,7 +528,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 value={`item-${index}`} 
                                 key={field.id} 
                                 className={cn(
-                                  "bg-muted/50 rounded-md border-b-0 border-l-4",
+                                  "bg-muted/50 rounded-md border",
                                   getSubtaskBorderColor(index)
                                 )}
                               >
@@ -767,6 +767,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
 }
 
     
+    
+
     
 
     
