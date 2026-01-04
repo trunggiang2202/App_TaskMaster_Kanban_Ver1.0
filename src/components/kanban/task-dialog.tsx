@@ -191,19 +191,20 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
         });
       } else {
         const currentYear = String(new Date().getFullYear());
+        const dateWithYearOnly = `__-__-${currentYear}`;
         form.reset({
           title: '',
           description: '',
-          startDate: format(new Date(), 'dd-MM-yyyy'),
+          startDate: dateWithYearOnly,
           startTime: '00:00',
-          endDate: format(new Date(), 'dd-MM-yyyy'),
+          endDate: dateWithYearOnly,
           endTime: '13:00',
           subtasks: [{ 
             title: "", 
             description: "", 
-            startDate: format(new Date(), 'dd-MM-yyyy'),
+            startDate: dateWithYearOnly,
             startTime: '00:00', 
-            endDate: format(new Date(), 'dd-MM-yyyy'),
+            endDate: dateWithYearOnly,
             endTime: '01:00', 
             attachments: [] 
           }],
@@ -609,14 +610,14 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                         size="sm"
                         className="mt-2"
                         onClick={() => {
-                            const now = new Date();
-                            const currentYear = String(now.getFullYear());
+                            const currentYear = String(new Date().getFullYear());
+                            const dateWithYearOnly = `__-__-${currentYear}`;
                             append({ 
                                 title: "", 
                                 description: "", 
-                                startDate: format(now, 'dd-MM-yyyy'),
+                                startDate: dateWithYearOnly,
                                 startTime: '00:00', 
-                                endDate: format(now, 'dd-MM-yyyy'),
+                                endDate: dateWithYearOnly,
                                 endTime: '01:00', 
                                 attachments: [] 
                             })
@@ -652,5 +653,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
   );
 }
 
+
+    
 
     
