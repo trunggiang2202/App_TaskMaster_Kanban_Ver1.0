@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from '@/lib/utils';
+import { DateSegmentInput } from '@/components/ui/date-segment-input';
 
 
 const attachmentSchema = z.object({
@@ -363,7 +364,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 <FormItem>
                                   <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="31-12-2024" {...field} className="bg-primary/5"/>
+                                      <DateSegmentInput value={field.value} onChange={field.onChange} />
                                     </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -396,8 +397,8 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                 <FormItem>
                                   <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="31-12-2024" {...field} className="bg-primary/5"/>
-                                    </FormControl>
+                                    <DateSegmentInput value={field.value} onChange={field.onChange} />
+                                  </FormControl>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -532,7 +533,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                 render={({ field }) => (
                                                   <FormItem>
                                                     <FormControl>
-                                                      <Input placeholder="DD-MM-YYYY" {...field} className="bg-primary/5" />
+                                                      <DateSegmentInput value={field.value} onChange={field.onChange} />
                                                     </FormControl>
                                                     <FormMessage />
                                                   </FormItem>
@@ -561,7 +562,7 @@ export function TaskDialog({ isOpen, onOpenChange, onSubmit, taskToEdit }: TaskD
                                                 render={({ field }) => (
                                                   <FormItem>
                                                     <FormControl>
-                                                      <Input placeholder="DD-MM-YYYY" {...field} className="bg-primary/5" />
+                                                      <DateSegmentInput value={field.value} onChange={field.onChange} />
                                                     </FormControl>
                                                     <FormMessage />
                                                   </FormItem>
