@@ -121,9 +121,10 @@ function TaskProgress({ task }: { task: Task }) {
   return (
     <div className="space-y-2">
        <div className="space-y-1 text-xs text-sidebar-foreground/70">
-          <div className="flex items-center gap-2">
+          <div className={cn("flex items-center gap-2", !isUpcoming && "text-emerald-500")}>
             <Calendar size={12} />
             <span>Bắt đầu: {formattedStartDate}</span>
+            {!isUpcoming && <span className="font-semibold">(Đã bắt đầu)</span>}
           </div>
           <div className="flex items-center gap-2">
             <Calendar size={12} />

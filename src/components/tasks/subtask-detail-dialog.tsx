@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { Progress } from '@/components/ui/progress';
 import { format, isAfter, isBefore } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
     if (attachment.type === 'image') {
@@ -137,14 +138,18 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     return 'text-muted-foreground';
   };
 
-  const formattedStart = subtask.startDate ? `Bắt đầu: ${format(subtask.startDate, 'p, dd/MM/yyyy', { locale: vi })}` : '';
-  const formattedEnd = subtask.endDate ? `Kết thúc: ${format(subtask.endDate, 'p, dd/MM/yyyy', { locale: vi })}` : '';
+  const formattedStart = subtask.startDate ? format(subtask.startDate, 'p, dd/MM/yyyy', { locale: vi }) : '';
+  const formattedEnd = subtask.endDate ? format(subtask.endDate, 'p, dd/MM/yyyy', { locale: vi }) : '';
 
   return (
     <div className="space-y-3">
         <div className="space-y-1 text-sm text-foreground">
-            <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedStart}</p>
-            <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {formattedEnd}</p>
+            <p className={cn("flex items-center gap-2", !isUpcoming && "text-emerald-500 font-semibold")}>
+              <Calendar className="h-4 w-4" /> 
+              Bắt đầu: {formattedStart}
+              {!isUpcoming && <span className="font-semibold">(Đã bắt đầu)</span>}
+            </p>
+            <p className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Kết thúc: {formattedEnd}</p>
             <p className={`flex items-center gap-2 font-semibold ${getTimeLeftColor()}`}>
                 <Clock className="h-4 w-4" /> 
                 {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
