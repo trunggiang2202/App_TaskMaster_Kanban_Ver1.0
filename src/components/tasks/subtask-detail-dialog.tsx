@@ -151,7 +151,7 @@ const SubtaskTimeProgress: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
             ) : (
                 <p className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
                   <Calendar className="h-4 w-4" /> Kết thúc: {formattedEnd}
-                  {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
+                  {isOverdue && <span className="font-semibold">(Đã quá hạn)</span>}
                 </p>
             )}
             {!isOverdue && !completed && (

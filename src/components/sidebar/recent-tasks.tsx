@@ -124,7 +124,7 @@ function TaskProgress({ task }: { task: Task }) {
             <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
                 <Calendar size={12} />
                 <span>Kết thúc: {formattedEndDate}</span>
-                {isOverdue && <span className="font-semibold">(đã quá hạn)</span>}
+                {isOverdue && <span className="font-semibold">(Đã quá hạn)</span>}
             </div>
           )}
         </div>
