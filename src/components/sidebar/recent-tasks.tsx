@@ -144,38 +144,6 @@ function TaskProgress({ task }: { task: Task }) {
   );
 }
 
-const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
-    
-    // Subtasks for today are those not completed and where today is between start and end date.
-    const today = startOfDay(new Date());
-    const todaySubtasks = task.subtasks.filter(st => {
-      if (!st.completed && st.startDate && st.endDate) {
-          const subtaskStart = startOfDay(st.startDate);
-          const subtaskEnd = startOfDay(st.endDate);
-          return !isAfter(today, subtaskEnd) && !isBefore(today, subtaskStart);
-      }
-      return false;
-    });
-    
-    const uncompletedTodaySubtasks = todaySubtasks.length;
-
-    if (uncompletedTodaySubtasks === 0) {
-        return (
-            <div className="text-xs text-emerald-500 flex items-center gap-1 mt-1">
-                <CheckCircle2 size={14} />
-                Công việc hôm nay đã xong
-            </div>
-        );
-    }
-
-    return (
-        <div className="text-xs text-sidebar-foreground/70 mt-1">
-            {uncompletedTodaySubtasks} công việc hôm nay
-        </div>
-    );
-};
-
-
 interface RecentTasksProps {
   tasks: Task[];
   selectedTaskId: string | null;
@@ -208,7 +176,6 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
               <TaskProgress 
                 task={task} 
               />
-              {activeFilter === 'today' && <TodaySubtasksInfo task={task} />}
             </div>
           )
         })}
