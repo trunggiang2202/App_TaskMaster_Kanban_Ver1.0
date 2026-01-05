@@ -93,7 +93,7 @@ const taskSchema = z.object({
   path: ["startTime"],
 }).refine(data => {
   if (data.taskType === 'deadline') {
-    return data.endDate && data.endDate.match(/^\d{2}-\d{2}-\d{4a}$/);
+    return data.endDate && data.endDate.match(/^\d{2}-\d{2}-\d{4}$/);
   }
   return true;
 }, {
@@ -800,6 +800,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
 
