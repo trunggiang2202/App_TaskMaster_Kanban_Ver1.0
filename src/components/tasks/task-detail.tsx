@@ -35,32 +35,36 @@ interface SubtaskItemProps {
 
 const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, isInProgress, isOverdue }) => {
     const canComplete = isClickable && !!subtask.startDate && !!subtask.endDate;
-    const [timeProgress, setTimeProgress] = React.useState(0);
+    const [timeProgress, setTimeProgress] = React.useState(100);
 
     React.useEffect(() => {
         if (subtask.completed || !isInProgress || !subtask.startDate || !subtask.endDate) {
-            setTimeProgress(0);
+            setTimeProgress(subtask.completed ? 100 : 0);
             return;
         }
 
-        const calculateProgress = () => {
+        const calculateRemainingTimeProgress = () => {
             const now = new Date().getTime();
             const start = new Date(subtask.startDate!).getTime();
             const end = new Date(subtask.endDate!).getTime();
 
             if (now >= end) {
+                setTimeProgress(0);
+                return;
+            }
+            if (now < start) {
                 setTimeProgress(100);
                 return;
             }
 
             const totalDuration = end - start;
-            const elapsedTime = now - start;
-            const percentage = (elapsedTime / totalDuration) * 100;
+            const remainingTime = end - now;
+            const percentage = (remainingTime / totalDuration) * 100;
             setTimeProgress(Math.min(100, Math.max(0, percentage)));
         };
 
-        calculateProgress();
-        const interval = setInterval(calculateProgress, 60000); // Cập nhật mỗi phút
+        calculateRemainingTimeProgress();
+        const interval = setInterval(calculateRemainingTimeProgress, 60000); 
 
         return () => clearInterval(interval);
     }, [subtask.startDate, subtask.endDate, subtask.completed, isInProgress]);
@@ -99,8 +103,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
       </div>
     );
     
-    const isWarning = timeProgress > 80;
-
+    const isWarning = timeProgress < 20;
 
     return (
         <div 
@@ -129,7 +132,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
             {isInProgress && !subtask.completed && (
                 <Progress 
                     value={timeProgress} 
-                    className="h-1 bg-amber-500/20" 
+                    className="h-1.5 bg-amber-500/20" 
                     indicatorClassName={cn(
                         "bg-amber-500",
                         isWarning && "bg-destructive"
