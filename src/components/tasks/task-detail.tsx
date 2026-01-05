@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -36,6 +35,36 @@ interface SubtaskItemProps {
 
 const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, isInProgress, isOverdue }) => {
     const canComplete = isClickable && !!subtask.startDate && !!subtask.endDate;
+    const [timeProgress, setTimeProgress] = React.useState(0);
+
+    React.useEffect(() => {
+        if (subtask.completed || !isInProgress || !subtask.startDate || !subtask.endDate) {
+            setTimeProgress(0);
+            return;
+        }
+
+        const calculateProgress = () => {
+            const now = new Date().getTime();
+            const start = new Date(subtask.startDate!).getTime();
+            const end = new Date(subtask.endDate!).getTime();
+
+            if (now >= end) {
+                setTimeProgress(100);
+                return;
+            }
+
+            const totalDuration = end - start;
+            const elapsedTime = now - start;
+            const percentage = (elapsedTime / totalDuration) * 100;
+            setTimeProgress(Math.min(100, Math.max(0, percentage)));
+        };
+
+        calculateProgress();
+        const interval = setInterval(calculateProgress, 60000); // Cập nhật mỗi phút
+
+        return () => clearInterval(interval);
+    }, [subtask.startDate, subtask.endDate, subtask.completed, isInProgress]);
+
 
     const handleToggle = (e: React.MouseEvent) => {
         if (canComplete) {
@@ -69,12 +98,14 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
         {renderIcon()}
       </div>
     );
+    
+    const isWarning = timeProgress > 80;
 
 
     return (
         <div 
             key={subtask.id} 
-            className="flex flex-col"
+            className="flex flex-col gap-2"
         >
             <div className="flex items-start gap-3">
                  <TooltipProvider>
@@ -95,6 +126,16 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                     </span>
                 </div>
             </div>
+            {isInProgress && !subtask.completed && (
+                <Progress 
+                    value={timeProgress} 
+                    className="h-1 bg-amber-500/20" 
+                    indicatorClassName={cn(
+                        "bg-amber-500",
+                        isWarning && "bg-destructive"
+                    )}
+                />
+            )}
         </div>
     )
 };
