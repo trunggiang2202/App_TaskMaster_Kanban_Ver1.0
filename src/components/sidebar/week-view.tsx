@@ -31,7 +31,7 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
 
     return tasks.some(task => {
       if (task.taskType === 'recurring') {
-        return task.recurringDay === dayOfWeek;
+        return task.recurringDays?.includes(dayOfWeek);
       }
       return task.subtasks.some(st => {
         if (!st.startDate || !st.endDate) return false;

@@ -33,9 +33,15 @@ const getTasksFromLocalStorage = (): Task[] => {
         };
         if (t.startDate) task.startDate = new Date(t.startDate);
         if (t.endDate) task.endDate = new Date(t.endDate);
-        if (t.taskType === 'recurring' && t.recurringDay !== undefined) {
-          task.recurringDay = t.recurringDay;
+        if (t.taskType === 'recurring' && t.recurringDay) {
+          // Migration from single day to multiple days
+          task.recurringDays = Array.isArray(t.recurringDay) ? t.recurringDay : [t.recurringDay];
+          delete (task as any).recurringDay;
         }
+        if (t.recurringDays) {
+            task.recurringDays = t.recurringDays;
+        }
+
         task.subtasks = t.subtasks.map((st: any) => {
           const subtask = { ...st };
           if (st.startDate) subtask.startDate = new Date(st.startDate);

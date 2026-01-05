@@ -77,7 +77,7 @@ function TaskKanban() {
     if (task.status === 'Done') return false;
     
     if (task.taskType === 'recurring') {
-      return getDay(new Date()) === task.recurringDay;
+      return task.recurringDays?.includes(getDay(new Date()));
     }
 
     const today = startOfDay(new Date());
@@ -102,7 +102,7 @@ function TaskKanban() {
       case 'week':
         return tasks.filter(task => {
           if (task.taskType === 'recurring') {
-            return task.recurringDay === dayOfWeek;
+            return task.recurringDays?.includes(dayOfWeek);
           }
           return task.subtasks.some(st => {
             if (!st.startDate || !st.endDate) return false;
@@ -125,7 +125,7 @@ function TaskKanban() {
     }
 
     if (task.taskType === 'recurring') {
-      if (getDay(new Date()) === task.recurringDay) {
+      if (task.recurringDays?.includes(getDay(new Date()))) {
         return count + task.subtasks.filter(st => !st.completed).length;
       }
       return count;
@@ -181,39 +181,41 @@ function TaskKanban() {
       <Sidebar>
         <SidebarHeader className="p-4 group">
           <div className="flex items-center justify-between">
-            {isEditingName ? (
-              <div className="w-full">
-                <Input
-                  type="text"
-                  value={userName || ''}
-                  onChange={handleNameChange}
-                  onKeyDown={handleNameKeyDown}
-                  onBlur={handleEditBlur}
-                  autoFocus
-                  maxLength={12}
-                  className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
-                />
-                {nameError && <p className="text-destructive text-xs mt-1">{nameError}</p>}
-              </div>
-            ) : (
-              <h2 className="flex items-center text-2xl font-bold font-headline">
-                {userName !== null ? (
-                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                    Hi, {userName}
-                    <span className="inline-block text-left w-12">{loadingDots}</span>
-                  </span>
+            <div className="flex items-center gap-1 min-w-0">
+                {isEditingName ? (
+                    <div className="w-full">
+                        <Input
+                        type="text"
+                        value={userName || ''}
+                        onChange={handleNameChange}
+                        onKeyDown={handleNameKeyDown}
+                        onBlur={handleEditBlur}
+                        autoFocus
+                        maxLength={12}
+                        className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
+                        />
+                    </div>
                 ) : (
-                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                    Hi, ...
-                  </span>
+                    <h2 className="flex items-center text-2xl font-bold font-headline truncate">
+                        {userName !== null ? (
+                        <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                            Hi, {userName}
+                            <span className="inline-block text-left w-12">{loadingDots}</span>
+                        </span>
+                        ) : (
+                        <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                            Hi, ...
+                        </span>
+                        )}
+                    </h2>
                 )}
-              </h2>
-            )}
+            </div>
+            {isEditingName && nameError && <p className="text-destructive text-xs mt-1 absolute top-full left-4">{nameError}</p>}
             {!isEditingName && (
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                 onClick={() => setIsEditingName(true)}
               >
                 <Pencil className="h-4 w-4" />

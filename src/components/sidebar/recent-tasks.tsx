@@ -103,13 +103,15 @@ function TaskProgress({ task }: { task: Task }) {
   }, [task.startDate, task.endDate, task.status, task.taskType]);
   
   if (task.taskType === 'recurring') {
-    const isTaskForToday = getDay(new Date()) === task.recurringDay;
+    const isTaskForToday = task.recurringDays?.includes(getDay(new Date()));
+    const recurringDaysText = task.recurringDays?.map(day => WEEKDAYS[day].substring(0,3)).join(', ') || '';
+
     return (
        <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
           <div className={cn("flex items-center gap-2", isTaskForToday && "text-emerald-500 font-semibold")}>
             <Repeat size={12} />
             <span>
-              {isTaskForToday ? "Hôm nay" : `Lặp lại vào ${WEEKDAYS[task.recurringDay!]}`}
+              {isTaskForToday ? `Hôm nay (${recurringDaysText})` : `Lặp lại vào ${recurringDaysText}`}
             </span>
           </div>
        </div>
@@ -130,6 +132,7 @@ function TaskProgress({ task }: { task: Task }) {
   };
 
   const getIndicatorColor = (progress: number) => {
+    if (isOverdue) return 'bg-destructive';
     if (progress > 60) {
       return 'bg-emerald-500';
     }
@@ -163,10 +166,16 @@ function TaskProgress({ task }: { task: Task }) {
                 {isOverdue && <span>(Đã quá hạn)</span>}
             </div>
           )}
-          {task.status !== 'Done' && (
+          {task.status !== 'Done' && !isOverdue && (
               <div className={`flex items-center gap-2 ${getTimeLeftColor()}`}>
                 <Clock size={12} /> 
-                <span>{isUpcoming ? 'Tổng thời gian' : isOverdue ? '' : 'Thời gian còn lại: '}{isOverdue ? 'Đã quá hạn' : timeLeft}</span>
+                <span>{isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại: '}{timeLeft}</span>
+              </div>
+          )}
+          {isOverdue && (
+             <div className={`flex items-center gap-2 ${getTimeLeftColor()}`}>
+                <Clock size={12} /> 
+                <span>Đã quá hạn</span>
               </div>
           )}
         </div>

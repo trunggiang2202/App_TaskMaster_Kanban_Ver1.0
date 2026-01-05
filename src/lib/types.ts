@@ -27,5 +27,5 @@ export interface Task {
   taskType: TaskType;
   startDate?: Date;
   endDate?: Date;
-  recurringDay?: number; // 0 (Sun) to 6 (Sat)
+  recurringDays?: number[]; // 0 (Sun) to 6 (Sat)
 }

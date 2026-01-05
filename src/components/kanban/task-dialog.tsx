@@ -39,7 +39,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -61,7 +62,7 @@ const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
   taskType: z.custom<TaskType>(),
-  recurringDay: z.number().optional(),
+  recurringDays: z.array(z.number()).optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
   endDate: z.string().optional(),
@@ -69,12 +70,12 @@ const taskSchema = z.object({
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
   if (data.taskType === 'recurring') {
-    return data.recurringDay !== undefined;
+    return data.recurringDays && data.recurringDays.length > 0;
   }
   return true;
 }, {
-  message: "Vui lòng chọn ngày lặp lại.",
-  path: ["recurringDay"],
+  message: "Vui lòng chọn ít nhất một ngày lặp lại.",
+  path: ["recurringDays"],
 }).refine(data => {
   if (data.taskType === 'deadline') {
     return data.startDate && data.startDate.match(/^\d{2}-\d{2}-\d{4}$/);
@@ -93,7 +94,7 @@ const taskSchema = z.object({
   path: ["startTime"],
 }).refine(data => {
   if (data.taskType === 'deadline') {
-    return data.endDate && data.endDate.match(/^\d{2}-\d{2}-\d{4}$/);
+    return data.endDate && data.endDate.match(/^\d{2}-\d{2}-\d{4a}$/);
   }
   return true;
 }, {
@@ -188,6 +189,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
       title: '',
       description: '',
       taskType: 'deadline',
+      recurringDays: [],
       subtasks: [],
     },
   });
@@ -212,7 +214,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
           startTime: taskToEdit.startDate ? new Date(taskToEdit.startDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
           endDate: taskToEdit.endDate ? new Date(taskToEdit.endDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
           endTime: taskToEdit.endDate ? new Date(taskToEdit.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
-          recurringDay: taskToEdit.recurringDay,
+          recurringDays: taskToEdit.recurringDays || [],
           subtasks: taskToEdit.subtasks.map(st => ({
               title: st.title,
               description: st.description || '',
@@ -234,7 +236,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
           startTime: '04:00',
           endDate: dateWithYearOnly,
           endTime: '23:59',
-          recurringDay: undefined,
+          recurringDays: [],
           subtasks: [{ 
             title: "", 
             description: "", 
@@ -276,7 +278,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                 attachments: st.attachments,
             })) : [];
     } else { // recurring
-        task.recurringDay = data.recurringDay;
+        task.recurringDays = data.recurringDays;
         task.subtasks = data.subtasks ? data.subtasks
             .filter(st => st.title && st.title.trim() !== '')
             .map((st, index) => ({
@@ -324,7 +326,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
   };
 
   const triggerValidationAndSwitchTab = async () => {
-    const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description", "recurringDay"]);
+    const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description", "recurringDays"]);
     if (result) {
         setActiveTab('subtasks');
     }
@@ -371,7 +373,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
   };
 
   const isTaskTabInvalid = Object.keys(form.formState.errors).some(key =>
-    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root', 'description', 'recurringDay'].includes(key) || (form.formState.errors as any)[key]?.type === 'custom'
+    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root', 'description', 'recurringDays'].includes(key) || (form.formState.errors as any)[key]?.type === 'custom'
   );
 
 
@@ -510,26 +512,27 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                     ) : (
                       <FormField
                           control={form.control}
-                          name="recurringDay"
+                          name="recurringDays"
                           render={({ field }) => (
-                              <FormItem>
-                                  <FormLabel>Lặp lại vào</FormLabel>
-                                  <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                      <FormControl>
-                                          <SelectTrigger className="bg-primary/5">
-                                              <SelectValue placeholder="Chọn một ngày trong tuần" />
-                                          </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                          {WEEKDAYS.map((day, index) => (
-                                              <SelectItem key={index} value={index.toString()}>
-                                                  {day}
-                                              </SelectItem>
-                                          ))}
-                                      </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                              </FormItem>
+                            <FormItem>
+                                <FormLabel>Lặp lại vào</FormLabel>
+                                <FormControl>
+                                    <ToggleGroup
+                                        type="multiple"
+                                        variant="outline"
+                                        value={field.value?.map(String) || []}
+                                        onValueChange={(value) => field.onChange(value.map(Number))}
+                                        className="grid grid-cols-4 sm:grid-cols-7 gap-2"
+                                    >
+                                        {WEEKDAYS.map((day, index) => (
+                                            <ToggleGroupItem key={index} value={String(index)} aria-label={`Toggle ${day}`}>
+                                                {day.substring(0, 3)}
+                                            </ToggleGroupItem>
+                                        ))}
+                                    </ToggleGroup>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                           )}
                       />
                     )}

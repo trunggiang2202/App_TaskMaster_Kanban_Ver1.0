@@ -28,6 +28,7 @@ import { useTasks } from '@/contexts/TaskContext';
 interface SubtaskItemProps {
     subtask: Subtask;
     taskType: Task['taskType'];
+    recurringDays?: number[];
     onToggle: (subtaskId: string) => void;
     onTitleClick: () => void;
     isClickable: boolean;
@@ -35,8 +36,8 @@ interface SubtaskItemProps {
     isOverdue: boolean;
 }
 
-const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, onToggle, onTitleClick, isClickable, isInProgress, isOverdue }) => {
-    const canComplete = taskType === 'recurring' || (isClickable && !!subtask.startDate && !!subtask.endDate);
+const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringDays, onToggle, onTitleClick, isClickable, isInProgress, isOverdue }) => {
+    const canComplete = taskType === 'recurring' ? (recurringDays?.includes(getDay(new Date()))) : (isClickable && !!subtask.startDate && !!subtask.endDate);
     const [timeProgress, setTimeProgress] = React.useState(100);
     const [timeLeft, setTimeLeft] = React.useState('');
     const [isExpanded, setIsExpanded] = React.useState(false);
@@ -146,7 +147,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, onToggle, 
                         <Tooltip>
                             <TooltipTrigger asChild>{iconElement}</TooltipTrigger>
                             <TooltipContent>
-                                <p>Chưa bắt đầu deadline</p>
+                                <p>{ taskType === 'recurring' ? 'Không phải hôm nay' : 'Chưa bắt đầu deadline'}</p>
                             </TooltipContent>
                         </Tooltip>
                     ) : (
@@ -259,7 +260,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const getSubtaskStyling = (subtask: Subtask, columnTitle?: SubtaskStatus) => {
     if (subtask.completed) return 'border-l-4 border-emerald-500';
     if (task.taskType === 'recurring') {
-      return getDay(new Date()) === task.recurringDay ? 'border-l-4 border-amber-500' : 'border-l-4 border-sky-500';
+      return task.recurringDays?.includes(getDay(new Date())) ? 'border-l-4 border-amber-500' : 'border-l-4 border-sky-500';
     }
     if (columnTitle === 'Đang làm' && subtask.endDate && isBefore(subtask.endDate, now)) {
       return 'border-l-4 border-destructive';
@@ -274,6 +275,11 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500', bgColor: 'bg-amber-500/5' },
     { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-emerald-500', bgColor: 'bg-emerald-500/5' },
   ];
+  
+  const recurringDaysText = task.recurringDays
+    ?.sort()
+    .map(day => WEEKDAYS[day])
+    .join(', ');
 
   return (
     <>
@@ -321,7 +327,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                 {task.taskType === 'recurring' && (
                   <div className="flex items-center gap-2 mt-4 text-sm font-medium text-primary">
                       <Repeat className="h-4 w-4" />
-                      Lặp lại vào {WEEKDAYS[task.recurringDay!]} hàng tuần
+                      Lặp lại vào {recurringDaysText} hàng tuần
                   </div>
                 )}
             </div>
@@ -392,10 +398,11 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                         <SubtaskItem
                           subtask={st}
                           taskType={task.taskType}
+                          recurringDays={task.recurringDays}
                           onToggle={(subtaskId) => toggleSubtask(task.id, subtaskId)}
                           onTitleClick={() => handleSubtaskClick(st)}
                           isClickable={true}
-                          isInProgress={getDay(new Date()) === task.recurringDay}
+                          isInProgress={task.recurringDays?.includes(getDay(new Date())) || false}
                           isOverdue={false}
                         />
                       </CardContent>
