@@ -42,7 +42,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
 
 
     React.useEffect(() => {
-        if (subtask.completed || !subtask.startDate || !subtask.endDate) {
+        if (!subtask.startDate || !subtask.endDate) {
             setTimeProgress(subtask.completed ? 100 : 0);
             return;
         }
@@ -52,18 +52,25 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
             const start = new Date(subtask.startDate!).getTime();
             const end = new Date(subtask.endDate!).getTime();
 
+            if (subtask.completed) {
+                setTimeProgress(100);
+                setTimeLeft('Đã hoàn thành');
+                return;
+            }
+
             if (now >= end) {
                 setTimeProgress(0);
                  setTimeLeft('Đã quá hạn');
                 return;
             }
+
             if (now < start) {
                 const totalDuration = end - start;
                 const days = Math.floor(totalDuration / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((totalDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((totalDuration % (1000 * 60 * 60)) / (1000 * 60));
-                setTimeLeft(`${days}d ${hours}h ${minutes}m`);
-                setTimeProgress(100);
+                setTimeLeft(`${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`);
+                setTimeProgress(100); // Full time left
                 return;
             }
 
@@ -118,6 +125,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     );
     
     const isWarning = !subtask.completed && isInProgress && timeProgress < 20;
+    const hasDeadline = !!subtask.startDate && !!subtask.endDate;
 
     return (
         <div 
@@ -142,7 +150,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                         {subtask.title}
                     </span>
                 </div>
-                 {isInProgress && !subtask.completed && (
+                 {!subtask.completed && hasDeadline && (
                     <Button
                         variant="ghost"
                         size="icon"
@@ -153,19 +161,19 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                     </Button>
                 )}
             </div>
-            {isExpanded && isInProgress && !subtask.completed && (
+            {isExpanded && !subtask.completed && hasDeadline && (
                 <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                         <span className={cn("flex items-center gap-1 font-medium", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
                             <Clock className="h-3 w-3" />
-                            Thời gian còn lại: {timeLeft}
+                             {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
                         </span>
                     </div>
                     <Progress 
                         value={timeProgress} 
                         className="h-1.5" 
                         indicatorClassName={cn(
-                            isWarning ? "bg-destructive" : "bg-amber-500"
+                            isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
                         )}
                     />
                 </div>
@@ -329,7 +337,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                                     onToggle={(subtaskId) => toggleSubtask(task.id, subtaskId)}
                                     onTitleClick={() => handleSubtaskClick(st)}
                                     isClickable={column.isClickable}
-                                    isInProgress={column.title === 'Đang làm' && !st.completed}
+                                    isInProgress={column.title === 'Đang làm'}
                                     isOverdue={isOverdue}
                                 />
                               </CardContent>
@@ -357,7 +365,3 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
-
-    
-
-    
