@@ -23,7 +23,7 @@ import { isAfter } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn, WEEKDAY_ABBREVIATIONS } from '@/lib/utils';
+import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAY_INDICES } from '@/lib/utils';
 import { DateSegmentInput } from '@/components/ui/date-segment-input';
 import { useTasks } from '@/contexts/TaskContext';
 import { parseDateTime } from '@/lib/utils';
@@ -525,7 +525,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                         className="grid grid-cols-4 sm:grid-cols-7 gap-2"
                                     >
                                         {WEEKDAY_ABBREVIATIONS.map((day, index) => (
-                                            <ToggleGroupItem key={index} value={String(index)} aria-label={`Toggle ${day}`}>
+                                            <ToggleGroupItem key={day} value={String(WEEKDAY_INDICES[index])} aria-label={`Toggle ${day}`}>
                                                 {day}
                                             </ToggleGroupItem>
                                         ))}
@@ -794,5 +794,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
     </Dialog>
   );
 }
+
+    
 
     
