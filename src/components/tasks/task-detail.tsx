@@ -129,10 +129,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     const hasDeadline = !!subtask.startDate && !!subtask.endDate;
 
     return (
-        <div 
-            key={subtask.id} 
-            className="flex flex-col gap-2"
-        >
+        <div key={subtask.id} className="flex flex-col gap-2">
             <div className="flex items-start gap-3">
                  <TooltipProvider>
                     {!canComplete && !subtask.completed ? (
@@ -163,9 +160,9 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 )}
             </div>
             {isExpanded && !subtask.completed && hasDeadline && (
-                <div className="space-y-1">
+                <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                        <span className={cn("flex items-center gap-1 font-medium", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
+                        <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
                             <Clock className="h-3 w-3" />
                              {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
                         </span>
@@ -366,7 +363,4 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
-
-    
-
-    
+ 
