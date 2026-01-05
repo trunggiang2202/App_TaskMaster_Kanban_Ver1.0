@@ -18,12 +18,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Plus, Trash2, Paperclip, X } from 'lucide-react';
-import type { Task, Subtask } from '@/lib/types';
+import type { Task, Subtask, TaskType } from '@/lib/types';
 import { isAfter } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from '@/lib/utils';
+import { cn, WEEKDAYS } from '@/lib/utils';
 import { DateSegmentInput } from '@/components/ui/date-segment-input';
 import { useTasks } from '@/contexts/TaskContext';
 import { parseDateTime } from '@/lib/utils';
@@ -38,6 +38,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -50,7 +52,7 @@ const subtaskSchema = z.object({
   description: z.string().optional(),
   startDate: z.string().optional(),
   startTime: z.string().optional(),
-  endDate: z.string().optional(),
+endDate: z.string().optional(),
   endTime: z.string().optional(),
   attachments: z.array(attachmentSchema).optional(),
 });
@@ -58,54 +60,87 @@ const subtaskSchema = z.object({
 const taskSchema = z.object({
   title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
   description: z.string().optional(),
-  startDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: " ",
-  }),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
-  endDate: z.string().refine(val => val && val.match(/^\d{2}-\d{2}-\d{4}$/), {
-    message: " ",
-  }),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, " "),
+  taskType: z.custom<TaskType>(),
+  recurringDay: z.number().optional(),
+  startDate: z.string().optional(),
+  startTime: z.string().optional(),
+  endDate: z.string().optional(),
+  endTime: z.string().optional(),
   subtasks: z.array(subtaskSchema).optional(),
 }).refine(data => {
-  if (data.subtasks) {
-    for (const subtask of data.subtasks) {
-      if (subtask.title && subtask.title.trim() !== '') {
-        if (!subtask.startDate || !subtask.startTime || !subtask.endDate || !subtask.endTime) {
-          return false; 
-        }
-        const startSubtaskTime = parseDateTime(subtask.startDate, subtask.startTime);
-        const endSubtaskTime = parseDateTime(subtask.endDate, subtask.endTime);
-        if (!startSubtaskTime || !endSubtaskTime || endSubtaskTime <= startSubtaskTime) {
-            return false;
-        }
-      }
-    }
+  if (data.taskType === 'recurring') {
+    return data.recurringDay !== undefined;
   }
   return true;
 }, {
-  message: "Công việc con có tiêu đề phải có deadline hợp lệ (ngày/giờ bắt đầu và kết thúc, và thời gian kết thúc phải sau thời gian bắt đầu).",
+  message: "Vui lòng chọn ngày lặp lại.",
+  path: ["recurringDay"],
+}).refine(data => {
+  if (data.taskType === 'deadline') {
+    return data.startDate && data.startDate.match(/^\d{2}-\d{2}-\d{4}$/);
+  }
+  return true;
+}, {
+  message: " ",
+  path: ["startDate"],
+}).refine(data => {
+  if (data.taskType === 'deadline') {
+    return data.startTime && data.startTime.match(/^\d{2}:\d{2}$/);
+  }
+  return true;
+}, {
+  message: " ",
+  path: ["startTime"],
+}).refine(data => {
+  if (data.taskType === 'deadline') {
+    return data.endDate && data.endDate.match(/^\d{2}-\d{2}-\d{4}$/);
+  }
+  return true;
+}, {
+  message: " ",
+  path: ["endDate"],
+}).refine(data => {
+  if (data.taskType === 'deadline') {
+    return data.endTime && data.endTime.match(/^\d{2}:\d{2}$/);
+  }
+  return true;
+}, {
+  message: " ",
+  path: ["endTime"],
+}).refine(data => {
+    if (data.taskType === 'deadline' && data.subtasks) {
+        for (const subtask of data.subtasks) {
+            if (subtask.title && subtask.title.trim() !== '') {
+                if (!subtask.startDate || !subtask.startTime || !subtask.endDate || !subtask.endTime) {
+                    return false; 
+                }
+                const startSubtaskTime = parseDateTime(subtask.startDate, subtask.startTime);
+                const endSubtaskTime = parseDateTime(subtask.endDate, subtask.endTime);
+                if (!startSubtaskTime || !endSubtaskTime || endSubtaskTime <= startSubtaskTime) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}, {
+  message: "Công việc con có tiêu đề phải có deadline hợp lệ.",
   path: ["subtasks"],
 }).refine(data => {
+    if (data.taskType !== 'deadline' || !data.startDate || !data.startTime || !data.endDate || !data.endTime) return true;
+
     const taskStartDateTime = parseDateTime(data.startDate, data.startTime);
     const taskEndDateTime = parseDateTime(data.endDate, data.endTime);
 
-    if (!taskStartDateTime || !taskEndDateTime || !data.subtasks) {
-        return true; 
-    }
+    if (!taskStartDateTime || !taskEndDateTime || !data.subtasks) return true;
 
     for (const subtask of data.subtasks) {
         if (subtask.title && subtask.title.trim() !== '' && subtask.startDate && subtask.startTime && subtask.endDate && subtask.endTime) {
             const subtaskStartDateTime = parseDateTime(subtask.startDate, subtask.startTime);
             const subtaskEndDateTime = parseDateTime(subtask.endDate, subtask.endTime);
 
-            if (!subtaskStartDateTime || !subtaskEndDateTime) {
-                continue; 
-            }
-
-            if (subtaskStartDateTime < taskStartDateTime || subtaskEndDateTime > taskEndDateTime) {
-                return false; 
-            }
+            if (!subtaskStartDateTime || !subtaskEndDateTime) continue;
+            if (subtaskStartDateTime < taskStartDateTime || subtaskEndDateTime > taskEndDateTime) return false;
         }
     }
     return true;
@@ -113,6 +148,7 @@ const taskSchema = z.object({
     message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
     path: ["subtasks"],
 }).refine((data) => {
+    if (data.taskType !== 'deadline' || !data.startDate || !data.startTime || !data.endDate || !data.endTime) return true;
     const start = parseDateTime(data.startDate, data.startTime);
     const end = parseDateTime(data.endDate, data.endTime);
     if (start && end) {
@@ -124,10 +160,7 @@ const taskSchema = z.object({
     path: ["endDate"], 
 }).refine((data) => {
     if (data.subtasks && data.subtasks.length > 0) {
-      const hasAtLeastOneSubtaskWithTitle = data.subtasks.some(st => st.title && st.title.trim() !== '');
-      if (!hasAtLeastOneSubtaskWithTitle) {
-          return false;
-      }
+      return data.subtasks.some(st => st.title && st.title.trim() !== '');
     }
     return true;
 }, {
@@ -154,10 +187,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
     defaultValues: {
       title: '',
       description: '',
-      startDate: '',
-      endDate: '',
-      startTime: '',
-      endTime: '',
+      taskType: 'deadline',
       subtasks: [],
     },
   });
@@ -167,6 +197,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
     name: "subtasks",
   });
   
+  const taskType = form.watch('taskType');
+
   useEffect(() => {
     if (isOpen) {
       form.clearErrors();
@@ -175,10 +207,12 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
         form.reset({
           title: taskToEdit.title,
           description: taskToEdit.description || '',
+          taskType: taskToEdit.taskType,
           startDate: taskToEdit.startDate ? new Date(taskToEdit.startDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
           startTime: taskToEdit.startDate ? new Date(taskToEdit.startDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
           endDate: taskToEdit.endDate ? new Date(taskToEdit.endDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
           endTime: taskToEdit.endDate ? new Date(taskToEdit.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
+          recurringDay: taskToEdit.recurringDay,
           subtasks: taskToEdit.subtasks.map(st => ({
               title: st.title,
               description: st.description || '',
@@ -195,10 +229,12 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
         form.reset({
           title: '',
           description: '',
+          taskType: 'deadline',
           startDate: dateWithYearOnly,
           startTime: '04:00',
           endDate: dateWithYearOnly,
           endTime: '23:59',
+          recurringDay: undefined,
           subtasks: [{ 
             title: "", 
             description: "", 
@@ -215,42 +251,54 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
 
 
   const handleSubmit = useCallback((data: TaskFormData) => {
-    const taskStartDate = parseDateTime(data.startDate, data.startTime);
-    const taskEndDate = parseDateTime(data.endDate, data.endTime);
-
-    if (!taskStartDate || !taskEndDate) return;
-
-    const newSubtasks: Subtask[] = data.subtasks ? data.subtasks
-      .filter(st => st.title && st.title.trim() !== '')
-      .map((st, index) => {
-        const subtaskStartDate = parseDateTime(st.startDate, st.startTime);
-        const subtaskEndDateTime = parseDateTime(st.endDate, st.endTime);
-        return {
-          id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
-          title: st.title ?? '',
-          description: st.description,
-          completed: taskToEdit?.subtasks[index]?.completed || false,
-          startDate: subtaskStartDate as Date,
-          endDate: subtaskEndDateTime as Date,
-          attachments: st.attachments,
-        };
-    }) : [];
-
-    const task: Task = {
-      id: taskToEdit?.id || crypto.randomUUID(),
-      title: data.title,
-      description: data.description,
-      status: taskToEdit?.status || 'To Do',
-      createdAt: taskToEdit?.createdAt || new Date(),
-      startDate: taskStartDate,
-      endDate: taskEndDate,
-      subtasks: newSubtasks,
+    const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any } = {
+        title: data.title,
+        description: data.description,
+        taskType: data.taskType,
+        subtasks: [],
     };
+
+    if (data.taskType === 'deadline') {
+        const taskStartDate = parseDateTime(data.startDate, data.startTime);
+        const taskEndDate = parseDateTime(data.endDate, data.endTime);
+        if (!taskStartDate || !taskEndDate) return;
+        task.startDate = taskStartDate;
+        task.endDate = taskEndDate;
+        task.subtasks = data.subtasks ? data.subtasks
+            .filter(st => st.title && st.title.trim() !== '')
+            .map((st, index) => ({
+                id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
+                title: st.title ?? '',
+                description: st.description,
+                completed: taskToEdit?.subtasks[index]?.completed || false,
+                startDate: parseDateTime(st.startDate, st.startTime) as Date,
+                endDate: parseDateTime(st.endDate, st.endTime) as Date,
+                attachments: st.attachments,
+            })) : [];
+    } else { // recurring
+        task.recurringDay = data.recurringDay;
+        task.subtasks = data.subtasks ? data.subtasks
+            .filter(st => st.title && st.title.trim() !== '')
+            .map((st, index) => ({
+                id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
+                title: st.title ?? '',
+                description: st.description,
+                completed: taskToEdit?.subtasks[index]?.completed || false,
+                attachments: st.attachments,
+            })) : [];
+    }
     
+    const finalTask: Task = {
+        ...task,
+        id: taskToEdit?.id || crypto.randomUUID(),
+        status: taskToEdit?.status || 'To Do',
+        createdAt: taskToEdit?.createdAt || new Date(),
+    } as Task;
+
     if (taskToEdit) {
-      updateTask(task);
+      updateTask(finalTask);
     } else {
-      addTask(task);
+      addTask(finalTask);
     }
     onOpenChange(false);
   }, [taskToEdit, addTask, updateTask, onOpenChange]);
@@ -276,7 +324,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
   };
 
   const triggerValidationAndSwitchTab = async () => {
-    const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description"]);
+    const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description", "recurringDay"]);
     if (result) {
         setActiveTab('subtasks');
     }
@@ -295,6 +343,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
 
 
   const getSubtaskBorderColor = (index: number) => {
+    if (taskType === 'recurring') return 'border-muted';
+
     const subtask = form.watch(`subtasks.${index}`);
     const now = new Date();
 
@@ -321,7 +371,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
   };
 
   const isTaskTabInvalid = Object.keys(form.formState.errors).some(key =>
-    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root', 'description'].includes(key) || (form.formState.errors as any)[key]?.type === 'custom'
+    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root', 'description', 'recurringDay'].includes(key) || (form.formState.errors as any)[key]?.type === 'custom'
   );
 
 
@@ -370,70 +420,119 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <FormLabel>Bắt đầu</FormLabel>
-                           <div className="border p-3 rounded-md grid gap-4">
-                                <FormItem>
-                                <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                                <FormField
-                                    control={form.control}
-                                    name="startDate"
-                                    render={({ field }) => (
-                                    <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
-                                    </FormControl>
-                                    )}
-                                />
-                                <FormMessage />
-                                </FormItem>
-                                <FormItem>
-                                <FormLabel>Giờ</FormLabel>
-                                <FormField
-                                    control={form.control}
-                                    name="startTime"
-                                    render={({ field }) => (
-                                    <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5" />
-                                    </FormControl>
-                                    )}
-                                />
-                                <FormMessage />
-                                </FormItem>
+
+                    <FormField
+                      control={form.control}
+                      name="taskType"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                          <div className="space-y-0.5">
+                            <FormLabel>Nhiệm vụ lặp lại</FormLabel>
+                            <FormDescription>
+                              Nhiệm vụ sẽ được nhắc nhở vào một ngày cố định hàng tuần.
+                            </FormDescription>
                           </div>
-                        </div>
-                        <div className="space-y-2">
-                          <FormLabel>Kết thúc</FormLabel>
-                           <div className="border p-3 rounded-md grid gap-4">
-                                <FormItem>
-                                <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                                <FormField
-                                    control={form.control}
-                                    name="endDate"
-                                    render={({ field }) => (
-                                    <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
-                                    </FormControl>
-                                    )}
-                                />
-                                <FormMessage />
-                                </FormItem>
-                                <FormItem>
-                                <FormLabel>Giờ</FormLabel>
-                                <FormField
-                                    control={form.control}
-                                    name="endTime"
-                                    render={({ field }) => (
-                                    <FormControl>
-                                        <Input type="time" {...field} className="bg-primary/5" />
-                                    </FormControl>
-                                    )}
-                                />
-                                <FormMessage />
-                                </FormItem>
+                          <FormControl>
+                            <Switch
+                              checked={field.value === 'recurring'}
+                              onCheckedChange={(checked) => field.onChange(checked ? 'recurring' : 'deadline')}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    {taskType === 'deadline' ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <FormLabel>Bắt đầu</FormLabel>
+                            <div className="border p-3 rounded-md grid gap-4">
+                                  <FormItem>
+                                  <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                  <FormField
+                                      control={form.control}
+                                      name="startDate"
+                                      render={({ field }) => (
+                                      <FormControl>
+                                          <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
+                                      </FormControl>
+                                      )}
+                                  />
+                                  <FormMessage />
+                                  </FormItem>
+                                  <FormItem>
+                                  <FormLabel>Giờ</FormLabel>
+                                  <FormField
+                                      control={form.control}
+                                      name="startTime"
+                                      render={({ field }) => (
+                                      <FormControl>
+                                          <Input type="time" {...field} className="bg-primary/5" />
+                                      </FormControl>
+                                      )}
+                                  />
+                                  <FormMessage />
+                                  </FormItem>
+                            </div>
                           </div>
-                        </div>
-                    </div>
+                          <div className="space-y-2">
+                            <FormLabel>Kết thúc</FormLabel>
+                            <div className="border p-3 rounded-md grid gap-4">
+                                  <FormItem>
+                                  <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                  <FormField
+                                      control={form.control}
+                                      name="endDate"
+                                      render={({ field }) => (
+                                      <FormControl>
+                                          <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
+                                      </FormControl>
+                                      )}
+                                  />
+                                  <FormMessage />
+                                  </FormItem>
+                                  <FormItem>
+                                  <FormLabel>Giờ</FormLabel>
+                                  <FormField
+                                      control={form.control}
+                                      name="endTime"
+                                      render={({ field }) => (
+                                      <FormControl>
+                                          <Input type="time" {...field} className="bg-primary/5" />
+                                      </FormControl>
+                                      )}
+                                  />
+                                  <FormMessage />
+                                  </FormItem>
+                            </div>
+                          </div>
+                      </div>
+                    ) : (
+                      <FormField
+                          control={form.control}
+                          name="recurringDay"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>Lặp lại vào</FormLabel>
+                                  <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                      <FormControl>
+                                          <SelectTrigger className="bg-primary/5">
+                                              <SelectValue placeholder="Chọn một ngày trong tuần" />
+                                          </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                          {WEEKDAYS.map((day, index) => (
+                                              <SelectItem key={index} value={index.toString()}>
+                                                  {day}
+                                              </SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                    )}
                      {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
                      {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
                   </Form>
@@ -569,15 +668,47 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                                 </FormItem>
                                             )}
                                         />
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                          <div className="space-y-2">
-                                              <FormLabel>Bắt đầu</FormLabel>
+                                        {taskType === 'deadline' && (
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <FormLabel>Bắt đầu</FormLabel>
+                                                <div className="border p-3 rounded-md grid gap-4">
+                                                    <FormItem>
+                                                      <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
+                                                      <FormField
+                                                        control={form.control}
+                                                        name={`subtasks.${index}.startDate`}
+                                                        render={({ field }) => (
+                                                          <FormControl>
+                                                            <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5" />
+                                                          </FormControl>
+                                                        )}
+                                                      />
+                                                      <FormMessage />
+                                                    </FormItem>
+                                                    <FormItem>
+                                                      <FormLabel>Giờ</FormLabel>
+                                                      <FormField
+                                                        control={form.control}
+                                                        name={`subtasks.${index}.startTime`}
+                                                        render={({ field }) => (
+                                                          <FormControl>
+                                                            <Input type="time" {...field} className="w-full bg-primary/5" />
+                                                          </FormControl>
+                                                        )}
+                                                      />
+                                                      <FormMessage />
+                                                    </FormItem>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <FormLabel>Kết thúc</FormLabel>
                                               <div className="border p-3 rounded-md grid gap-4">
                                                   <FormItem>
                                                     <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
                                                     <FormField
                                                       control={form.control}
-                                                      name={`subtasks.${index}.startDate`}
+                                                      name={`subtasks.${index}.endDate`}
                                                       render={({ field }) => (
                                                         <FormControl>
                                                           <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5" />
@@ -590,7 +721,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                                     <FormLabel>Giờ</FormLabel>
                                                     <FormField
                                                       control={form.control}
-                                                      name={`subtasks.${index}.startTime`}
+                                                      name={`subtasks.${index}.endTime`}
                                                       render={({ field }) => (
                                                         <FormControl>
                                                           <Input type="time" {...field} className="w-full bg-primary/5" />
@@ -600,39 +731,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                                     <FormMessage />
                                                   </FormItem>
                                               </div>
-                                          </div>
-                                          <div className="space-y-2">
-                                            <FormLabel>Kết thúc</FormLabel>
-                                            <div className="border p-3 rounded-md grid gap-4">
-                                                <FormItem>
-                                                  <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                                                  <FormField
-                                                    control={form.control}
-                                                    name={`subtasks.${index}.endDate`}
-                                                    render={({ field }) => (
-                                                      <FormControl>
-                                                        <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5" />
-                                                      </FormControl>
-                                                    )}
-                                                  />
-                                                  <FormMessage />
-                                                </FormItem>
-                                                <FormItem>
-                                                  <FormLabel>Giờ</FormLabel>
-                                                  <FormField
-                                                    control={form.control}
-                                                    name={`subtasks.${index}.endTime`}
-                                                    render={({ field }) => (
-                                                      <FormControl>
-                                                        <Input type="time" {...field} className="w-full bg-primary/5" />
-                                                      </FormControl>
-                                                    )}
-                                                  />
-                                                  <FormMessage />
-                                                </FormItem>
                                             </div>
                                           </div>
-                                        </div>
+                                        )}
                                       </div>
                                     </AccordionContent>
                                   </AccordionItem>
@@ -647,15 +748,18 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                         onClick={() => {
                             const currentYear = String(new Date().getFullYear());
                             const dateWithYearOnly = `__-__-${currentYear}`;
-                            append({ 
+                            const newSubtask: any = { 
                                 title: "", 
                                 description: "", 
-                                startDate: dateWithYearOnly,
-                                startTime: '04:00', 
-                                endDate: dateWithYearOnly,
-                                endTime: '23:59', 
                                 attachments: [] 
-                            })
+                            };
+                            if (taskType === 'deadline') {
+                                newSubtask.startDate = dateWithYearOnly;
+                                newSubtask.startTime = '04:00';
+                                newSubtask.endDate = dateWithYearOnly;
+                                newSubtask.endTime = '23:59';
+                            }
+                            append(newSubtask);
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />
@@ -687,15 +791,3 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
     </Dialog>
   );
 }
-
-    
-
-
-
-    
-
-    
-
-    
-
-    

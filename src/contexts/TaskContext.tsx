@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useState, useCallback, useMemo, useContext, useEffect } from 'react';
-import type { Task } from '@/lib/types';
+import type { Task, TaskType } from '@/lib/types';
 
 interface TaskContextType {
   tasks: Task[];
@@ -26,9 +26,16 @@ const getTasksFromLocalStorage = (): Task[] => {
     if (item) {
       // Need to parse dates back into Date objects
       const parsedTasks = JSON.parse(item).map((t: any) => {
-        const task: Task = { ...t, createdAt: new Date(t.createdAt) };
+        const task: Task = { 
+            ...t, 
+            createdAt: new Date(t.createdAt),
+            taskType: t.taskType || 'deadline' // Default old tasks to 'deadline'
+        };
         if (t.startDate) task.startDate = new Date(t.startDate);
         if (t.endDate) task.endDate = new Date(t.endDate);
+        if (t.taskType === 'recurring' && t.recurringDay !== undefined) {
+          task.recurringDay = t.recurringDay;
+        }
         task.subtasks = t.subtasks.map((st: any) => {
           const subtask = { ...st };
           if (st.startDate) subtask.startDate = new Date(st.startDate);

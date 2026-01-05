@@ -7,7 +7,7 @@ import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus, BarChart3, Pencil } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isAfter, isBefore, startOfDay, subWeeks, addWeeks } from 'date-fns';
+import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
@@ -75,6 +75,11 @@ function TaskKanban() {
 
   const hasInProgressSubtasks = useCallback((task: import('@/lib/types').Task) => {
     if (task.status === 'Done') return false;
+    
+    if (task.taskType === 'recurring') {
+      return getDay(new Date()) === task.recurringDay;
+    }
+
     const today = startOfDay(new Date());
     return task.subtasks.some(st => 
       !st.completed && 
@@ -89,18 +94,23 @@ function TaskKanban() {
 
   const filteredTasksForSidebar = useMemo(() => {
     const sDay = startOfDay(selectedDay);
+    const dayOfWeek = getDay(sDay);
+
     switch(activeFilter) {
       case 'today':
         return todaysTasks;
       case 'week':
-        return tasks.filter(task => 
-          task.subtasks.some(st => {
+        return tasks.filter(task => {
+          if (task.taskType === 'recurring') {
+            return task.recurringDay === dayOfWeek;
+          }
+          return task.subtasks.some(st => {
             if (!st.startDate || !st.endDate) return false;
             const subtaskStart = startOfDay(st.startDate);
             const subtaskEnd = startOfDay(st.endDate);
             return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
-          })
-        );
+          });
+        });
       case 'all':
       default:
         return tasks;
@@ -113,6 +123,14 @@ function TaskKanban() {
     if (task.status === 'Done') {
       return count;
     }
+
+    if (task.taskType === 'recurring') {
+      if (getDay(new Date()) === task.recurringDay) {
+        return count + task.subtasks.filter(st => !st.completed).length;
+      }
+      return count;
+    }
+
     const today = startOfDay(new Date());
     const inProgressSubtasks = task.subtasks.filter(st => {
         if (!st.completed && st.startDate && st.endDate) {

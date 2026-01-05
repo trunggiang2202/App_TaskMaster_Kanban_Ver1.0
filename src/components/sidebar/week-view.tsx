@@ -27,14 +27,19 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
 
   const hasTasksOnDay = (day: Date) => {
     const sDay = startOfDay(day);
-    return tasks.some(task => 
-      task.subtasks.some(st => {
+    const dayOfWeek = getDay(sDay);
+
+    return tasks.some(task => {
+      if (task.taskType === 'recurring') {
+        return task.recurringDay === dayOfWeek;
+      }
+      return task.subtasks.some(st => {
         if (!st.startDate || !st.endDate) return false;
         const subtaskStart = startOfDay(st.startDate);
         const subtaskEnd = startOfDay(st.endDate);
         return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
       })
-    );
+    });
   };
   
   const isCurrentWeek = isSameWeek(currentDate, today, { weekStartsOn: 1 });

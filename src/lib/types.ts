@@ -1,4 +1,5 @@
 export type Status = 'To Do' | 'In Progress' | 'Done';
+export type TaskType = 'deadline' | 'recurring';
 
 export interface Attachment {
   name: string;
@@ -21,8 +22,10 @@ export interface Task {
   title: string;
   description?: string;
   status: Status;
-  startDate: Date;
-  endDate: Date;
   createdAt: Date;
   subtasks: Subtask[];
+  taskType: TaskType;
+  startDate?: Date;
+  endDate?: Date;
+  recurringDay?: number; // 0 (Sun) to 6 (Sat)
 }

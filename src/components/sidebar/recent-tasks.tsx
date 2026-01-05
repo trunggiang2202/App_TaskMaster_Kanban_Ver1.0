@@ -5,12 +5,13 @@ import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, Calendar } from 'lucide-react';
-import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval } from 'date-fns';
+import { Clock, CheckCircle2, Calendar, Repeat } from 'lucide-react';
+import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { cn, WEEKDAYS } from '@/lib/utils';
 
 const calculateInitialTimeProgress = (task: Task) => {
+    if (task.taskType === 'recurring' || !task.startDate || !task.endDate) return 100;
     const now = new Date().getTime();
     const start = new Date(task.startDate).getTime();
     const end = new Date(task.endDate).getTime();
@@ -27,7 +28,12 @@ function TaskProgress({ task }: { task: Task }) {
   const [timeLeft, setTimeLeft] = React.useState('');
   
   React.useEffect(() => {
+    if (task.taskType === 'recurring') {
+      return;
+    }
+
     const calculateTimeProgress = () => {
+      if (!task.startDate || !task.endDate) return 100;
       const now = new Date().getTime();
       const start = new Date(task.startDate).getTime();
       const end = new Date(task.endDate).getTime();
@@ -43,6 +49,8 @@ function TaskProgress({ task }: { task: Task }) {
       if (task.status === 'Done') {
         return 'Đã hoàn thành';
       }
+      if (!task.startDate || !task.endDate) return '';
+
 
       const now = new Date().getTime();
       const start = new Date(task.startDate).getTime();
@@ -92,11 +100,25 @@ function TaskProgress({ task }: { task: Task }) {
       const interval = setInterval(updateTimes, 1000);
       return () => clearInterval(interval);
     }
-  }, [task.startDate, task.endDate, task.status]);
+  }, [task.startDate, task.endDate, task.status, task.taskType]);
   
+  if (task.taskType === 'recurring') {
+    const isTaskForToday = getDay(new Date()) === task.recurringDay;
+    return (
+       <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
+          <div className={cn("flex items-center gap-2", isTaskForToday && "text-emerald-500 font-semibold")}>
+            <Repeat size={12} />
+            <span>
+              {isTaskForToday ? "Hôm nay" : `Lặp lại vào ${WEEKDAYS[task.recurringDay!]}`}
+            </span>
+          </div>
+       </div>
+    )
+  }
+
   const now = new Date();
-  const isOverdue = task.status !== 'Done' && isAfter(now, task.endDate);
-  const isUpcoming = isBefore(now, task.startDate);
+  const isOverdue = task.status !== 'Done' && task.endDate && isAfter(now, task.endDate);
+  const isUpcoming = task.startDate && isBefore(now, task.startDate);
   const isWarning = !isOverdue && timeProgress < 20;
 
   const getTimeLeftColor = () => {
@@ -117,8 +139,8 @@ function TaskProgress({ task }: { task: Task }) {
     return 'bg-destructive';
   };
 
-  const formattedStartDate = format(task.startDate, 'p, dd/MM/yyyy', { locale: vi });
-  const formattedEndDate = format(task.endDate, 'p, dd/MM/yyyy', { locale: vi });
+  const formattedStartDate = task.startDate ? format(task.startDate, 'p, dd/MM/yyyy', { locale: vi }) : '';
+  const formattedEndDate = task.endDate ? format(task.endDate, 'p, dd/MM/yyyy', { locale: vi }) : '';
   const isStarted = !isUpcoming && !isOverdue && task.status !== 'Done';
   
   return (
