@@ -147,8 +147,8 @@ function TaskKanban() {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader className="p-4">
-          <div className="group relative">
+        <SidebarHeader className="p-4 group">
+          <div className="flex items-center justify-between">
             {isEditingName ? (
               <Input
                 type="text"
@@ -162,20 +162,10 @@ function TaskKanban() {
             ) : (
               <h2 className="flex items-center text-2xl font-bold font-headline">
                 {userName !== null ? (
-                  <div className="flex items-center gap-1">
-                    <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                      Hi, {userName}
-                      <span className="inline-block text-left w-12">{loadingDots}</span>
-                    </span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => setIsEditingName(true)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                    Hi, {userName}
+                    <span className="inline-block text-left w-12">{loadingDots}</span>
+                  </span>
                 ) : (
                   <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
                     Hi, ...
@@ -183,6 +173,14 @@ function TaskKanban() {
                 )}
               </h2>
             )}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => setIsEditingName(true)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
           </div>
         </SidebarHeader>
         <SidebarContent>
