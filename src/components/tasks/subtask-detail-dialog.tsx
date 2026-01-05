@@ -84,7 +84,7 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
         <div className="space-y-4 pt-2">
             <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Mô tả</h3>
-                <div className="p-3 rounded-md border bg-muted/20 min-h-[60px]">
+                <div className="p-3 rounded-md border bg-primary/10 min-h-[60px]">
                     <p className="text-sm text-foreground leading-relaxed">
                         {subtask.description || <span className="text-muted-foreground">Không có mô tả.</span>}
                     </p>
@@ -93,7 +93,7 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
 
             <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
-                 <div className="p-3 rounded-md border bg-muted/20 min-h-[120px]">
+                 <div className="p-3 rounded-md border bg-primary/10 min-h-[120px]">
                     {attachments.length > 0 ? (
                         <Tabs defaultValue={defaultTab} className="w-full">
                             <TabsList className="grid w-full grid-cols-2">
