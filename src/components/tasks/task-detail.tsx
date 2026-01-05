@@ -58,12 +58,12 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 return;
             }
             if (now < start) {
-                setTimeProgress(100);
-                const distance = end - start;
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const totalDuration = end - start;
+                const days = Math.floor(totalDuration / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((totalDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((totalDuration % (1000 * 60 * 60)) / (1000 * 60));
                 setTimeLeft(`${days}d ${hours}h ${minutes}m`);
+                setTimeProgress(100);
                 return;
             }
 
@@ -117,7 +117,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
       </div>
     );
     
-    const isWarning = timeProgress < 20;
+    const isWarning = !subtask.completed && isInProgress && timeProgress < 20;
 
     return (
         <div 
@@ -236,13 +236,13 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const now = new Date();
 
   const getSubtaskStyling = (subtask: Subtask, columnTitle: SubtaskStatus) => {
-    if (subtask.completed) return 'border-l-4 border-emerald-500 hover:bg-emerald-500/5';
+    if (subtask.completed) return 'border-l-4 border-emerald-500';
     if (columnTitle === 'Đang làm' && subtask.endDate && isBefore(subtask.endDate, now)) {
-      return 'border-l-4 border-destructive hover:bg-destructive/5';
+      return 'border-l-4 border-destructive';
     }
-    if (columnTitle === 'Đang làm') return 'border-l-4 border-amber-500 hover:bg-amber-500/5';
-    if (columnTitle === 'Chưa làm') return 'border-l-4 border-sky-500 hover:bg-sky-500/5';
-    return 'border-l-4 border-muted hover:bg-muted/50';
+    if (columnTitle === 'Đang làm') return 'border-l-4 border-amber-500';
+    if (columnTitle === 'Chưa làm') return 'border-l-4 border-sky-500';
+    return 'border-l-4 border-muted';
   };
 
   const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
