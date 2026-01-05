@@ -112,14 +112,14 @@ function TaskProgress({ task }: { task: Task }) {
   
   return (
     <div className="space-y-2">
-       <div className="space-y-1 text-xs text-sidebar-foreground/70">
+       <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
           <div className={cn("flex items-center gap-2", isStarted && !isOverdue && "text-emerald-500")}>
             <Calendar size={12} />
             <span>Bắt đầu: {formattedStartDate}</span>
-            {isStarted && !isOverdue && <span className="font-medium">(Đã bắt đầu)</span>}
+            {isStarted && !isOverdue && <span>(Đã bắt đầu)</span>}
           </div>
           {task.status === 'Done' ? (
-            <div className="flex items-center gap-2 font-medium text-emerald-500">
+            <div className="flex items-center gap-2 text-emerald-500">
                 <CheckCircle2 size={12} />
                 <span>Đã hoàn thành</span>
             </div>
@@ -127,20 +127,18 @@ function TaskProgress({ task }: { task: Task }) {
             <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
                 <Calendar size={12} />
                 <span>Kết thúc: {formattedEndDate}</span>
-                {isOverdue && <span className="font-medium">(Đã quá hạn)</span>}
+                {isOverdue && <span>(Đã quá hạn)</span>}
             </div>
+          )}
+          {!isOverdue && task.status !== 'Done' && (
+              <div className={`flex items-center gap-2 ${getTimeLeftColor()}`}>
+                <Clock size={12} /> 
+                <span>{isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}</span>
+              </div>
           )}
         </div>
         {!isOverdue && task.status !== 'Done' && (
-            <>
-                <div className="flex justify-between items-center text-xs">
-                  <span className={`flex items-center gap-1.5 ${getTimeLeftColor()}`}>
-                    <Clock size={12} /> 
-                    {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
-                  </span>
-                </div>
-                <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={isWarning ? 'bg-destructive' : 'bg-primary'} />
-            </>
+            <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={isWarning ? 'bg-destructive' : 'bg-primary'} />
         )}
     </div>
   );
@@ -163,7 +161,7 @@ const TodaySubtasksInfo: React.FC<{ task: Task }> = ({ task }) => {
 
     if (uncompletedTodaySubtasks === 0) {
         return (
-            <div className="text-xs text-emerald-500 flex items-center gap-1 mt-1 font-medium">
+            <div className="text-xs text-emerald-500 flex items-center gap-1 mt-1">
                 <CheckCircle2 size={14} />
                 Công việc hôm nay đã xong
             </div>
@@ -204,7 +202,7 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
               )}
             >
               <div className="flex justify-between items-start">
-                <p className="text-sm font-medium text-sidebar-foreground truncate pr-6">{task.title}</p>
+                <p className="text-sm text-sidebar-foreground truncate pr-6">{task.title}</p>
               </div>
               
               <TaskProgress 
