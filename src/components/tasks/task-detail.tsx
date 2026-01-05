@@ -130,14 +130,19 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 </div>
             </div>
             {isInProgress && !subtask.completed && (
-                <Progress 
-                    value={timeProgress} 
-                    className="h-1.5 bg-amber-500/20" 
-                    indicatorClassName={cn(
-                        "bg-amber-500",
-                        isWarning && "bg-destructive"
-                    )}
-                />
+                <div className="relative w-full h-4 flex items-center">
+                    <Progress 
+                        value={timeProgress} 
+                        className="h-2 bg-amber-500/20" 
+                        indicatorClassName={cn(
+                            "bg-amber-500",
+                            isWarning && "bg-destructive"
+                        )}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="text-[10px] font-medium text-background/80">Thời gian còn lại</span>
+                    </div>
+                </div>
             )}
         </div>
     )
