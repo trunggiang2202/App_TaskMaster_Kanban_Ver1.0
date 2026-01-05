@@ -4,7 +4,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, BarChart3 } from 'lucide-react';
+import { Plus, BarChart3, Pencil } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks } from 'date-fns';
@@ -17,6 +17,9 @@ import { WeekView } from '@/components/sidebar/week-view';
 import { TaskProvider, useTasks } from '@/contexts/TaskContext';
 import { StatsDialog } from '@/components/stats/StatsDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 type FilterType = 'all' | 'today' | 'week';
 
@@ -30,6 +33,8 @@ function TaskKanban() {
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [loadingDots, setLoadingDots] = useState('');
+  const [userName, setUserName] = useState('Louis Giang');
+  const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
@@ -37,7 +42,15 @@ function TaskKanban() {
       setShowWelcomeDialog(true);
       localStorage.setItem('hasSeenWelcomeDialog', 'true');
     }
+    const savedName = localStorage.getItem('userName');
+    if (savedName) {
+      setUserName(savedName);
+    }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('userName', userName);
+  }, [userName]);
 
   useState(() => {
     let dotCount = 0;
@@ -119,18 +132,50 @@ function TaskKanban() {
     setCurrentDate(today);
     setSelectedDay(today);
   }, []);
+  
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserName(e.target.value);
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditingName(false);
+    }
+  };
 
 
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
-          <h2 className="flex items-center gap-2 text-2xl font-bold font-headline">
-            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-              Hi, Louis Giang
-              <span className="inline-block text-left w-12">{loadingDots}</span>
-            </span>
-          </h2>
+          <div className="group relative">
+            {isEditingName ? (
+              <Input
+                type="text"
+                value={userName}
+                onChange={handleNameChange}
+                onKeyDown={handleNameKeyDown}
+                onBlur={() => setIsEditingName(false)}
+                autoFocus
+                className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
+              />
+            ) : (
+              <h2 className="flex items-center gap-2 text-2xl font-bold font-headline">
+                <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                  Hi, {userName}
+                  <span className="inline-block text-left w-12">{loadingDots}</span>
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => setIsEditingName(true)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </h2>
+            )}
+          </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
