@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore } from 'date-fns';
-import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock } from 'lucide-react';
+import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, ChevronDown } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -38,10 +38,11 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     const canComplete = isClickable && !!subtask.startDate && !!subtask.endDate;
     const [timeProgress, setTimeProgress] = React.useState(100);
     const [timeLeft, setTimeLeft] = React.useState('');
+    const [isExpanded, setIsExpanded] = React.useState(false);
 
 
     React.useEffect(() => {
-        if (subtask.completed || !isInProgress || !subtask.startDate || !subtask.endDate) {
+        if (subtask.completed || !subtask.startDate || !subtask.endDate) {
             setTimeProgress(subtask.completed ? 100 : 0);
             return;
         }
@@ -53,13 +54,12 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
 
             if (now >= end) {
                 setTimeProgress(0);
-                setTimeLeft('Đã quá hạn');
+                 setTimeLeft('Đã quá hạn');
                 return;
             }
             if (now < start) {
-                // If the task hasn't started, we consider time left as the total duration.
                 setTimeProgress(100);
-                 const distance = end - start;
+                const distance = end - start;
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -81,7 +81,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
         const interval = setInterval(calculateTimes, 60000); 
 
         return () => clearInterval(interval);
-    }, [subtask.startDate, subtask.endDate, subtask.completed, isInProgress]);
+    }, [subtask.startDate, subtask.endDate, subtask.completed]);
 
 
     const handleToggle = (e: React.MouseEvent) => {
@@ -142,8 +142,18 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                         {subtask.title}
                     </span>
                 </div>
+                 {isInProgress && !subtask.completed && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")} />
+                    </Button>
+                )}
             </div>
-            {isInProgress && !subtask.completed && (
+            {isExpanded && isInProgress && !subtask.completed && (
                 <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                         <span className={cn("flex items-center gap-1 font-medium", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
@@ -155,8 +165,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                         value={timeProgress} 
                         className="h-1.5" 
                         indicatorClassName={cn(
-                            "bg-amber-500",
-                            isWarning && "bg-destructive"
+                            isWarning ? "bg-destructive" : "bg-amber-500"
                         )}
                     />
                 </div>
@@ -310,10 +319,9 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                             <Card 
                                 key={st.id} 
                                 className={cn(
-                                    "bg-background shadow-sm border transition-colors cursor-pointer",
+                                    "bg-background shadow-sm border transition-colors",
                                     getSubtaskStyling(st, column.title)
                                 )}
-                                onClick={() => handleSubtaskClick(st)}
                             >
                               <CardContent className="p-3">
                                 <SubtaskItem 
@@ -349,5 +357,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
 
     
