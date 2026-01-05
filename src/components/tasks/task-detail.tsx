@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -56,6 +57,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 return;
             }
             if (now < start) {
+                // If the task hasn't started, we consider time left as the total duration.
                 setTimeProgress(100);
                  const distance = end - start;
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -65,9 +67,8 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 return;
             }
 
-            const totalDuration = end - start;
             const remainingDuration = end - now;
-            const percentage = (remainingDuration / totalDuration) * 100;
+            const percentage = ((end - now) / (end - start)) * 100
             setTimeProgress(Math.min(100, Math.max(0, percentage)));
 
             const days = Math.floor(remainingDuration / (1000 * 60 * 60 * 24));
@@ -143,7 +144,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 </div>
             </div>
             {isInProgress && !subtask.completed && (
-                <div className="pl-8 space-y-1">
+                <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
                         <span className={cn("flex items-center gap-1 font-medium", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
                             <Clock className="h-3 w-3" />
@@ -348,3 +349,5 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
