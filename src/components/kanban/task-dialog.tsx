@@ -450,6 +450,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                           {fields.map((field, index) => {
                               const subtaskAttachments = form.watch(`subtasks.${index}.attachments`) || [];
                               const subtaskTitle = form.watch(`subtasks.${index}.title`);
+                              const hasTitle = subtaskTitle && subtaskTitle.trim() !== '';
+
                               return (
                                 <AccordionItem 
                                   value={`item-${index}`} 
@@ -478,27 +480,34 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                         />
                                         <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
                                         </AccordionTrigger>
-                                        <AlertDialog>
-                                          <AlertDialogTrigger asChild>
-                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
-                                              <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                          </AlertDialogTrigger>
-                                          <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                              <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                                Hành động này sẽ xóa công việc <span className="font-bold">{subtaskTitle || 'không tên'}</span> vĩnh viễn.
-                                              </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                              <AlertDialogCancel>Hủy</AlertDialogCancel>
-                                              <AlertDialogAction variant="destructive" onClick={() => remove(index)}>
-                                                Xóa
-                                              </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                          </AlertDialogContent>
-                                        </AlertDialog>
+
+                                        {hasTitle ? (
+                                          <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8">
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                              </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                              <AlertDialogHeader>
+                                                <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                  Hành động này sẽ xóa công việc <span className="font-bold">{subtaskTitle}</span> vĩnh viễn.
+                                                </AlertDialogDescription>
+                                              </AlertDialogHeader>
+                                              <AlertDialogFooter>
+                                                <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                                <AlertDialogAction variant="destructive" onClick={() => remove(index)}>
+                                                  Xóa
+                                                </AlertDialogAction>
+                                              </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                          </AlertDialog>
+                                        ) : (
+                                          <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => remove(index)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                          </Button>
+                                        )}
                                     </div>
                                     <AccordionContent className="px-3 pb-3">
                                       <div className="space-y-4 p-4 rounded-md border bg-background">
@@ -682,6 +691,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
     
 
 
+
+    
 
     
 
