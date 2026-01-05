@@ -383,7 +383,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
         <DialogHeader>
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
           <DialogDescription>
-            {taskToEdit ? 'Cập nhật chi tiết nhiệm vụ của bạn.' : 'Điền vào các chi tiết cho nhiệm vụ mới của bạn. Bạn có thể thêm các công việc để chia nhỏ nó ra.'}
+            {taskToEdit ? 'Cập nhật chi tiết nhiệm vụ của bạn.' : ' '}
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1 flex flex-col min-h-0">
@@ -794,6 +794,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
     </Dialog>
   );
 }
+
+    
 
     
 
