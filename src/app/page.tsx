@@ -20,6 +20,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
+import type { TaskType } from '@/lib/types';
 
 type FilterType = 'all' | 'today' | 'week';
 
@@ -27,6 +29,7 @@ function TaskKanban() {
   const { tasks, selectedTaskId, setSelectedTaskId } = useTasks();
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [isStatsDialogOpen, setIsStatsDialogOpen] = useState(false);
+  const [isTaskTypeDialogOpen, setIsTaskTypeDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<import('@/lib/types').Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
@@ -36,6 +39,8 @@ function TaskKanban() {
   const [userName, setUserName] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
+  const [initialTaskType, setInitialTaskType] = useState<TaskType>('deadline');
+
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
@@ -63,8 +68,20 @@ function TaskKanban() {
     return () => clearInterval(interval);
   });
 
-  const handleOpenTaskDialog = useCallback((task?: import('@/lib/types').Task) => {
+  const handleOpenNewTaskDialog = () => {
+    setTaskToEdit(undefined);
+    setIsTaskTypeDialogOpen(true);
+  };
+  
+  const handleSelectTaskType = (type: TaskType) => {
+    setInitialTaskType(type);
+    setIsTaskTypeDialogOpen(false);
+    setIsTaskDialogOpen(true);
+  };
+
+  const handleOpenEditTaskDialog = useCallback((task: import('@/lib/types').Task) => {
     setTaskToEdit(task);
+    setInitialTaskType(task.taskType);
     setIsTaskDialogOpen(true);
   }, []);
   
@@ -227,7 +244,7 @@ function TaskKanban() {
           <SidebarMenu className="px-2">
             <div className="flex w-full items-center gap-2">
                 <SidebarMenuItem className="flex-1">
-                  <SidebarMenuButton onClick={() => handleOpenTaskDialog()} className="w-full">
+                  <SidebarMenuButton onClick={handleOpenNewTaskDialog} className="w-full">
                     <Plus />
                     <span>Nhiệm vụ mới</span>
                   </SidebarMenuButton>
@@ -297,7 +314,7 @@ function TaskKanban() {
             {selectedTask ? (
               <TaskDetail 
                 task={selectedTask} 
-                onEditTask={handleOpenTaskDialog}
+                onEditTask={handleOpenEditTaskDialog}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
@@ -309,10 +326,16 @@ function TaskKanban() {
           </main>
         </div>
       </SidebarInset>
+      <TaskTypeDialog 
+        isOpen={isTaskTypeDialogOpen}
+        onOpenChange={setIsTaskTypeDialogOpen}
+        onSelectType={handleSelectTaskType}
+      />
       <TaskDialog
         isOpen={isTaskDialogOpen}
         onOpenChange={handleCloseTaskDialog}
         taskToEdit={taskToEdit}
+        initialTaskType={initialTaskType}
       />
       <StatsDialog 
         tasks={tasks} 
@@ -336,3 +359,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    

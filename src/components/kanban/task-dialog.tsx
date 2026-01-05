@@ -250,7 +250,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         });
       }
     }
-  }, [taskToEdit, isOpen, initialTaskType, replace, form]);
+  }, [taskToEdit, isOpen, initialTaskType, replace, form.reset, form.clearErrors]);
 
 
   const handleSubmit = useCallback((data: TaskFormData) => {
@@ -668,7 +668,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                     name="startDate"
                                     render={({ field }) => (
                                     <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
+                                        <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5"/>
                                     </FormControl>
                                     )}
                                 />
@@ -699,7 +699,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                     name="endDate"
                                     render={({ field }) => (
                                     <FormControl>
-                                        <DateSegmentInput value={field.value} onChange={field.onChange} className="bg-primary/5"/>
+                                        <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5"/>
                                     </FormControl>
                                     )}
                                 />
@@ -800,5 +800,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
