@@ -129,7 +129,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
       </div>
     );
     
-    const isWarning = !subtask.completed && isInProgress && timeProgress < 20;
+    const isWarning = !subtask.completed && isInProgress && !isOverdue && timeProgress < 20;
     const hasDeadline = !!subtask.startDate && !!subtask.endDate;
 
     return (
@@ -168,18 +168,20 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                     <Separator className="my-1" />
                     <div className="flex flex-col gap-2">
                          <div className="flex items-center justify-between text-xs pt-1">
-                            <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
+                            <span className={cn("flex items-center gap-1", isOverdue ? 'text-destructive' : isWarning ? 'text-destructive' : 'text-muted-foreground')}>
                                 <Clock className="h-3 w-3" />
-                                {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
+                                {isOverdue ? 'Đã quá hạn' : isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
                             </span>
                         </div>
-                        <Progress 
-                            value={timeProgress} 
-                            className="h-1.5" 
-                            indicatorClassName={cn(
-                                isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
-                            )}
-                        />
+                        {!isOverdue && (
+                            <Progress 
+                                value={timeProgress} 
+                                className="h-1.5" 
+                                indicatorClassName={cn(
+                                    isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
+                                )}
+                            />
+                        )}
                     </div>
                 </div>
             )}

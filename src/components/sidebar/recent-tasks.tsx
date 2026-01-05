@@ -101,7 +101,8 @@ function TaskProgress({ task }: { task: Task }) {
 
   const getTimeLeftColor = () => {
     if (task.status === 'Done') return 'text-emerald-500';
-    if (isOverdue || isWarning) return 'text-destructive';
+    if (isOverdue) return 'text-destructive';
+    if (isWarning) return 'text-destructive';
     if (isUpcoming) return 'text-sky-500';
     return 'text-sidebar-foreground/80';
   };
@@ -113,10 +114,10 @@ function TaskProgress({ task }: { task: Task }) {
   return (
     <div className="space-y-2">
        <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
-          <div className={cn("flex items-center gap-2", isStarted && !isOverdue && "text-emerald-500")}>
+          <div className={cn("flex items-center gap-2", isStarted && "text-emerald-500")}>
             <Calendar size={12} />
             <span>Bắt đầu: {formattedStartDate}</span>
-            {isStarted && !isOverdue && <span>(Đã bắt đầu)</span>}
+            {isStarted && <span>(Đã bắt đầu)</span>}
           </div>
           {task.status === 'Done' ? (
             <div className="flex items-center gap-2 text-emerald-500">
@@ -130,7 +131,7 @@ function TaskProgress({ task }: { task: Task }) {
                 {isOverdue && <span>(Đã quá hạn)</span>}
             </div>
           )}
-          {!isOverdue && task.status !== 'Done' && (
+          {task.status !== 'Done' && (
               <div className={`flex items-center gap-2 ${getTimeLeftColor()}`}>
                 <Clock size={12} /> 
                 <span>{isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}</span>
