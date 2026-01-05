@@ -137,7 +137,6 @@ function TaskProgress({ task }: { task: Task }) {
                   <span className={`flex items-center gap-1.5 font-semibold ${getTimeLeftColor()}`}>
                     <Clock size={12} /> 
                     {isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}
-                    {isUpcoming && <span className="font-normal text-sidebar-foreground/70">(Chưa bắt đầu)</span>}
                   </span>
                 </div>
                 <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={isWarning ? 'bg-destructive' : 'bg-primary'} />
