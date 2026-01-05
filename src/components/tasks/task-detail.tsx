@@ -129,7 +129,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     const hasDeadline = !!subtask.startDate && !!subtask.endDate;
 
     return (
-        <div key={subtask.id} className="flex flex-col">
+        <div key={subtask.id} className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
                  <TooltipProvider>
                     {!canComplete && !subtask.completed ? (
@@ -160,21 +160,23 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 )}
             </div>
             {isExpanded && !subtask.completed && hasDeadline && (
-                <div className="flex flex-col gap-2 mt-2">
-                     <Separator />
-                    <div className="flex items-center justify-between text-xs pt-1">
-                        <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
-                            <Clock className="h-3 w-3" />
-                             {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
-                        </span>
+                <div className="flex flex-col gap-2">
+                    <Separator className="my-1" />
+                    <div className="flex flex-col gap-2">
+                         <div className="flex items-center justify-between text-xs pt-1">
+                            <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
+                                <Clock className="h-3 w-3" />
+                                {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
+                            </span>
+                        </div>
+                        <Progress 
+                            value={timeProgress} 
+                            className="h-1.5" 
+                            indicatorClassName={cn(
+                                isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
+                            )}
+                        />
                     </div>
-                    <Progress 
-                        value={timeProgress} 
-                        className="h-1.5" 
-                        indicatorClassName={cn(
-                            isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
-                        )}
-                    />
                 </div>
             )}
         </div>
@@ -296,7 +298,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         <Separator />
 
         <div className="space-y-6">
-            <div className="p-4 rounded-md border bg-muted/20">
+            <div className="p-4 rounded-md border bg-muted">
                 <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
                 <p className="text-muted-foreground leading-relaxed">
                     {task.description || 'Không có mô tả cho nhiệm vụ này.'}
