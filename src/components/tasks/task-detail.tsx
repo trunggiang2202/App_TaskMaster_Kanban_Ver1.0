@@ -128,8 +128,6 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     const isWarning = !subtask.completed && isInProgress && timeProgress < 20;
     const hasDeadline = !!subtask.startDate && !!subtask.endDate;
 
-    const statusText = subtask.completed ? '(Đã xong)' : isInProgress ? '(Đã bắt đầu)' : '(Chưa bắt đầu)';
-
     return (
         <div 
             key={subtask.id} 
@@ -151,7 +149,6 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {subtask.title}
-                        <span className="ml-1 text-xs text-muted-foreground font-normal">{statusText}</span>
                     </span>
                 </div>
                  {!subtask.completed && hasDeadline && (
@@ -369,5 +366,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
 
     
