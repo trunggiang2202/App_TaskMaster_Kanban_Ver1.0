@@ -161,6 +161,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
             </div>
             {isExpanded && !subtask.completed && hasDeadline && (
                 <div className="space-y-2">
+                    <Separator className="my-2" />
                     <div className="flex items-center justify-between text-xs">
                         <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
                             <Clock className="h-3 w-3" />
