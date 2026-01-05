@@ -94,11 +94,11 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
                  <div className="p-3 rounded-md border bg-primary/10 min-h-[120px]">
                     {attachments.length > 0 ? (
                         <Tabs defaultValue={defaultTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="images" disabled={imageAttachments.length === 0}>
+                            <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
+                                <TabsTrigger value="images" disabled={imageAttachments.length === 0} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                                     Ảnh ({imageAttachments.length})
                                 </TabsTrigger>
-                                <TabsTrigger value="files" disabled={fileAttachments.length === 0}>
+                                <TabsTrigger value="files" disabled={fileAttachments.length === 0} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                                     Tệp ({fileAttachments.length})
                                 </TabsTrigger>
                             </TabsList>
