@@ -113,7 +113,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
     const renderIcon = () => {
         if (subtask.completed) {
             return (
-                <div className="h-5 w-5 flex items-center justify-center bg-emerald-500 rounded-full">
+                <div className="h-5 w-5 flex items-center justify-center bg-chart-2 rounded-full">
                     <Check className="h-3 w-3 text-primary-foreground" />
                 </div>
             );
@@ -122,7 +122,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
             return <AlertTriangle className="h-5 w-5 text-destructive" />;
         }
         if (isInProgress) {
-            return <LoaderCircle className="h-5 w-5 text-amber-500 animate-spin" />;
+            return <LoaderCircle className="h-5 w-5 text-accent animate-spin" />;
         }
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     };
@@ -184,7 +184,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                             value={timeProgress} 
                             className="h-1.5" 
                             indicatorClassName={cn(
-                                isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
+                                isWarning ? "bg-destructive" : isInProgress ? "bg-accent" : "bg-primary"
                             )}
                         />
                     </div>
@@ -250,22 +250,22 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const now = new Date();
 
   const getSubtaskStyling = (subtask: Subtask, columnTitle?: SubtaskStatus) => {
-    if (subtask.completed) return 'border-l-4 border-emerald-500';
+    if (subtask.completed) return 'border-l-4 border-chart-2';
     if (task.taskType === 'recurring') {
-      return task.recurringDays?.includes(getDay(new Date())) ? 'border-l-4 border-amber-500' : 'border-l-4 border-sky-500';
+      return task.recurringDays?.includes(getDay(new Date())) ? 'border-l-4 border-accent' : 'border-l-4 border-primary';
     }
     if (columnTitle === 'Đang làm' && subtask.endDate && isBefore(subtask.endDate, now)) {
       return 'border-l-4 border-destructive';
     }
-    if (columnTitle === 'Đang làm') return 'border-l-4 border-amber-500';
-    if (columnTitle === 'Chưa làm') return 'border-l-4 border-sky-500';
+    if (columnTitle === 'Đang làm') return 'border-l-4 border-accent';
+    if (columnTitle === 'Chưa làm') return 'border-l-4 border-primary';
     return 'border-l-4 border-muted';
   };
 
   const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
-    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-sky-500', bgColor: 'bg-sky-500/5' },
-    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500', bgColor: 'bg-amber-500/5' },
-    { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-emerald-500', bgColor: 'bg-emerald-500/5' },
+    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-primary', bgColor: 'bg-primary/5' },
+    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-accent', bgColor: 'bg-accent/5' },
+    { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-chart-2', bgColor: 'bg-chart-2/5' },
   ];
   
   const recurringDaysText = task.recurringDays
@@ -377,7 +377,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                   ))}
                 </div>
               ) : ( // Recurring Task View
-                <div className="bg-amber-500/5 rounded-lg p-2 space-y-2 min-h-24">
+                <div className="bg-accent/5 rounded-lg p-2 space-y-2 min-h-24">
                   {task.subtasks.map(st => (
                     <Card
                       key={st.id}
