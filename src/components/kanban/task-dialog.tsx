@@ -196,16 +196,16 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
           title: '',
           description: '',
           startDate: dateWithYearOnly,
-          startTime: '00:00',
+          startTime: '04:00',
           endDate: dateWithYearOnly,
-          endTime: '13:00',
+          endTime: '23:59',
           subtasks: [{ 
             title: "", 
             description: "", 
             startDate: dateWithYearOnly,
-            startTime: '00:00', 
+            startTime: '04:00', 
             endDate: dateWithYearOnly,
-            endTime: '01:00', 
+            endTime: '23:59', 
             attachments: [] 
           }],
         });
@@ -642,9 +642,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                 title: "", 
                                 description: "", 
                                 startDate: dateWithYearOnly,
-                                startTime: '00:00', 
+                                startTime: '04:00', 
                                 endDate: dateWithYearOnly,
-                                endTime: '01:00', 
+                                endTime: '23:59', 
                                 attachments: [] 
                             })
                         }}
@@ -681,3 +681,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
 
     
 
+
+
+    
