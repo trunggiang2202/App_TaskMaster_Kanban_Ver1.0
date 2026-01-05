@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore } from 'date-fns';
-import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle } from 'lucide-react';
+import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -36,6 +36,8 @@ interface SubtaskItemProps {
 const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleClick, isClickable, isInProgress, isOverdue }) => {
     const canComplete = isClickable && !!subtask.startDate && !!subtask.endDate;
     const [timeProgress, setTimeProgress] = React.useState(100);
+    const [timeLeft, setTimeLeft] = React.useState('');
+
 
     React.useEffect(() => {
         if (subtask.completed || !isInProgress || !subtask.startDate || !subtask.endDate) {
@@ -43,28 +45,39 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
             return;
         }
 
-        const calculateRemainingTimeProgress = () => {
+        const calculateTimes = () => {
             const now = new Date().getTime();
             const start = new Date(subtask.startDate!).getTime();
             const end = new Date(subtask.endDate!).getTime();
 
             if (now >= end) {
                 setTimeProgress(0);
+                setTimeLeft('Đã quá hạn');
                 return;
             }
             if (now < start) {
                 setTimeProgress(100);
+                 const distance = end - start;
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                setTimeLeft(`${days}d ${hours}h ${minutes}m`);
                 return;
             }
 
             const totalDuration = end - start;
-            const remainingTime = end - now;
-            const percentage = (remainingTime / totalDuration) * 100;
+            const remainingDuration = end - now;
+            const percentage = (remainingDuration / totalDuration) * 100;
             setTimeProgress(Math.min(100, Math.max(0, percentage)));
+
+            const days = Math.floor(remainingDuration / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remainingDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingDuration % (1000 * 60 * 60)) / (1000 * 60));
+            setTimeLeft(`${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`);
         };
 
-        calculateRemainingTimeProgress();
-        const interval = setInterval(calculateRemainingTimeProgress, 60000); 
+        calculateTimes();
+        const interval = setInterval(calculateTimes, 60000); 
 
         return () => clearInterval(interval);
     }, [subtask.startDate, subtask.endDate, subtask.completed, isInProgress]);
@@ -130,18 +143,21 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 </div>
             </div>
             {isInProgress && !subtask.completed && (
-                <div className="relative w-full h-4 flex items-center">
+                <div className="pl-8 space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                        <span className={cn("flex items-center gap-1 font-medium", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
+                            <Clock className="h-3 w-3" />
+                            Thời gian còn lại: {timeLeft}
+                        </span>
+                    </div>
                     <Progress 
                         value={timeProgress} 
-                        className="h-2 bg-amber-500/20" 
+                        className="h-1.5" 
                         indicatorClassName={cn(
                             "bg-amber-500",
                             isWarning && "bg-destructive"
                         )}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <span className="text-[10px] font-medium text-background/80">Thời gian còn lại</span>
-                    </div>
                 </div>
             )}
         </div>
