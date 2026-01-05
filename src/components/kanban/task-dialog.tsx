@@ -455,7 +455,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                   value={`item-${index}`} 
                                   key={field.id} 
                                   className={cn(
-                                    "border rounded-md border-l-4 bg-primary/5",
+                                    "border rounded-md border-l-4",
                                     getSubtaskBorderColor(index)
                                   )}
                                 >
@@ -520,7 +520,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
                                             name={`subtasks.${index}.attachments`}
                                             render={() => (
                                                 <FormItem>
-                                                    <Button type="button" variant="ghost" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 text-primary hover:bg-primary/20">
+                                                    <Button type="button" variant="ghost" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-muted text-foreground hover:bg-muted/80">
                                                         <Paperclip className="mr-2 h-4 w-4" />
                                                         Đính kèm tệp
                                                     </Button>
@@ -682,6 +682,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit }: TaskDialogProps
     
 
 
+
+    
 
     
 
