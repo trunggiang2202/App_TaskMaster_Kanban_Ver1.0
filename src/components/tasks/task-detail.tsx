@@ -298,7 +298,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         <Separator />
 
         <div className="space-y-6">
-            <div className="p-4 rounded-md border bg-muted">
+            <div className="p-4 rounded-md border bg-primary/10">
                 <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
                 <p className="text-muted-foreground leading-relaxed">
                     {task.description || 'Không có mô tả cho nhiệm vụ này.'}
