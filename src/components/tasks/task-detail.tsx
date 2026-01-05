@@ -64,17 +64,18 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 return;
             }
 
+            const remainingDuration = end - now;
+
             if (now < start) {
                 const totalDuration = end - start;
                 const days = Math.floor(totalDuration / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((totalDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((totalDuration % (1000 * 60 * 60)) / (1000 * 60));
                 setTimeLeft(`${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`);
-                setTimeProgress(100); // Full time left
+                setTimeProgress(100);
                 return;
             }
 
-            const remainingDuration = end - now;
             const percentage = ((end - now) / (end - start)) * 100
             setTimeProgress(Math.min(100, Math.max(0, percentage)));
 
@@ -127,6 +128,8 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
     const isWarning = !subtask.completed && isInProgress && timeProgress < 20;
     const hasDeadline = !!subtask.startDate && !!subtask.endDate;
 
+    const statusText = subtask.completed ? '(Đã xong)' : isInProgress ? '(Đã bắt đầu)' : '(Chưa bắt đầu)';
+
     return (
         <div 
             key={subtask.id} 
@@ -148,6 +151,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                 <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {subtask.title}
+                        <span className="ml-1 text-xs text-muted-foreground font-normal">{statusText}</span>
                     </span>
                 </div>
                  {!subtask.completed && hasDeadline && (
@@ -365,3 +369,5 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
