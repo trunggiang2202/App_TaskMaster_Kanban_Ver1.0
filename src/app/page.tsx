@@ -160,9 +160,9 @@ function TaskKanban() {
                 className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
               />
             ) : (
-              <h2 className="flex items-center gap-2 text-2xl font-bold font-headline">
+              <h2 className="flex items-center text-2xl font-bold font-headline">
                 {userName !== null ? (
-                  <>
+                  <div className="flex items-center gap-1">
                     <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
                       Hi, {userName}
                       <span className="inline-block text-left w-12">{loadingDots}</span>
@@ -175,7 +175,7 @@ function TaskKanban() {
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                  </>
+                  </div>
                 ) : (
                   <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
                     Hi, ...
