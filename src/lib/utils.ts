@@ -19,3 +19,6 @@ export const parseDateTime = (dateStr?: string, timeStr?: string) => {
 };
 
 export const WEEKDAYS = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+export const WEEKDAY_ABBREVIATIONS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+    

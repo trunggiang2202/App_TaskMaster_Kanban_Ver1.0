@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar, Repeat } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { cn, WEEKDAYS } from '@/lib/utils';
+import { cn, WEEKDAY_ABBREVIATIONS } from '@/lib/utils';
 
 const calculateInitialTimeProgress = (task: Task) => {
     if (task.taskType === 'recurring' || !task.startDate || !task.endDate) return 100;
@@ -104,7 +104,7 @@ function TaskProgress({ task }: { task: Task }) {
   
   if (task.taskType === 'recurring') {
     const isTaskForToday = task.recurringDays?.includes(getDay(new Date()));
-    const recurringDaysText = task.recurringDays?.map(day => WEEKDAYS[day].substring(0,3)).join(', ') || '';
+    const recurringDaysText = task.recurringDays?.map(day => WEEKDAY_ABBREVIATIONS[day]).join(', ') || '';
 
     return (
        <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
@@ -232,3 +232,5 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
     </SidebarGroup>
   );
 }
+
+    
