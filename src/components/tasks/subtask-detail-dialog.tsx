@@ -8,11 +8,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Paperclip, Download } from 'lucide-react';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 const AttachmentItem: React.FC<{ attachment: Attachment }> = ({ attachment }) => {
     const [isZoomed, setIsZoomed] = React.useState(false);
@@ -76,10 +76,8 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>{subtask.title}</DialogTitle>
-          <DialogDescription>
-            Chi tiết cho công việc.
-          </DialogDescription>
         </DialogHeader>
+        <Separator />
         
         <div className="space-y-4 pt-2">
             <div className="space-y-2">
