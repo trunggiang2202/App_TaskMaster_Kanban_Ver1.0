@@ -63,33 +63,37 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                  setTimeLeft('Đã quá hạn');
                 return;
             }
-
-            const remainingDuration = end - now;
-
+            
+            let remainingDuration;
             if (now < start) {
-                const totalDuration = end - start;
-                const days = Math.floor(totalDuration / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((totalDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((totalDuration % (1000 * 60 * 60)) / (1000 * 60));
-                setTimeLeft(`${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`);
+                remainingDuration = end - start;
                 setTimeProgress(100);
-                return;
+            } else {
+                remainingDuration = end - now;
+                const percentage = ((end - now) / (end - start)) * 100
+                setTimeProgress(Math.min(100, Math.max(0, percentage)));
             }
-
-            const percentage = ((end - now) / (end - start)) * 100
-            setTimeProgress(Math.min(100, Math.max(0, percentage)));
 
             const days = Math.floor(remainingDuration / (1000 * 60 * 60 * 24));
             const hours = Math.floor((remainingDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((remainingDuration % (1000 * 60 * 60)) / (1000 * 60));
-            setTimeLeft(`${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`);
+            const seconds = Math.floor((remainingDuration % (1000 * 60)) / 1000);
+
+            let timeLeftString = '';
+            if (days > 0) timeLeftString += `${days}d `;
+            if (hours > 0) timeLeftString += `${hours}h `;
+            if (minutes > 0) timeLeftString += `${minutes}m `;
+            if (isInProgress) timeLeftString += `${seconds}s`;
+
+
+            setTimeLeft(timeLeftString.trim() || '0s');
         };
 
         calculateTimes();
-        const interval = setInterval(calculateTimes, 60000); 
+        const interval = setInterval(calculateTimes, 1000); 
 
         return () => clearInterval(interval);
-    }, [subtask.startDate, subtask.endDate, subtask.completed]);
+    }, [subtask.startDate, subtask.endDate, subtask.completed, isInProgress]);
 
 
     const handleToggle = (e: React.MouseEvent) => {
@@ -371,3 +375,4 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+

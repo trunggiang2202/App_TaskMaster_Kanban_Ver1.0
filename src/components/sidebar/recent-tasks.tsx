@@ -75,7 +75,7 @@ function TaskProgress({ task }: { task: Task }) {
       if (days > 0) result += `${days}d `;
       if (hours > 0) result += `${hours}h `;
       if (minutes > 0) result += `${minutes}m `;
-      if (seconds >= 0) result += `${seconds}s`;
+      result += `${seconds}s`;
       
       if (result.trim() === '') return 'dưới 1 giây';
       return result.trim();
