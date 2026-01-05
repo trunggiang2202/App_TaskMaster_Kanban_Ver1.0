@@ -107,6 +107,16 @@ function TaskProgress({ task }: { task: Task }) {
     return 'text-sidebar-foreground/80';
   };
 
+  const getIndicatorColor = (progress: number) => {
+    if (progress > 60) {
+      return 'bg-emerald-500';
+    }
+    if (progress > 30) {
+      return 'bg-amber-500';
+    }
+    return 'bg-destructive';
+  };
+
   const formattedStartDate = format(task.startDate, 'p, dd/MM/yyyy', { locale: vi });
   const formattedEndDate = format(task.endDate, 'p, dd/MM/yyyy', { locale: vi });
   const isStarted = !isUpcoming && !isOverdue && task.status !== 'Done';
@@ -134,12 +144,12 @@ function TaskProgress({ task }: { task: Task }) {
           {task.status !== 'Done' && (
               <div className={`flex items-center gap-2 ${getTimeLeftColor()}`}>
                 <Clock size={12} /> 
-                <span>{isUpcoming ? 'Tổng thời gian' : 'Thời gian còn lại'}: {timeLeft}</span>
+                <span>{isUpcoming ? 'Tổng thời gian' : isOverdue ? '' : 'Thời gian còn lại: '}{isOverdue ? 'Đã quá hạn' : timeLeft}</span>
               </div>
           )}
         </div>
         {!isOverdue && task.status !== 'Done' && (
-            <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={isWarning ? 'bg-destructive' : 'bg-primary'} />
+            <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={getIndicatorColor(timeProgress)} />
         )}
     </div>
   );
