@@ -214,7 +214,6 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const { deleteTask, toggleSubtask } = useTasks();
   const [selectedSubtask, setSelectedSubtask] = React.useState<Subtask | null>(null);
   const [isSubtaskDetailOpen, setIsSubtaskDetailOpen] = React.useState(false);
-  const [categorizedSubtasks, setCategorizedSubtasks] = React.useState<CategorizedSubtasks>(initialCategorizedSubtasks);
 
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
@@ -225,35 +224,28 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     setIsSubtaskDetailOpen(true);
   };
   
-  React.useEffect(() => {
-    if (task.taskType === 'recurring') return;
-
-    const categorize = () => {
-      const categories: CategorizedSubtasks = {
-        'Chưa làm': [],
-        'Đang làm': [],
-        'Xong': [],
-      };
-      const now = new Date();
-      task.subtasks.forEach(st => {
-        if (st.completed) {
-          categories['Xong'].push(st);
-          return;
-        }
-        if (st.startDate && isAfter(now, st.startDate)) {
-          categories['Đang làm'].push(st);
-        } else {
-          categories['Chưa làm'].push(st);
-        }
-      });
-      setCategorizedSubtasks(categories);
+  const categorizedSubtasks = React.useMemo<CategorizedSubtasks>(() => {
+    if (task.taskType === 'recurring') {
+      return initialCategorizedSubtasks;
+    }
+    const categories: CategorizedSubtasks = {
+      'Chưa làm': [],
+      'Đang làm': [],
+      'Xong': [],
     };
-
-    categorize();
-    const intervalId = setInterval(categorize, 60000); // Re-categorize every minute
-
-    return () => clearInterval(intervalId);
+    const now = new Date();
+    task.subtasks.forEach(st => {
+      if (st.completed) {
+        categories['Xong'].push(st);
+      } else if (st.startDate && isAfter(now, st.startDate)) {
+        categories['Đang làm'].push(st);
+      } else {
+        categories['Chưa làm'].push(st);
+      }
+    });
+    return categories;
   }, [task.subtasks, task.taskType]);
+
 
   const now = new Date();
 
