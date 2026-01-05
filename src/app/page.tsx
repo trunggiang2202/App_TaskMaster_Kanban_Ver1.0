@@ -33,7 +33,7 @@ function TaskKanban() {
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [loadingDots, setLoadingDots] = useState('');
-  const [userName, setUserName] = useState('Louis Giang');
+  const [userName, setUserName] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
@@ -43,13 +43,13 @@ function TaskKanban() {
       localStorage.setItem('hasSeenWelcomeDialog', 'true');
     }
     const savedName = localStorage.getItem('userName');
-    if (savedName) {
-      setUserName(savedName);
-    }
+    setUserName(savedName || 'Louis Giang');
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('userName', userName);
+    if (userName && userName !== 'Louis Giang') {
+      localStorage.setItem('userName', userName);
+    }
   }, [userName]);
 
   useState(() => {
@@ -152,7 +152,7 @@ function TaskKanban() {
             {isEditingName ? (
               <Input
                 type="text"
-                value={userName}
+                value={userName || ''}
                 onChange={handleNameChange}
                 onKeyDown={handleNameKeyDown}
                 onBlur={() => setIsEditingName(false)}
@@ -161,18 +161,26 @@ function TaskKanban() {
               />
             ) : (
               <h2 className="flex items-center gap-2 text-2xl font-bold font-headline">
-                <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                  Hi, {userName}
-                  <span className="inline-block text-left w-12">{loadingDots}</span>
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => setIsEditingName(true)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                {userName !== null ? (
+                  <>
+                    <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                      Hi, {userName}
+                      <span className="inline-block text-left w-12">{loadingDots}</span>
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => setIsEditingName(true)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                    Hi, ...
+                  </span>
+                )}
               </h2>
             )}
           </div>
@@ -290,3 +298,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
