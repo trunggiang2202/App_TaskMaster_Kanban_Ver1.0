@@ -35,6 +35,7 @@ function TaskKanban() {
   const [loadingDots, setLoadingDots] = useState('');
   const [userName, setUserName] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
@@ -134,14 +135,27 @@ function TaskKanban() {
   }, []);
   
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserName(e.target.value);
+    const newName = e.target.value;
+    if (newName.length <= 15) {
+      setUserName(newName);
+      setNameError(null);
+    } else {
+      setUserName(newName.substring(0, 15));
+      setNameError('Bạn chỉ được nhập 15 kí tự');
+    }
   };
 
   const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       setIsEditingName(false);
+      setNameError(null);
     }
   };
+
+  const handleEditBlur = () => {
+    setIsEditingName(false);
+    setNameError(null);
+  }
 
 
   return (
@@ -150,15 +164,19 @@ function TaskKanban() {
         <SidebarHeader className="p-4 group">
           <div className="flex items-center justify-between">
             {isEditingName ? (
-              <Input
-                type="text"
-                value={userName || ''}
-                onChange={handleNameChange}
-                onKeyDown={handleNameKeyDown}
-                onBlur={() => setIsEditingName(false)}
-                autoFocus
-                className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
-              />
+              <div className="w-full">
+                <Input
+                  type="text"
+                  value={userName || ''}
+                  onChange={handleNameChange}
+                  onKeyDown={handleNameKeyDown}
+                  onBlur={handleEditBlur}
+                  autoFocus
+                  maxLength={15}
+                  className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
+                />
+                {nameError && <p className="text-destructive text-xs mt-1">{nameError}</p>}
+              </div>
             ) : (
               <h2 className="flex items-center text-2xl font-bold font-headline">
                 {userName !== null ? (
@@ -173,14 +191,16 @@ function TaskKanban() {
                 )}
               </h2>
             )}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => setIsEditingName(true)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
+            {!isEditingName && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => setIsEditingName(true)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -296,5 +316,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
