@@ -136,12 +136,12 @@ function TaskKanban() {
   
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    if (newName.length <= 15) {
+    if (newName.length <= 12) {
       setUserName(newName);
       setNameError(null);
     } else {
-      setUserName(newName.substring(0, 15));
-      setNameError('Bạn chỉ được nhập 15 kí tự');
+      setUserName(newName.substring(0, 12));
+      setNameError('Bạn chỉ được nhập 12 kí tự');
     }
   };
 
@@ -172,7 +172,7 @@ function TaskKanban() {
                   onKeyDown={handleNameKeyDown}
                   onBlur={handleEditBlur}
                   autoFocus
-                  maxLength={15}
+                  maxLength={12}
                   className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
                 />
                 {nameError && <p className="text-destructive text-xs mt-1">{nameError}</p>}
