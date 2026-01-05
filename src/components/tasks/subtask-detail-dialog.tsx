@@ -91,7 +91,7 @@ export function SubtaskDetailDialog({ subtask, isOpen, onOpenChange }: SubtaskDe
 
             <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Tệp đính kèm</h3>
-                 <div className="p-3 rounded-md border bg-primary/10 min-h-[120px]">
+                 <div className="p-3 rounded-md border bg-background min-h-[120px]">
                     {attachments.length > 0 ? (
                         <Tabs defaultValue={defaultTab} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
