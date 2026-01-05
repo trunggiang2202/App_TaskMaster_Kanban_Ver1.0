@@ -183,15 +183,6 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                     </div>
                 </div>
             )}
-             {isOverdue && !subtask.completed && (
-                <div className="flex flex-col gap-2">
-                    <Separator className="my-1" />
-                    <div className="flex items-center text-xs pt-1 text-destructive">
-                        <Clock className="h-3 w-3 mr-1" />
-                        <span>Đã quá hạn</span>
-                    </div>
-                </div>
-            )}
         </div>
     )
 };
