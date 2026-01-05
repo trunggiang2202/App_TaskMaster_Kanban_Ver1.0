@@ -152,7 +152,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                         {subtask.title}
                     </span>
                 </div>
-                 {!subtask.completed && hasDeadline && (
+                 {!subtask.completed && hasDeadline && !isOverdue && (
                     <Button
                         variant="ghost"
                         size="icon"
@@ -163,25 +163,32 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
                     </Button>
                 )}
             </div>
-            {isExpanded && !subtask.completed && hasDeadline && (
+            {isExpanded && !subtask.completed && hasDeadline && !isOverdue && (
                 <div className="flex flex-col gap-2">
                     <Separator className="my-1" />
                     <div className="flex flex-col gap-2">
                          <div className="flex items-center justify-between text-xs pt-1">
-                            <span className={cn("flex items-center gap-1", isOverdue ? 'text-destructive' : isWarning ? 'text-destructive' : 'text-muted-foreground')}>
+                            <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
                                 <Clock className="h-3 w-3" />
-                                {isOverdue ? 'Đã quá hạn' : isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
+                                {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
                             </span>
                         </div>
-                        {!isOverdue && (
-                            <Progress 
-                                value={timeProgress} 
-                                className="h-1.5" 
-                                indicatorClassName={cn(
-                                    isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
-                                )}
-                            />
-                        )}
+                        <Progress 
+                            value={timeProgress} 
+                            className="h-1.5" 
+                            indicatorClassName={cn(
+                                isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-sky-500"
+                            )}
+                        />
+                    </div>
+                </div>
+            )}
+             {isOverdue && !subtask.completed && (
+                <div className="flex flex-col gap-2">
+                    <Separator className="my-1" />
+                    <div className="flex items-center text-xs pt-1 text-destructive">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span>Đã quá hạn</span>
                     </div>
                 </div>
             )}
@@ -378,3 +385,4 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
 
     
 
+    
