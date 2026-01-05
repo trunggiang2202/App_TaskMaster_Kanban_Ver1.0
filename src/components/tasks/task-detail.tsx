@@ -130,7 +130,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, onToggle, onTitleCli
 
     return (
         <div key={subtask.id} className="flex flex-col gap-2">
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-3">
                  <TooltipProvider>
                     {!canComplete && !subtask.completed ? (
                         <Tooltip>
@@ -364,3 +364,5 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   );
 }
  
+
+    
