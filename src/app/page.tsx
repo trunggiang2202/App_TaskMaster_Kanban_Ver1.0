@@ -25,6 +25,20 @@ import type { TaskType, Task } from '@/lib/types';
 
 type FilterType = 'all' | 'today' | 'week';
 
+const IconButton = ({ children, tooltipText, onClick }: { children: React.ReactNode, tooltipText: string, onClick?: () => void }) => (
+    <Tooltip>
+        <TooltipTrigger asChild>
+            <button
+                onClick={onClick}
+                className="flex items-center justify-center w-full h-14 rounded-lg bg-sidebar-primary text-white hover:bg-white/10 hover:text-white transition-colors"
+            >
+                {children}
+            </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom"><p>{tooltipText}</p></TooltipContent>
+    </Tooltip>
+);
+
 
 function TaskKanban() {
   const { tasks, selectedTaskId, setSelectedTaskId } = useTasks();
@@ -238,45 +252,23 @@ function TaskKanban() {
           </div>
         </SidebarHeader>
         <SidebarContent>
-        <SidebarMenu className="px-2">
-          <div className="flex items-center justify-around p-1 rounded-lg bg-sidebar-primary">
+        <SidebarMenu className="px-2 grid grid-cols-4 gap-2">
             <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white">
-                            <Clock className="h-5 w-5" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><p>Nhiệm vụ có Deadline</p></TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white">
-                            <Repeat className="h-5 w-5" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><p>Nhiệm vụ lặp lại</p></TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" onClick={() => setIsStatsDialogOpen(true)}>
-                            <BarChart3 className="h-5 w-5" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><p>Thống kê</p></TooltipContent>
-                </Tooltip>
+                <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
+                    <Clock className="h-5 w-5" />
+                </IconButton>
+                <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
+                    <Repeat className="h-5 w-5" />
+                </IconButton>
+                <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
+                    <BarChart3 className="h-5 w-5" />
+                </IconButton>
                 {!isEditingName && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" onClick={() => setIsEditingName(true)}>
-                                <Pencil className="h-5 w-5" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom"><p>Sửa tên</p></TooltipContent>
-                    </Tooltip>
+                    <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
+                        <Pencil className="h-4 w-4" />
+                    </IconButton>
                 )}
             </TooltipProvider>
-          </div>
         </SidebarMenu>
           <Separator className="my-2" />
           <div className="px-2">
@@ -367,5 +359,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
