@@ -259,15 +259,33 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     }
   }, [taskToEdit, isOpen, initialTaskType, replace, form]);
 
-  useEffect(() => {
-    if (fields.length > 0) {
-      const lastIndex = fields.length - 1;
-      const lastInput = subtaskTitleRefs.current[lastIndex];
-      if (lastInput) {
-        lastInput.focus();
-      }
+  const addEmptySubtask = () => {
+    const newSubtask: Partial<Subtask> = { 
+        title: "", 
+        description: "", 
+        attachments: [] 
+    };
+    if (taskType === 'deadline') {
+        const now = new Date();
+        const tomorrow = addDays(now, 1);
+        const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        
+        newSubtask.startDate = formatDate(now);
+        newSubtask.startTime = formatTime(now);
+        newSubtask.endDate = formatDate(tomorrow);
+        newSubtask.endTime = formatTime(now);
     }
-  }, [fields.length]);
+    append(newSubtask as Subtask);
+    setTimeout(() => {
+        const lastIndex = fields.length;
+        const lastInput = subtaskTitleRefs.current[lastIndex];
+        if (lastInput) {
+            lastInput.focus();
+        }
+    }, 0);
+  };
+
 
   const handleSubmit = useCallback((data: TaskFormData) => {
     const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any } = {
@@ -340,26 +358,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
             form.setValue(`subtasks.${index}.attachments`, [...currentAttachments, newAttachment], { shouldValidate: true });
           }
       }
-  };
-
-  const addEmptySubtask = () => {
-    const newSubtask: Partial<Subtask> = { 
-        title: "", 
-        description: "", 
-        attachments: [] 
-    };
-    if (taskType === 'deadline') {
-        const now = new Date();
-        const tomorrow = addDays(now, 1);
-        const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-        
-        newSubtask.startDate = formatDate(now);
-        newSubtask.startTime = formatTime(now);
-        newSubtask.endDate = formatDate(tomorrow);
-        newSubtask.endTime = formatTime(now);
-    }
-    append(newSubtask as Subtask);
   };
 
   const triggerValidationAndSwitchTab = async () => {
