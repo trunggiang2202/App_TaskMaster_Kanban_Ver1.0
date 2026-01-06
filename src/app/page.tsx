@@ -243,36 +243,49 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
-            <div className="flex items-center gap-2">
-              <SidebarMenuItem className="flex-1">
-                <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
-                  <Clock />
-                  <span>Deadline</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem className="flex-1">
-                <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
-                  <Repeat />
-                  <span>Lặp lại</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-               <SidebarMenuItem>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton 
-                        variant="ghost" 
-                        size="icon"
-                        className="w-full"
-                        onClick={() => setIsStatsDialogOpen(true)}
-                      >
-                          <BarChart3 />
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      Thống kê
-                    </TooltipContent>
-                  </Tooltip>
-              </SidebarMenuItem>
+            <div className="flex items-center justify-around gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => handleOpenNewTaskDialog('deadline')}
+                  >
+                    <Clock />
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  Nhiệm vụ có Deadline
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => handleOpenNewTaskDialog('recurring')}
+                  >
+                    <Repeat />
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  Nhiệm vụ lặp lại
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setIsStatsDialogOpen(true)}
+                  >
+                    <BarChart3 />
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  Thống kê
+                </TooltipContent>
+              </Tooltip>
             </div>
           </SidebarMenu>
           <Separator className="my-2" />
@@ -364,7 +377,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
-
-    

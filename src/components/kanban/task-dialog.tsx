@@ -250,7 +250,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         });
       }
     }
-  }, [taskToEdit, isOpen, initialTaskType, replace, form.reset, form.clearErrors]);
+  }, [taskToEdit, isOpen, initialTaskType, replace, form]);
 
 
   const handleSubmit = useCallback((data: TaskFormData) => {
@@ -800,9 +800,3 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
-
-    
-
-    
