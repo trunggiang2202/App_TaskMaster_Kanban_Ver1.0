@@ -233,12 +233,11 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
-              <div className="flex items-center justify-around gap-2">
+              <div className="flex items-center justify-around">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
                       variant="ghost"
-                      className="flex-1"
                       onClick={() => handleOpenNewTaskDialog('deadline')}
                     >
                       <Clock />
@@ -252,7 +251,6 @@ function TaskKanban() {
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
                       variant="ghost"
-                      className="flex-1"
                       onClick={() => handleOpenNewTaskDialog('recurring')}
                     >
                       <Repeat />
@@ -266,7 +264,6 @@ function TaskKanban() {
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
                       variant="ghost"
-                      className="flex-1"
                       onClick={() => setIsStatsDialogOpen(true)}
                     >
                       <BarChart3 />
