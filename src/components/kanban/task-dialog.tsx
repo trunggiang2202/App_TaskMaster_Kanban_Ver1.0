@@ -367,8 +367,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   };
 
   const isTaskTabInvalid = Object.keys(form.formState.errors).some(key =>
-    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'root', 'description', 'recurringDays'].includes(key) || (form.formState.errors as any)[key]?.type === 'custom'
-  );
+    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'recurringDays', 'subtasks'].includes(key) && key !== 'subtasks'
+  ) || !!form.formState.errors.root;
 
 
   const renderSubtasks = () => (
@@ -780,7 +780,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           {taskType === 'deadline' && activeTab === 'task' ? (
             <>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="button" onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
+              <Button type="button" disabled={isTaskTabInvalid} onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
             </>
           ) : taskType === 'deadline' && activeTab === 'subtasks' ? (
             <>
@@ -803,3 +803,4 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     
 
     
+
