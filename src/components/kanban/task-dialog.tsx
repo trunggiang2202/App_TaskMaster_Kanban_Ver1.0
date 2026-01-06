@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { TaskTypeDialog } from './task-type-dialog';
+import { Separator } from '../ui/separator';
 
 
 const attachmentSchema = z.object({
@@ -667,9 +668,13 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
-          <DialogDescription>
-             {taskToEdit ? 'Cập nhật chi tiết nhiệm vụ của bạn.' : (taskType === 'deadline' ? 'Nhiệm vụ với ngày bắt đầu và kết thúc cụ thể.' : 'Nhiệm vụ lặp lại vào các ngày cố định trong tuần.')}
-          </DialogDescription>
+          {taskToEdit ? (
+            <DialogDescription>Cập nhật chi tiết nhiệm vụ của bạn.</DialogDescription>
+          ) : taskType === 'recurring' ? (
+            <DialogDescription>Nhiệm vụ lặp lại vào các ngày cố định trong tuần.</DialogDescription>
+          ) : (
+            <Separator />
+          )}
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
@@ -857,3 +862,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
