@@ -234,62 +234,67 @@ function TaskKanban() {
         <SidebarContent>
           <SidebarMenu className="px-2">
               <div className="flex items-center justify-around">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton 
-                      variant="ghost"
-                      onClick={() => handleOpenNewTaskDialog('deadline')}
-                    >
-                      <Clock />
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    Nhiệm vụ có Deadline
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton 
-                      variant="ghost"
-                      onClick={() => handleOpenNewTaskDialog('recurring')}
-                    >
-                      <Repeat />
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    Nhiệm vụ lặp lại
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton 
-                      variant="ghost"
-                      onClick={() => setIsStatsDialogOpen(true)}
-                    >
-                      <BarChart3 />
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    Thống kê
-                  </TooltipContent>
-                </Tooltip>
-                 {!isEditingName && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button 
-                                variant="ghost"
-                                size="icon" 
-                                className="h-8 w-8 text-sidebar-foreground/70"
-                                onClick={() => setIsEditingName(true)}
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            Sửa tên
-                        </TooltipContent>
-                    </Tooltip>
-                )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenNewTaskDialog('deadline')}
+                      >
+                        <Clock />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Nhiệm vụ có Deadline
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenNewTaskDialog('recurring')}
+                      >
+                        <Repeat />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Nhiệm vụ lặp lại
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsStatsDialogOpen(true)}
+                      >
+                        <BarChart3 />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      Thống kê
+                    </TooltipContent>
+                  </Tooltip>
+                   {!isEditingName && (
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Button 
+                                  variant="ghost"
+                                  size="icon" 
+                                  className="text-sidebar-foreground/70"
+                                  onClick={() => setIsEditingName(true)}
+                              >
+                                  <Pencil className="h-4 w-4" />
+                              </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom">
+                              Sửa tên
+                          </TooltipContent>
+                      </Tooltip>
+                  )}
+                </TooltipProvider>
               </div>
           </SidebarMenu>
           <Separator className="my-2" />
@@ -381,5 +386,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
