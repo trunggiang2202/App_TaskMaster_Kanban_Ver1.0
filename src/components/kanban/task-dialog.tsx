@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Plus, Trash2, Paperclip, X, Zap, Calendar as CalendarIcon } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
-import { isAfter, addDays, startOfDay } from 'date-fns';
+import { isAfter, addDays, startOfDay, getDay } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -397,7 +397,13 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
     if (isCompleted) return 'border-chart-2';
     
-    if (taskType === 'recurring') return 'border-primary';
+    if (taskType === 'recurring') {
+      const recurringDays = form.watch('recurringDays');
+      if (recurringDays?.includes(getDay(now))) {
+        return 'border-accent'; // Active today
+      }
+      return 'border-primary'; // Not active today
+    }
 
     const startDate = parseDateTime(subtask.startDate, subtask.startTime);
     const endDate = parseDateTime(subtask.endDate, subtask.endTime);
@@ -439,7 +445,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
 
   const renderSubtasks = () => (
-    <Form {...form}>
+    <div className="space-y-2">
       <div className="px-1 pt-4 text-sm font-medium text-muted-foreground">
         Danh sách công việc ({uncompletedSubtasksCount})
       </div>
@@ -657,7 +663,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         </div>
         {form.formState.errors.subtasks && <FormMessage>{form.formState.errors.subtasks.root?.message || form.formState.errors.subtasks.message}</FormMessage>}
       </div>
-    </Form>
+    </div>
   );
 
   return (
@@ -668,16 +674,16 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           {taskToEdit ? null : taskType === 'recurring' ? null : null}
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
-          {taskType === 'deadline' ? (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-              <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
-                <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
-                <TabsTrigger value="subtasks" disabled={isTaskTabInvalid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="task" className="mt-0 py-4 space-y-4">
-                  <Form {...form}>
+        <Form {...form}>
+          <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
+            {taskType === 'deadline' ? (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+                <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
+                  <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
+                  <TabsTrigger value="subtasks" disabled={isTaskTabInvalid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="task" className="mt-0 py-4 space-y-4">
                     <FormField
                       control={form.control}
                       name="title"
@@ -771,88 +777,82 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                      {form.formState.errors.startDate && <FormMessage>{form.formState.errors.startDate.message}</FormMessage>}
                      {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
                      {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
-                  </Form>
-              </TabsContent>
-              <TabsContent value="subtasks" className="mt-0 space-y-2">
-                {renderSubtasks()}
-              </TabsContent>
-            </Tabs>
-          ) : ( // Recurring Task View
-            <div className="py-4 space-y-4">
-               <Form {...form}>
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tên nhiệm vụ</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5"/>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
+                </TabsContent>
+                <TabsContent value="subtasks" className="mt-0 space-y-2">
+                  {renderSubtasks()}
+                </TabsContent>
+              </Tabs>
+            ) : ( // Recurring Task View
+              <div className="py-4 space-y-4">
+                    <FormField
                       control={form.control}
-                      name="recurringDays"
+                      name="title"
                       render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Lặp lại vào</FormLabel>
-                            <FormControl>
-                                <ToggleGroup
-                                    type="multiple"
-                                    variant="outline"
-                                    value={field.value?.map(String) || []}
-                                    onValueChange={(value) => field.onChange(value.map(Number))}
-                                    className="grid grid-cols-4 sm:grid-cols-7 gap-2"
-                                >
-                                    {WEEKDAY_INDICES.map((dayIndex, arrayIndex) => (
-                                        <ToggleGroupItem 
-                                          key={dayIndex} 
-                                          value={String(dayIndex)} 
-                                          aria-label={`Toggle ${WEEKDAY_ABBREVIATIONS[arrayIndex]}`}
-                                          className="bg-primary/5 border-primary/20 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:scale-110 transform transition-transform hover:bg-primary/10 hover:text-foreground"
-                                        >
-                                            {WEEKDAY_ABBREVIATIONS[arrayIndex]}
-                                        </ToggleGroupItem>
-                                    ))}
-                                </ToggleGroup>
-                            </FormControl>
-                            <FormMessage />
+                          <FormLabel>Tên nhiệm vụ</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5"/>
+                          </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
-                  />
-                  {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
-                </Form>
-                {renderSubtasks()}
-            </div>
-          )}
-        </div>
-        
-        <DialogFooter className="pt-4 mt-auto">
-          {taskType === 'deadline' && activeTab === 'task' ? (
-            <>
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
-              <Button type="button" disabled={isTaskTabInvalid} onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
-            </>
-          ) : taskType === 'deadline' && activeTab === 'subtasks' ? (
-            <>
-                <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
-                <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
-            </>
-          ) : ( // Recurring task footer
-             <>
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>              <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
-            </>
-          )}
-        </DialogFooter>
+                    />
+                    
+                    <FormField
+                        control={form.control}
+                        name="recurringDays"
+                        render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Lặp lại vào</FormLabel>
+                              <FormControl>
+                                  <ToggleGroup
+                                      type="multiple"
+                                      variant="outline"
+                                      value={field.value?.map(String) || []}
+                                      onValueChange={(value) => field.onChange(value.map(Number))}
+                                      className="grid grid-cols-4 sm:grid-cols-7 gap-2"
+                                  >
+                                      {WEEKDAY_INDICES.map((dayIndex, arrayIndex) => (
+                                          <ToggleGroupItem 
+                                            key={dayIndex} 
+                                            value={String(dayIndex)} 
+                                            aria-label={`Toggle ${WEEKDAY_ABBREVIATIONS[arrayIndex]}`}
+                                            className="bg-primary/5 border-primary/20 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:scale-110 transform transition-transform hover:bg-primary/10 hover:text-foreground"
+                                          >
+                                              {WEEKDAY_ABBREVIATIONS[arrayIndex]}
+                                          </ToggleGroupItem>
+                                      ))}
+                                  </ToggleGroup>
+                              </FormControl>
+                              <FormMessage />
+                          </FormItem>
+                        )}
+                    />
+                    {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
+                  {renderSubtasks()}
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="pt-4 mt-auto">
+            {taskType === 'deadline' && activeTab === 'task' ? (
+              <>
+                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
+                <Button type="button" disabled={isTaskTabInvalid} onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
+              </>
+            ) : taskType === 'deadline' && activeTab === 'subtasks' ? (
+              <>
+                  <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
+                  <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+              </>
+            ) : ( // Recurring task footer
+               <>
+                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>              <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+              </>
+            )}
+          </DialogFooter>
+        </Form>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
-
-    
