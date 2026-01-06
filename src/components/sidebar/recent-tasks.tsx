@@ -194,10 +194,8 @@ interface RecentTasksProps {
 }
 
 
-export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter }: RecentTasksProps) {
-  const recentTasks = [...tasks]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
+export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, activeFilter }: RecentTasksProps) {
+  
   return (
     <SidebarGroup>
       <div className="space-y-3 px-2">
@@ -207,8 +205,8 @@ export function RecentTasks({ tasks, selectedTaskId, onSelectTask, activeFilter 
               key={task.id}
               onClick={() => onSelectTask(task.id)}
               className={cn(
-                  'p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors bg-sidebar-accent/50 hover:bg-sidebar-accent/80',
-                  selectedTaskId === task.id ? 'ring-2 ring-sidebar-primary bg-sidebar-accent' : 'border border-transparent'
+                  'p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors bg-sidebar-accent/50 hover:bg-sidebar-accent/80 border-sidebar-border border',
+                  selectedTaskId === task.id ? 'ring-2 ring-sidebar-primary bg-sidebar-accent' : ''
               )}
             >
               <div className="flex justify-between items-start">

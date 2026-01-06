@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
-import type { TaskType } from '@/lib/types';
+import type { TaskType, Task } from '@/lib/types';
 
 type FilterType = 'all' | 'today' | 'week';
 
@@ -114,9 +114,15 @@ function TaskKanban() {
     const sDay = startOfDay(selectedDay);
     const dayOfWeek = getDay(sDay);
 
+    const sortTasks = (a: Task, b: Task) => {
+        if (a.taskType === 'recurring' && b.taskType !== 'recurring') return -1;
+        if (a.taskType !== 'recurring' && b.taskType === 'recurring') return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    };
+
     switch(activeFilter) {
       case 'today':
-        return todaysTasks;
+        return [...todaysTasks].sort(sortTasks);
       case 'week':
         return tasks.filter(task => {
           if (task.taskType === 'recurring') {
@@ -128,10 +134,10 @@ function TaskKanban() {
             const subtaskEnd = startOfDay(st.endDate);
             return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
           });
-        });
+        }).sort(sortTasks);
       case 'all':
       default:
-        return tasks;
+        return [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
   }, [activeFilter, tasks, selectedDay, todaysTasks]);
 
@@ -300,13 +306,13 @@ function TaskKanban() {
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-sidebar-accent/60">
-                <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
+                <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
                   Tất cả ({uncompletedTasksCount})
                 </TabsTrigger>
-                <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
+                <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
                   Hôm nay ({todaysSubtaskCount})
                 </TabsTrigger>
-                <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground">
+                <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
                   Xem tuần
                 </TabsTrigger>
               </TabsList>
@@ -385,3 +391,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
