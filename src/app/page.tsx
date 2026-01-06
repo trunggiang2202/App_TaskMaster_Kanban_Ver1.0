@@ -26,17 +26,19 @@ import type { TaskType, Task } from '@/lib/types';
 type FilterType = 'all' | 'today' | 'week';
 
 const IconButton = ({ children, tooltipText, onClick }: { children: React.ReactNode, tooltipText: string, onClick?: () => void }) => (
-    <Tooltip>
-        <TooltipTrigger asChild>
-            <button
-                onClick={onClick}
-                className="flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white transition-colors group"
-            >
-                {children}
-            </button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom"><p>{tooltipText}</p></TooltipContent>
-    </Tooltip>
+    <TooltipProvider delayDuration={0}>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <button
+                    onClick={onClick}
+                    className="group flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white transition-colors"
+                >
+                    {children}
+                </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom"><p>{tooltipText}</p></TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
 );
 
 
@@ -253,22 +255,20 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
         <SidebarMenu className="px-2 grid grid-cols-4 gap-2">
-            <TooltipProvider delayDuration={0}>
-                <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
-                    <Clock className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+            <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
+                <Clock className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+            </IconButton>
+            <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
+                <Repeat className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+            </IconButton>
+            <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
+                <BarChart3 className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+            </IconButton>
+            {!isEditingName && (
+                <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
+                    <Pencil className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
                 </IconButton>
-                <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
-                    <Repeat className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
-                </IconButton>
-                <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
-                    <BarChart3 className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
-                </IconButton>
-                {!isEditingName && (
-                    <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
-                        <Pencil className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
-                    </IconButton>
-                )}
-            </TooltipProvider>
+            )}
         </SidebarMenu>
           <Separator className="my-2" />
           <div className="px-2">
