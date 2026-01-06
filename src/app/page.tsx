@@ -25,13 +25,13 @@ import type { TaskType, Task } from '@/lib/types';
 
 type FilterType = 'all' | 'today' | 'week';
 
-const IconButton = ({ children, tooltipText, onClick }: { children: React.ReactNode, tooltipText: string, onClick?: () => void }) => (
+const IconButton = ({ children, tooltipText, onClick, className }: { children: React.ReactNode, tooltipText: string, onClick?: () => void, className?: string }) => (
     <TooltipProvider delayDuration={0}>
         <Tooltip>
             <TooltipTrigger asChild>
                 <button
                     onClick={onClick}
-                    className="group flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white transition-colors"
+                    className={cn("group flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white transition-colors", className)}
                 >
                     {children}
                 </button>
@@ -359,3 +359,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
