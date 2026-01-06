@@ -175,15 +175,9 @@ function TaskProgress({ task }: { task: Task }) {
             </div>
           )}
           {task.status !== 'Done' && !isOverdue && (
-              <div className={`flex items-center gap-2 ${getTimeLeftColor()}`}>
+              <div className={`flex items-center gap-2 text-sidebar-foreground/80`}>
                 <Clock size={12} /> 
                 <span>{isUpcoming ? 'Tổng thời gian: ' : 'Thời gian còn lại: '}{timeLeft}</span>
-              </div>
-          )}
-          {isOverdue && (
-             <div className={`flex items-center gap-2 ${getTimeLeftColor()}`}>
-                <Clock size={12} /> 
-                <span>Đã quá hạn</span>
               </div>
           )}
         </div>
