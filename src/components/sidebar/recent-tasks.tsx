@@ -102,9 +102,17 @@ function TaskProgress({ task }: { task: Task }) {
     }
   }, [task.startDate, task.endDate, task.status, task.taskType]);
   
+  if (task.status === 'Done') {
+    return (
+      <div className="flex items-center gap-2 text-emerald-500 text-xs">
+          <CheckCircle2 size={12} />
+          <span>Đã hoàn thành</span>
+      </div>
+    );
+  }
+
   if (task.taskType === 'recurring') {
     const isTaskForToday = task.recurringDays?.includes(getDay(new Date()));
-    const recurringDaysText = task.recurringDays?.map(day => WEEKDAYS[day]).join(', ') || '';
 
     return (
        <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
