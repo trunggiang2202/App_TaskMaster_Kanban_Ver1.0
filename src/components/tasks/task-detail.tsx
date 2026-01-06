@@ -112,8 +112,9 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
 
     const renderIcon = () => {
         if (subtask.completed) {
-            return (
-                <div className="h-5 w-5 flex items-center justify-center bg-chart-2 rounded-full">
+            const wasOverdue = subtask.endDate && isBefore(subtask.endDate, new Date());
+             return (
+                <div className={cn("h-5 w-5 flex items-center justify-center rounded-full", wasOverdue ? "bg-destructive" : "bg-chart-2")}>
                     <Check className="h-3 w-3 text-primary-foreground" />
                 </div>
             );
@@ -250,7 +251,10 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const now = new Date();
 
   const getSubtaskStyling = (subtask: Subtask, columnTitle?: SubtaskStatus) => {
-    if (subtask.completed) return 'border-l-4 border-chart-2';
+    if (subtask.completed) {
+        const wasOverdue = subtask.endDate && isBefore(subtask.endDate, now);
+        return wasOverdue ? 'border-l-4 border-destructive' : 'border-l-4 border-chart-2';
+    }
     if (task.taskType === 'recurring') {
       return task.recurringDays?.includes(getDay(new Date())) ? 'border-l-4 border-accent' : 'border-l-4 border-primary';
     }
@@ -415,3 +419,5 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
