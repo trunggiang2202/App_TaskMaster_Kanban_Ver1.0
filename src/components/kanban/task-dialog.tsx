@@ -93,7 +93,7 @@ const taskSchema = z.object({
   path: ["startTime"],
 }).refine(data => {
   if (data.taskType === 'deadline') {
-    return data.endDate && data.endDate.match(/^\d{2}-\d{2}-\d{4}$/);
+    return data.endDate && data.endDate.match(/^\d{2}-\d{2}-\d{4}\d*$/);
   }
   return true;
 }, {
@@ -769,7 +769,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                           key={dayIndex} 
                                           value={String(dayIndex)} 
                                           aria-label={`Toggle ${WEEKDAY_ABBREVIATIONS[arrayIndex]}`}
-                                          className="bg-primary/5 border-primary/20 hover:bg-primary/10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                                          className="bg-primary/5 border-primary/20 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary hover:text-primary hover:scale-110 transform transition-transform"
                                         >
                                             {WEEKDAY_ABBREVIATIONS[arrayIndex]}
                                         </ToggleGroupItem>
@@ -809,6 +809,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
 
