@@ -769,7 +769,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                           key={dayIndex} 
                                           value={String(dayIndex)} 
                                           aria-label={`Toggle ${WEEKDAY_ABBREVIATIONS[arrayIndex]}`}
-                                          className="bg-primary/5 border-primary/20 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary hover:text-primary hover:scale-110 transform transition-transform"
+                                          className="bg-primary/5 border-primary/20 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary hover:text-primary hover:scale-110 transform transition-transform hover:bg-primary/5"
                                         >
                                             {WEEKDAY_ABBREVIATIONS[arrayIndex]}
                                         </ToggleGroupItem>
@@ -809,6 +809,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
 
