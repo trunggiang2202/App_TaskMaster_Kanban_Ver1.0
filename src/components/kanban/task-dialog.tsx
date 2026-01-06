@@ -273,12 +273,11 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         const now = new Date();
         const tomorrow = addDays(now, 1);
         const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         
         newSubtask.startDate = formatDate(now);
-        newSubtask.startTime = formatTime(now);
+        newSubtask.startTime = '04:00';
         newSubtask.endDate = formatDate(tomorrow);
-        newSubtask.endTime = formatTime(now);
+        newSubtask.endTime = '23:59';
     }
     append(newSubtask as Subtask);
     setTimeout(() => {
@@ -858,11 +857,3 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
-
-    
-
-    
-
-    
