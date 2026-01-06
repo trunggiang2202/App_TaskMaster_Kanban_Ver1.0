@@ -111,23 +111,20 @@ function TaskKanban() {
     setIsTaskDialogOpen(false);
   }, []);
 
-  const hasInProgressSubtasks = useCallback((task: import('@/lib/types').Task) => {
-    if (task.status === 'Done') return false;
-    
+  const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
     if (task.taskType === 'recurring') {
       return task.recurringDays?.includes(getDay(new Date()));
     }
 
     const today = startOfDay(new Date());
     return task.subtasks.some(st => 
-      !st.completed && 
       st.startDate && 
       st.endDate &&
       !isAfter(today, startOfDay(st.endDate)) && !isBefore(today, startOfDay(st.startDate))
     );
   }, []);
   
-  const todaysTasks = useMemo(() => tasks.filter(hasInProgressSubtasks), [tasks, hasInProgressSubtasks]);
+  const todaysTasks = useMemo(() => tasks.filter(isTaskForToday), [tasks, isTaskForToday]);
   const uncompletedTasksCount = useMemo(() => tasks.filter(task => task.status !== 'Done').length, [tasks]);
 
   const filteredTasksForSidebar = useMemo(() => {
