@@ -244,19 +244,21 @@ function TaskKanban() {
         <SidebarContent>
           <SidebarMenu className="px-2">
             <div className="flex w-full items-center gap-2">
-                <div className="flex flex-col flex-1 gap-2">
-                    <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
-                        <Clock />
-                        <span>Deadline</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
-                        <Repeat />
-                        <span>Lặp lại</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                <div className="flex flex-1 flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                        <SidebarMenuItem className="flex-1">
+                          <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
+                            <Clock />
+                            <span>Deadline</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem className="flex-1">
+                          <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
+                            <Repeat />
+                            <span>Lặp lại</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </div>
                 </div>
                 <SidebarMenuItem>
                     <TooltipProvider>
