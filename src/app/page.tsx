@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
@@ -132,6 +133,8 @@ function TaskKanban() {
     const dayOfWeek = getDay(sDay);
 
     const sortTasks = (a: Task, b: Task) => {
+        if (a.status === 'Done' && b.status !== 'Done') return 1;
+        if (a.status !== 'Done' && b.status === 'Done') return -1;
         if (a.taskType === 'recurring' && b.taskType !== 'recurring') return -1;
         if (a.taskType !== 'recurring' && b.taskType === 'recurring') return 1;
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -154,7 +157,7 @@ function TaskKanban() {
         }).sort(sortTasks);
       case 'all':
       default:
-        return [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).sort(sortTasks);
     }
   }, [activeFilter, tasks, selectedDay, todaysTasks]);
 
