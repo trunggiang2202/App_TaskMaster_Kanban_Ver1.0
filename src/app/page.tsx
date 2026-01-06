@@ -4,7 +4,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, BarChart3, Pencil } from 'lucide-react';
+import { Plus, BarChart3, Pencil, Clock, Repeat } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay } from 'date-fns';
@@ -68,9 +68,10 @@ function TaskKanban() {
     return () => clearInterval(interval);
   });
 
-  const handleOpenNewTaskDialog = () => {
+  const handleOpenNewTaskDialog = (type: TaskType) => {
     setTaskToEdit(undefined);
-    setIsTaskTypeDialogOpen(true);
+    setInitialTaskType(type);
+    setIsTaskDialogOpen(true);
   };
   
   const handleSelectTaskType = (type: TaskType) => {
@@ -243,12 +244,20 @@ function TaskKanban() {
         <SidebarContent>
           <SidebarMenu className="px-2">
             <div className="flex w-full items-center gap-2">
-                <SidebarMenuItem className="flex-1">
-                  <SidebarMenuButton onClick={handleOpenNewTaskDialog} className="w-full">
-                    <Plus />
-                    <span>Nhiệm vụ mới</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <div className="flex flex-col flex-1 gap-2">
+                    <SidebarMenuItem>
+                      <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
+                        <Clock />
+                        <span>Nhiệm vụ Deadline</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
+                        <Repeat />
+                        <span>Nhiệm vụ Lặp lại</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </div>
                 <SidebarMenuItem>
                     <TooltipProvider>
                       <Tooltip>
