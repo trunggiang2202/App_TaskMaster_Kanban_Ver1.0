@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Plus, Trash2, Paperclip, X, Zap, Calendar as CalendarIcon } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
-import { isAfter } from 'date-fns';
+import { isAfter, addDays, startOfDay } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -159,6 +159,17 @@ const taskSchema = z.object({
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"], 
 }).refine((data) => {
+    if (data.taskType === 'deadline' && data.startDate && data.startTime) {
+        const startDateTime = parseDateTime(data.startDate, data.startTime);
+        if (startDateTime && startDateTime < startOfDay(new Date())) {
+            return false;
+        }
+    }
+    return true;
+}, {
+    message: "Ngày bắt đầu không được trong quá khứ.",
+    path: ["startDate"],
+}).refine((data) => {
     if (data.subtasks && data.subtasks.length > 0) {
       return data.subtasks.some(st => st.title && st.title.trim() !== '');
     }
@@ -227,17 +238,20 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           })),
         });
       } else {
-        const currentYear = String(new Date().getFullYear());
-        const dateWithYearOnly = `__-__-${currentYear}`;
+         const now = new Date();
+        const tomorrow = addDays(now, 1);
         
+        const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
         form.reset({
           title: '',
           description: '',
           taskType: initialTaskType,
-          startDate: dateWithYearOnly,
-          startTime: '04:00',
-          endDate: dateWithYearOnly,
-          endTime: '23:59',
+          startDate: formatDate(now),
+          startTime: formatTime(now),
+          endDate: formatDate(tomorrow),
+          endTime: formatTime(now),
           recurringDays: [],
           subtasks: [],
         });
@@ -712,6 +726,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                           </div>
                         </div>
                     </div>
+                     {form.formState.errors.startDate && <FormMessage>{form.formState.errors.startDate.message}</FormMessage>}
                      {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
                      {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
                   </Form>
