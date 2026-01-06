@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar, Repeat } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { cn, WEEKDAY_ABBREVIATIONS } from '@/lib/utils';
+import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 
 const calculateInitialTimeProgress = (task: Task) => {
     if (task.taskType === 'recurring' || !task.startDate || !task.endDate) return 100;
@@ -104,14 +104,14 @@ function TaskProgress({ task }: { task: Task }) {
   
   if (task.taskType === 'recurring') {
     const isTaskForToday = task.recurringDays?.includes(getDay(new Date()));
-    const recurringDaysText = task.recurringDays?.map(day => WEEKDAY_ABBREVIATIONS[day]).join(', ') || '';
+    const recurringDaysText = task.recurringDays?.map(day => WEEKDAYS[day]).join(', ') || '';
 
     return (
        <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
           <div className={cn("flex items-center gap-2", isTaskForToday && "text-emerald-500 font-semibold")}>
-            <Repeat size={12} />
+            <Repeat size={12} className={cn(isTaskForToday && "animate-spin")} />
             <span>
-              {isTaskForToday ? `Hôm nay (${recurringDaysText})` : `Lặp lại vào ${recurringDaysText}`}
+              {isTaskForToday ? `Đang diễn ra (${recurringDaysText})` : `Lặp lại vào ${recurringDaysText}`}
             </span>
           </div>
        </div>
