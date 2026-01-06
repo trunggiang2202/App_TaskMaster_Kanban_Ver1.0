@@ -30,7 +30,7 @@ const IconButton = ({ children, tooltipText, onClick }: { children: React.ReactN
         <TooltipTrigger asChild>
             <button
                 onClick={onClick}
-                className="flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white hover:bg-white/10 hover:text-white transition-colors"
+                className="flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white hover:bg-white/10 hover:text-white transition-colors group"
             >
                 {children}
             </button>
@@ -255,17 +255,17 @@ function TaskKanban() {
         <SidebarMenu className="px-2 grid grid-cols-4 gap-2">
             <TooltipProvider delayDuration={0}>
                 <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
                 </IconButton>
                 <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
-                    <Repeat className="h-4 w-4" />
+                    <Repeat className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
                 </IconButton>
                 <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
-                    <BarChart3 className="h-4 w-4" />
+                    <BarChart3 className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
                 </IconButton>
                 {!isEditingName && (
                     <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
                     </IconButton>
                 )}
             </TooltipProvider>
