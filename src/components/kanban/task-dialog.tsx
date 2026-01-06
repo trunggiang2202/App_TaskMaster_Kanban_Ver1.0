@@ -380,7 +380,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     return 'border-muted';
   };
   
-  const isTaskTabInvalid = taskToEdit ? !form.formState.isValid : (!form.formState.isValid && form.formState.isDirty);
+  const isTaskTabInvalid = taskToEdit ? false : !form.formState.isValid;
 
 
   const renderSubtasks = () => (
@@ -591,20 +591,23 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
             size="sm"
             className="mt-2 hover:bg-primary hover:text-primary-foreground"
             onClick={() => {
-                const currentYear = String(new Date().getFullYear());
-                const dateWithYearOnly = `__-__-${currentYear}`;
-                const newSubtask: any = { 
+                const newSubtask: Partial<Subtask> = { 
                     title: "", 
                     description: "", 
                     attachments: [] 
                 };
                 if (taskType === 'deadline') {
-                    newSubtask.startDate = dateWithYearOnly;
-                    newSubtask.startTime = '04:00';
-                    newSubtask.endDate = dateWithYearOnly;
-                    newSubtask.endTime = '23:59';
+                    const now = new Date();
+                    const tomorrow = addDays(now, 1);
+                    const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+                    const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    
+                    newSubtask.startDate = formatDate(now);
+                    newSubtask.startTime = formatTime(now);
+                    newSubtask.endDate = formatDate(tomorrow);
+                    newSubtask.endTime = formatTime(now);
                 }
-                append(newSubtask);
+                append(newSubtask as Subtask);
             }}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -811,3 +814,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
