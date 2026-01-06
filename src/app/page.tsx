@@ -268,13 +268,13 @@ function TaskKanban() {
         <SidebarMenu className="px-2">
           <div className="group flex items-center justify-around">
             <GradientButton onClick={() => handleOpenNewTaskDialog('deadline')} tooltip="Nhiệm vụ có Deadline">
-              <Clock />
+              <Clock className="h-4 w-4" />
             </GradientButton>
             <GradientButton onClick={() => handleOpenNewTaskDialog('recurring')} tooltip="Nhiệm vụ lặp lại">
-              <Repeat />
+              <Repeat className="h-4 w-4" />
             </GradientButton>
             <GradientButton onClick={() => setIsStatsDialogOpen(true)} tooltip="Thống kê">
-              <BarChart3 />
+              <BarChart3 className="h-4 w-4" />
             </GradientButton>
             {!isEditingName && (
               <GradientButton onClick={() => setIsEditingName(true)} tooltip="Sửa tên">
@@ -372,3 +372,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
