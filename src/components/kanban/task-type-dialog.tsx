@@ -12,6 +12,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Zap, Repeat } from 'lucide-react';
 import type { TaskType } from '@/lib/types';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface TaskTypeDialogProps {
   isOpen: boolean;
@@ -20,6 +22,13 @@ interface TaskTypeDialogProps {
 }
 
 export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeDialogProps) {
+    const [selectedType, setSelectedType] = useState<TaskType | null>(null);
+
+    const handleSelect = (type: TaskType) => {
+        setSelectedType(type);
+        setTimeout(() => onSelectType(type), 150); // Delay for visual feedback
+    }
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -32,19 +41,31 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
             <Button
                 variant="outline"
-                className="h-24 flex-col gap-2"
-                onClick={() => onSelectType('deadline')}
+                className={cn(
+                    "h-24 justify-start p-4 text-left",
+                    selectedType === 'deadline' && 'bg-primary text-primary-foreground'
+                )}
+                onClick={() => handleSelect('deadline')}
             >
-                <Zap className="h-6 w-6 text-primary" />
-                <span className="font-semibold">Có deadline</span>
+                <Zap className="h-5 w-5 mr-3" />
+                <div className="flex flex-col">
+                    <span className="font-semibold">Có deadline</span>
+                    <span className="text-xs text-muted-foreground">Ngày hết hạn cụ thể</span>
+                </div>
             </Button>
             <Button
                 variant="outline"
-                className="h-24 flex-col gap-2"
-                onClick={() => onSelectType('recurring')}
+                 className={cn(
+                    "h-24 justify-start p-4 text-left",
+                    selectedType === 'recurring' && 'bg-primary text-primary-foreground'
+                )}
+                onClick={() => handleSelect('recurring')}
             >
-                <Repeat className="h-6 w-6 text-accent" />
-                <span className="font-semibold">Lặp lại</span>
+                <Repeat className="h-5 w-5 mr-3" />
+                <div className="flex flex-col">
+                    <span className="font-semibold">Lặp lại</span>
+                    <span className="text-xs text-muted-foreground">Theo các ngày trong tuần</span>
+                </div>
             </Button>
         </div>
       </DialogContent>
