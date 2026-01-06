@@ -58,7 +58,7 @@ function TaskKanban() {
     }
   }, [userName]);
 
-  useState(() => {
+  useEffect(() => {
     let dotCount = 0;
     const interval = setInterval(() => {
       dotCount = (dotCount + 1) % 6; // Cycle from 0 to 5
@@ -66,7 +66,7 @@ function TaskKanban() {
     }, 700); 
 
     return () => clearInterval(interval);
-  });
+  }, []);
 
   const handleOpenNewTaskDialog = (type: TaskType) => {
     setTaskToEdit(undefined);
@@ -391,5 +391,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
