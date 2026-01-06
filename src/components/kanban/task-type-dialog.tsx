@@ -40,29 +40,35 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
             <button
                 className={cn(
-                    "h-24 justify-start p-4 text-left flex-col items-start rounded-lg border bg-card transition-all flex",
+                    "p-4 text-left rounded-lg border transition-all flex items-center gap-4",
+                    "bg-transparent hover:bg-accent/20",
                     selectedType === 'deadline' 
-                        ? 'border-primary ring-2 ring-primary' 
-                        : 'text-muted-foreground'
+                        ? 'border-primary ring-2 ring-primary text-primary' 
+                        : 'text-muted-foreground border-border'
                 )}
                 onClick={() => handleSelect('deadline')}
             >
-                <Zap className={cn("h-5 w-5 mb-2", selectedType === 'deadline' && 'text-primary')} />
-                <span className={cn("font-semibold", selectedType === 'deadline' ? 'text-primary' : 'text-card-foreground')}>Có deadline</span>
-                <span className="text-xs">Ngày hết hạn cụ thể</span>
+                <Zap className={cn("h-5 w-5 shrink-0", selectedType === 'deadline' && 'text-primary')} />
+                <div>
+                    <p className={cn("font-semibold", selectedType === 'deadline' ? 'text-primary' : 'text-card-foreground')}>Có deadline</p>
+                    <p className="text-xs">Ngày hết hạn cụ thể</p>
+                </div>
             </button>
             <button
-                className={cn(
-                    "h-24 justify-start p-4 text-left flex-col items-start rounded-lg border bg-card transition-all flex",
+                 className={cn(
+                    "p-4 text-left rounded-lg border transition-all flex items-center gap-4",
+                    "bg-transparent hover:bg-accent/20",
                      selectedType === 'recurring' 
-                        ? 'border-primary ring-2 ring-primary' 
-                        : 'text-muted-foreground'
+                        ? 'border-primary ring-2 ring-primary text-primary' 
+                        : 'text-muted-foreground border-border'
                 )}
                 onClick={() => handleSelect('recurring')}
             >
-                <Repeat className={cn("h-5 w-5 mb-2", selectedType === 'recurring' && 'text-primary')} />
-                <span className={cn("font-semibold", selectedType === 'recurring' ? 'text-primary' : 'text-card-foreground')}>Lặp lại</span>
-                <span className="text-xs">Theo các ngày trong tuần</span>
+                <Repeat className={cn("h-5 w-5 shrink-0", selectedType === 'recurring' && 'text-primary')} />
+                <div>
+                    <p className={cn("font-semibold", selectedType === 'recurring' ? 'text-primary' : 'text-card-foreground')}>Lặp lại</p>
+                    <p className="text-xs">Theo các ngày trong tuần</p>
+                </div>
             </button>
         </div>
       </DialogContent>
