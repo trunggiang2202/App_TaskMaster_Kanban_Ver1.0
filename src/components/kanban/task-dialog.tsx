@@ -389,8 +389,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
 
   const getSubtaskBorderColor = (index: number) => {
-    if (taskType === 'recurring') return 'border-muted';
-
     const subtask = form.watch(`subtasks.${index}`);
     const now = new Date();
 
@@ -398,6 +396,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     const isCompleted = originalSubtask ? originalSubtask.completed : false;
 
     if (isCompleted) return 'border-chart-2';
+    
+    if (taskType === 'recurring') return 'border-muted';
 
     const startDate = parseDateTime(subtask.startDate, subtask.startTime);
     const endDate = parseDateTime(subtask.endDate, subtask.endTime);
@@ -412,7 +412,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     }
 
     if (isAfter(startDate, now)) {
-        return 'border-primary';
+        return 'border-muted';
     }
     
     return 'border-muted';
@@ -852,11 +852,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
-
-    
-
-    
 
     
