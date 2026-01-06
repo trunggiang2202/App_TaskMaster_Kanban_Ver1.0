@@ -267,11 +267,9 @@ function TaskKanban() {
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
                 <BarChart3 className="h-4 w-4" />
             </IconButton>
-            {!isEditingName && (
-                <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
-                    <Pencil className="h-4 w-4" />
-                </IconButton>
-            )}
+            <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
+                <Pencil className="h-4 w-4" />
+            </IconButton>
         </SidebarMenu>
           <Separator className="my-2" />
           <div className="px-2">
