@@ -25,6 +25,34 @@ import type { TaskType, Task } from '@/lib/types';
 
 type FilterType = 'all' | 'today' | 'week';
 
+interface GradientButtonProps {
+  onClick: () => void;
+  tooltip: string;
+  children: React.ReactNode;
+}
+
+const GradientButton: React.FC<GradientButtonProps> = ({ onClick, tooltip, children }) => (
+  <TooltipProvider delayDuration={0}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={onClick}
+          className="relative p-2 rounded-lg bg-sidebar-accent/80 hover:bg-sidebar-accent/100 transition-colors"
+        >
+          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 opacity-50 group-hover:opacity-75 transition-opacity"></div>
+          <div className="relative text-sidebar-foreground">
+            {children}
+          </div>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p>{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
+
 function TaskKanban() {
   const { tasks, selectedTaskId, setSelectedTaskId } = useTasks();
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
@@ -237,71 +265,24 @@ function TaskKanban() {
           </div>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarMenu className="px-2">
-              <div className="flex items-center justify-around">
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenNewTaskDialog('deadline')}
-                      >
-                        <Clock />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      Nhiệm vụ có Deadline
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenNewTaskDialog('recurring')}
-                      >
-                        <Repeat />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      Nhiệm vụ lặp lại
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsStatsDialogOpen(true)}
-                      >
-                        <BarChart3 />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      Thống kê
-                    </TooltipContent>
-                  </Tooltip>
-                   {!isEditingName && (
-                      <Tooltip>
-                          <TooltipTrigger asChild>
-                              <Button 
-                                  variant="ghost"
-                                  size="icon" 
-                                  className="text-sidebar-foreground/70"
-                                  onClick={() => setIsEditingName(true)}
-                              >
-                                  <Pencil className="h-4 w-4" />
-                              </Button>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom">
-                              Sửa tên
-                          </TooltipContent>
-                      </Tooltip>
-                  )}
-                </TooltipProvider>
-              </div>
-          </SidebarMenu>
+        <SidebarMenu className="px-2">
+          <div className="group flex items-center justify-around">
+            <GradientButton onClick={() => handleOpenNewTaskDialog('deadline')} tooltip="Nhiệm vụ có Deadline">
+              <Clock />
+            </GradientButton>
+            <GradientButton onClick={() => handleOpenNewTaskDialog('recurring')} tooltip="Nhiệm vụ lặp lại">
+              <Repeat />
+            </GradientButton>
+            <GradientButton onClick={() => setIsStatsDialogOpen(true)} tooltip="Thống kê">
+              <BarChart3 />
+            </GradientButton>
+            {!isEditingName && (
+              <GradientButton onClick={() => setIsEditingName(true)} tooltip="Sửa tên">
+                <Pencil className="h-4 w-4" />
+              </GradientButton>
+            )}
+          </div>
+        </SidebarMenu>
           <Separator className="my-2" />
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
