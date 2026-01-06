@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Zap, Repeat } from 'lucide-react';
@@ -39,30 +38,32 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
-            <Button
-                variant="outline"
+            <button
                 className={cn(
-                    "h-24 justify-start p-4 text-left flex-col items-start",
-                    selectedType === 'deadline' && 'border-primary ring-2 ring-primary',
+                    "h-24 justify-start p-4 text-left flex-col items-start rounded-lg border bg-card transition-all flex",
+                    selectedType === 'deadline' 
+                        ? 'border-primary ring-2 ring-primary' 
+                        : 'text-muted-foreground'
                 )}
                 onClick={() => handleSelect('deadline')}
             >
-                <Zap className="h-5 w-5 mb-2" />
-                <span className="font-semibold">Có deadline</span>
-                <span className={cn("text-xs", selectedType === 'deadline' ? 'text-primary' : 'text-muted-foreground')}>Ngày hết hạn cụ thể</span>
-            </Button>
-            <Button
-                variant="outline"
+                <Zap className={cn("h-5 w-5 mb-2", selectedType === 'deadline' && 'text-primary')} />
+                <span className={cn("font-semibold", selectedType === 'deadline' ? 'text-primary' : 'text-card-foreground')}>Có deadline</span>
+                <span className="text-xs">Ngày hết hạn cụ thể</span>
+            </button>
+            <button
                 className={cn(
-                    "h-24 justify-start p-4 text-left flex-col items-start",
-                    selectedType === 'recurring' && 'border-primary ring-2 ring-primary'
+                    "h-24 justify-start p-4 text-left flex-col items-start rounded-lg border bg-card transition-all flex",
+                     selectedType === 'recurring' 
+                        ? 'border-primary ring-2 ring-primary' 
+                        : 'text-muted-foreground'
                 )}
                 onClick={() => handleSelect('recurring')}
             >
-                <Repeat className="h-5 w-5 mb-2" />
-                <span className="font-semibold">Lặp lại</span>
-                <span className={cn("text-xs", selectedType === 'recurring' ? 'text-primary' : 'text-muted-foreground')}>Theo các ngày trong tuần</span>
-            </Button>
+                <Repeat className={cn("h-5 w-5 mb-2", selectedType === 'recurring' && 'text-primary')} />
+                <span className={cn("font-semibold", selectedType === 'recurring' ? 'text-primary' : 'text-card-foreground')}>Lặp lại</span>
+                <span className="text-xs">Theo các ngày trong tuần</span>
+            </button>
         </div>
       </DialogContent>
     </Dialog>
