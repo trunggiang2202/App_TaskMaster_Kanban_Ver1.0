@@ -30,7 +30,7 @@ const IconButton = ({ children, tooltipText, onClick }: { children: React.ReactN
         <TooltipTrigger asChild>
             <button
                 onClick={onClick}
-                className="flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white hover:bg-white/10 hover:text-white transition-colors group"
+                className="flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white transition-colors group"
             >
                 {children}
             </button>
