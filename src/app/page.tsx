@@ -172,12 +172,11 @@ function TaskKanban() {
   
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
-    if (newName.length <= 12) {
+    if (newName.length > 12) {
+      setNameError('Bạn chỉ được nhập 12 kí tự');
+    } else {
       setUserName(newName);
       setNameError(null);
-    } else {
-      setUserName(newName.substring(0, 12));
-      setNameError('Bạn chỉ được nhập 12 kí tự');
     }
   };
 
@@ -199,7 +198,7 @@ function TaskKanban() {
       <Sidebar>
         <SidebarHeader className="p-4 group">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 min-w-0">
+            <div className="flex items-center gap-1 min-w-0 relative">
                 {isEditingName ? (
                     <div className="w-full">
                         <Input
@@ -212,6 +211,7 @@ function TaskKanban() {
                         maxLength={12}
                         className="text-2xl font-bold font-headline bg-sidebar-accent border-sidebar-border h-auto p-0"
                         />
+                         {isEditingName && nameError && <p className="text-destructive text-xs mt-1 absolute top-full left-0">{nameError}</p>}
                     </div>
                 ) : (
                     <h2 className="flex items-center text-2xl font-bold font-headline truncate">
@@ -228,7 +228,6 @@ function TaskKanban() {
                     </h2>
                 )}
             </div>
-            {isEditingName && nameError && <p className="text-destructive text-xs mt-1 absolute top-full left-4">{nameError}</p>}
           </div>
         </SidebarHeader>
         <SidebarContent>
