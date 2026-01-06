@@ -215,6 +215,14 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const { deleteTask, toggleSubtask } = useTasks();
   const [selectedSubtask, setSelectedSubtask] = React.useState<Subtask | null>(null);
   const [isSubtaskDetailOpen, setIsSubtaskDetailOpen] = React.useState(false);
+  const [currentTime, setCurrentTime] = React.useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const completedSubtasks = task.subtasks.filter(st => st.completed).length;
   const totalSubtasks = task.subtasks.length;
@@ -234,18 +242,18 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
       'Đang làm': [],
       'Xong': [],
     };
-    const now = new Date();
+    
     task.subtasks.forEach(st => {
       if (st.completed) {
         categories['Xong'].push(st);
-      } else if (st.startDate && isAfter(now, st.startDate)) {
+      } else if (st.startDate && isAfter(currentTime, st.startDate)) {
         categories['Đang làm'].push(st);
       } else {
         categories['Chưa làm'].push(st);
       }
     });
     return categories;
-  }, [task.subtasks, task.taskType]);
+  }, [task.subtasks, task.taskType, currentTime]);
 
 
   const now = new Date();
@@ -419,5 +427,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
 
     
