@@ -42,30 +42,26 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
             <Button
                 variant="outline"
                 className={cn(
-                    "h-auto justify-start p-4 text-left flex-row items-center gap-3",
-                    selectedType === 'deadline' && 'border-primary ring-2 ring-primary'
+                    "h-24 justify-start p-4 text-left flex-col items-start",
+                    selectedType === 'deadline' && 'border-primary ring-2 ring-primary',
                 )}
                 onClick={() => handleSelect('deadline')}
             >
-                <Zap className="h-5 w-5 shrink-0" />
-                <div className="flex flex-col">
-                    <span className="font-semibold">Có deadline</span>
-                    <span className={cn("text-xs", selectedType === 'deadline' ? 'text-primary' : 'text-muted-foreground')}>Ngày hết hạn cụ thể</span>
-                </div>
+                <Zap className="h-5 w-5 mb-2" />
+                <span className="font-semibold">Có deadline</span>
+                <span className={cn("text-xs", selectedType === 'deadline' ? 'text-primary' : 'text-muted-foreground')}>Ngày hết hạn cụ thể</span>
             </Button>
             <Button
                 variant="outline"
-                 className={cn(
-                    "h-auto justify-start p-4 text-left flex-row items-center gap-3",
+                className={cn(
+                    "h-24 justify-start p-4 text-left flex-col items-start",
                     selectedType === 'recurring' && 'border-primary ring-2 ring-primary'
                 )}
                 onClick={() => handleSelect('recurring')}
             >
-                <Repeat className="h-5 w-5 shrink-0" />
-                <div className="flex flex-col">
-                    <span className="font-semibold">Lặp lại</span>
-                    <span className={cn("text-xs", selectedType === 'recurring' ? 'text-primary' : 'text-muted-foreground')}>Theo các ngày trong tuần</span>
-                </div>
+                <Repeat className="h-5 w-5 mb-2" />
+                <span className="font-semibold">Lặp lại</span>
+                <span className={cn("text-xs", selectedType === 'recurring' ? 'text-primary' : 'text-muted-foreground')}>Theo các ngày trong tuần</span>
             </Button>
         </div>
       </DialogContent>
