@@ -161,17 +161,6 @@ const taskSchema = z.object({
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"], 
 }).refine((data) => {
-    if (data.taskType === 'deadline' && data.startDate && data.startTime) {
-        const startDateTime = parseDateTime(data.startDate, data.startTime);
-        if (startDateTime && startDateTime < startOfDay(new Date())) {
-            return false;
-        }
-    }
-    return true;
-}, {
-    message: "Ngày bắt đầu không được trong quá khứ.",
-    path: ["startDate"],
-}).refine((data) => {
     if (data.subtasks && data.subtasks.length > 0) {
       // Only enforce this validation if there are subtasks *with titles*.
       const hasTitledSubtask = data.subtasks.some(st => st.title && st.title.trim() !== '');
@@ -864,6 +853,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
 
