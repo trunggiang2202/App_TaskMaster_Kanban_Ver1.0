@@ -642,7 +642,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <FormItem>
                           <FormLabel>Tên nhiệm vụ</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-2 focus-visible:ring-primary"/>
+                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-0 focus-visible:ring-offset-0"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -743,7 +743,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                       <FormItem>
                         <FormLabel>Tên nhiệm vụ</FormLabel>
                         <FormControl>
-                          <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-2 focus-visible:ring-primary"/>
+                          <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-0 focus-visible:ring-offset-0"/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -811,4 +811,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 }
 
     
+    
+
     
