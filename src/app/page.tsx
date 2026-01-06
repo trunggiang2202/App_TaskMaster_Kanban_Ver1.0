@@ -31,7 +31,10 @@ const IconButton = ({ children, tooltipText, onClick, className }: { children: R
             <TooltipTrigger asChild>
                 <button
                     onClick={onClick}
-                    className={cn("group flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-primary text-white transition-colors hover:bg-sidebar-primary/80", className)}
+                    className={cn(
+                        "group flex items-center justify-center w-full h-9 rounded-lg bg-sidebar-accent/60 text-sidebar-foreground transition-colors hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
+                        className
+                    )}
                 >
                     {children}
                 </button>
@@ -359,5 +362,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
