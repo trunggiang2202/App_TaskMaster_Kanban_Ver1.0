@@ -427,7 +427,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                             {hasTitle ? (
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-110 hover:bg-transparent">
+                                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full">
                                     <Trash2 className="h-4 w-4 text-destructive" />
                                   </Button>
                                 </AlertDialogTrigger>
@@ -447,7 +447,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                 </AlertDialogContent>
                               </AlertDialog>
                             ) : (
-                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-110 hover:bg-transparent" onClick={() => remove(index)}>
+                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full" onClick={() => remove(index)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                             )}
@@ -809,19 +809,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     
