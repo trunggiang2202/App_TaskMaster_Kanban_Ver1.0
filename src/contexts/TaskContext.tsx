@@ -3,6 +3,7 @@
 
 import { createContext, useState, useCallback, useMemo, useContext, useEffect } from 'react';
 import type { Task, TaskType } from '@/lib/types';
+import { isSameWeek, startOfWeek } from 'date-fns';
 
 interface TaskContextType {
   tasks: Task[];
@@ -33,6 +34,8 @@ const getTasksFromLocalStorage = (): Task[] => {
         };
         if (t.startDate) task.startDate = new Date(t.startDate);
         if (t.endDate) task.endDate = new Date(t.endDate);
+        if (t.lastCompletedAt) task.lastCompletedAt = new Date(t.lastCompletedAt);
+
         if (t.taskType === 'recurring' && t.recurringDay) {
           // Migration from single day to multiple days
           task.recurringDays = Array.isArray(t.recurringDay) ? t.recurringDay : [t.recurringDay];
@@ -66,9 +69,28 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const initialData = getTasksFromLocalStorage();
-    setTasks(initialData);
-    if (initialData.length > 0) {
-      setSelectedTaskId(initialData[0].id)
+    const today = new Date();
+    const weekStartsOn = 1; // Monday
+
+    const processedData = initialData.map(task => {
+        if (task.taskType === 'recurring' && task.status === 'Done' && task.lastCompletedAt) {
+            if (!isSameWeek(today, task.lastCompletedAt, { weekStartsOn })) {
+                return {
+                    ...task,
+                    status: 'To Do' as 'To Do',
+                    subtasks: task.subtasks.map(st => ({ ...st, completed: false })),
+                    lastCompletedAt: undefined
+                };
+            }
+        }
+        return task;
+    });
+    
+    setTasks(processedData);
+    if (processedData.length > 0 && !selectedTaskId) {
+      // Find first unfinished or recurring task to select
+      const firstTaskToSelect = processedData.find(t => t.status !== 'Done' || t.taskType === 'recurring') || processedData[0];
+      setSelectedTaskId(firstTaskToSelect.id);
     }
   }, []);
 
@@ -87,6 +109,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
   const addTask = useCallback((taskData: Task) => {
     setTasks(prevTasks => {
       const newTasks = [taskData, ...prevTasks];
+      // Select new task only if it's the first one
       if (prevTasks.length === 0) {
         setSelectedTaskId(taskData.id);
       }
@@ -104,7 +127,8 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     setTasks(prevTasks => {
         const newTasks = prevTasks.filter(task => task.id !== taskId);
         if (selectedTaskId === taskId) {
-            setSelectedTaskId(newTasks.length > 0 ? newTasks[0].id : null);
+            const firstUnfinished = newTasks.find(t => t.status !== 'Done' || t.taskType === 'recurring');
+            setSelectedTaskId(firstUnfinished ? firstUnfinished.id : (newTasks.length > 0 ? newTasks[0].id : null));
         }
         return newTasks;
     });
@@ -114,6 +138,8 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     setTasks(prevTasks =>
       prevTasks.map(task => {
         if (task.id === taskId) {
+          let updatedTask = { ...task };
+          
           const updatedSubtasks = task.subtasks.map(subtask =>
             subtask.id === subtaskId
               ? { ...subtask, completed: !subtask.completed }
@@ -122,14 +148,20 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
           const allSubtasksDone = updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed);
 
-          let newStatus = task.status;
           if (allSubtasksDone) {
-            newStatus = 'Done';
+            updatedTask.status = 'Done';
+            if (task.taskType === 'recurring') {
+              updatedTask.lastCompletedAt = new Date();
+            }
           } else if (task.status === 'Done' && !allSubtasksDone) {
-            newStatus = 'In Progress';
+             updatedTask.status = 'In Progress';
+             if (task.taskType === 'recurring') {
+                updatedTask.lastCompletedAt = undefined;
+             }
           }
 
-          return { ...task, subtasks: updatedSubtasks, status: newStatus };
+          updatedTask.subtasks = updatedSubtasks;
+          return updatedTask;
         }
         return task;
       })
