@@ -191,6 +191,7 @@ interface TaskDialogProps {
 export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }: TaskDialogProps) {
   const { addTask, updateTask } = useTasks();
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const subtaskTitleRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [activeTab, setActiveTab] = useState('task');
   
   const form = useForm<TaskFormData>({
@@ -242,8 +243,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         const tomorrow = addDays(now, 1);
         
         const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-
+        
         form.reset({
           title: '',
           description: '',
@@ -259,6 +259,15 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     }
   }, [taskToEdit, isOpen, initialTaskType, replace, form]);
 
+  useEffect(() => {
+    if (fields.length > 0) {
+      const lastIndex = fields.length - 1;
+      const lastInput = subtaskTitleRefs.current[lastIndex];
+      if (lastInput) {
+        lastInput.focus();
+      }
+    }
+  }, [fields.length]);
 
   const handleSubmit = useCallback((data: TaskFormData) => {
     const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any } = {
@@ -333,9 +342,32 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       }
   };
 
+  const addEmptySubtask = () => {
+    const newSubtask: Partial<Subtask> = { 
+        title: "", 
+        description: "", 
+        attachments: [] 
+    };
+    if (taskType === 'deadline') {
+        const now = new Date();
+        const tomorrow = addDays(now, 1);
+        const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        
+        newSubtask.startDate = formatDate(now);
+        newSubtask.startTime = formatTime(now);
+        newSubtask.endDate = formatDate(tomorrow);
+        newSubtask.endTime = formatTime(now);
+    }
+    append(newSubtask as Subtask);
+  };
+
   const triggerValidationAndSwitchTab = async () => {
     const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description", "recurringDays"]);
     if (result) {
+        if (fields.length === 0) {
+            addEmptySubtask();
+        }
         setActiveTab('subtasks');
     }
   };
@@ -409,12 +441,16 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                           <FormField
                             control={form.control}
                             name={`subtasks.${index}.title`}
-                            render={({ field }) => (
+                            render={({ field: { ref, ...fieldProps } }) => (
                               <FormItem className="flex-grow">
                                 <FormControl>
                                   <Input 
                                     placeholder="Nhập tên công việc" 
-                                    {...field}
+                                    {...fieldProps}
+                                    ref={(el) => {
+                                      ref(el);
+                                      subtaskTitleRefs.current[index] = el;
+                                    }}
                                     className="border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0" 
                                   />
                                 </FormControl>
@@ -473,7 +509,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                 name={`subtasks.${index}.attachments`}
                                 render={() => (
                                     <FormItem>
-                                        <Button type="button" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="text-foreground bg-primary/10 hover:bg-primary/20">
+                                        <Button type="button" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 hover:bg-primary/20 text-foreground">
                                             <Paperclip className="mr-2 h-4 w-4" />
                                             Đính kèm tệp
                                         </Button>
@@ -590,25 +626,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
             variant="outline"
             size="sm"
             className="mt-2 hover:bg-primary hover:text-primary-foreground"
-            onClick={() => {
-                const newSubtask: Partial<Subtask> = { 
-                    title: "", 
-                    description: "", 
-                    attachments: [] 
-                };
-                if (taskType === 'deadline') {
-                    const now = new Date();
-                    const tomorrow = addDays(now, 1);
-                    const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-                    const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                    
-                    newSubtask.startDate = formatDate(now);
-                    newSubtask.startTime = formatTime(now);
-                    newSubtask.endDate = formatDate(tomorrow);
-                    newSubtask.endTime = formatTime(now);
-                }
-                append(newSubtask as Subtask);
-            }}
+            onClick={addEmptySubtask}
           >
             <Plus className="mr-2 h-4 w-4" />
             Thêm Công việc
