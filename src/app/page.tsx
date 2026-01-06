@@ -233,12 +233,11 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
-            <div className="space-y-2">
               <div className="flex items-center justify-around gap-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
-                      variant="outline"
+                      variant="ghost"
                       className="flex-1"
                       onClick={() => handleOpenNewTaskDialog('deadline')}
                     >
@@ -252,7 +251,7 @@ function TaskKanban() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
-                      variant="outline"
+                      variant="ghost"
                       className="flex-1"
                       onClick={() => handleOpenNewTaskDialog('recurring')}
                     >
@@ -266,7 +265,7 @@ function TaskKanban() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
-                      variant="outline"
+                      variant="ghost"
                       className="flex-1"
                       onClick={() => setIsStatsDialogOpen(true)}
                     >
@@ -277,20 +276,24 @@ function TaskKanban() {
                     Thống kê
                   </TooltipContent>
                 </Tooltip>
+                 {!isEditingName && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button 
+                                variant="ghost"
+                                size="icon" 
+                                className="h-8 w-8 text-sidebar-foreground/70"
+                                onClick={() => setIsEditingName(true)}
+                            >
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                            Sửa tên
+                        </TooltipContent>
+                    </Tooltip>
+                )}
               </div>
-              {!isEditingName && (
-                <div className="flex justify-center">
-                  <Button 
-                    variant="outline"
-                    size="icon" 
-                    className="h-8 w-8 text-sidebar-foreground/70"
-                    onClick={() => setIsEditingName(true)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
           </SidebarMenu>
           <Separator className="my-2" />
           <div className="px-2">
@@ -381,3 +384,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
