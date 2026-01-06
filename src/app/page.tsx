@@ -248,13 +248,13 @@ function TaskKanban() {
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
                         <Clock />
-                        <span>Nhiệm vụ Deadline</span>
+                        <span>Deadline</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
                         <Repeat />
-                        <span>Nhiệm vụ Lặp lại</span>
+                        <span>Lặp lại</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                 </div>
@@ -368,5 +368,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
