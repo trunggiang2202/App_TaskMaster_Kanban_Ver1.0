@@ -171,7 +171,11 @@ const taskSchema = z.object({
     path: ["startDate"],
 }).refine((data) => {
     if (data.subtasks && data.subtasks.length > 0) {
-      return data.subtasks.some(st => st.title && st.title.trim() !== '');
+      // Only enforce this validation if there are subtasks *with titles*.
+      const hasTitledSubtask = data.subtasks.some(st => st.title && st.title.trim() !== '');
+      if (hasTitledSubtask) {
+        return true;
+      }
     }
     return true;
 }, {
@@ -288,6 +292,12 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
 
   const handleSubmit = useCallback((data: TaskFormData) => {
+    // Final validation before submitting
+    if ((data.subtasks || []).length > 0 && !(data.subtasks || []).some(st => st.title && st.title.trim() !== '')) {
+      form.setError("subtasks", { type: "manual", message: "Nhiệm vụ phải có ít nhất một công việc." });
+      return;
+    }
+
     const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any } = {
         title: data.title,
         description: data.description,
@@ -338,7 +348,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       addTask(finalTask);
     }
     onOpenChange(false);
-  }, [taskToEdit, addTask, updateTask, onOpenChange]);
+  }, [taskToEdit, addTask, updateTask, onOpenChange, form]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
       const file = e.target.files?.[0];
@@ -410,7 +420,22 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     return 'border-muted';
   };
   
-  const isTaskTabInvalid = taskToEdit ? false : !form.formState.isValid;
+  const isTaskTabInvalid = useMemo(() => {
+      const state = form.getFieldState('title');
+      const startDateState = form.getFieldState('startDate');
+      const startTimeState = form.getFieldState('startTime');
+      const endDateState = form.getFieldState('endDate');
+      const endTimeState = form.getFieldState('endTime');
+      const recurringDaysState = form.getFieldState('recurringDays');
+  
+      if (taskType === 'deadline') {
+        return !!state.error || !!startDateState.error || !!startTimeState.error || !!endDateState.error || !!endTimeState.error;
+      }
+      if (taskType === 'recurring') {
+        return !!state.error || !!recurringDaysState.error;
+      }
+      return false;
+    }, [form.formState.errors, taskType]);
 
 
   const renderSubtasks = () => (
