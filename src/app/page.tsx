@@ -243,42 +243,31 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
-            <div className="flex w-full items-center gap-2">
-                <div className="flex flex-1 flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <SidebarMenuItem className="flex-1">
-                          <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
-                            <Clock />
-                            <span>Deadline</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem className="flex-1">
-                          <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
-                            <Repeat />
-                            <span>Lặp lại</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    </div>
-                </div>
-                <SidebarMenuItem>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton 
-                            variant="ghost" 
-                            size="icon" 
-                            className="w-10 h-10 transition-transform hover:scale-110" 
-                            onClick={() => setIsStatsDialogOpen(true)}
-                          >
-                              <BarChart3 />
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                          <p>Xem thống kê</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                </SidebarMenuItem>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                  <SidebarMenuItem className="flex-1">
+                    <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
+                      <Clock />
+                      <span>Deadline</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem className="flex-1">
+                    <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
+                      <Repeat />
+                      <span>Lặp lại</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+              </div>
+              <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    variant="ghost" 
+                    className="w-full justify-start" 
+                    onClick={() => setIsStatsDialogOpen(true)}
+                  >
+                      <BarChart3 />
+                      <span>Thống kê</span>
+                  </SidebarMenuButton>
+              </SidebarMenuItem>
             </div>
           </SidebarMenu>
           <Separator className="my-2" />
