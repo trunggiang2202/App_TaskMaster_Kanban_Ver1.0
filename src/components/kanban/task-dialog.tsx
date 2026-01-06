@@ -477,7 +477,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                       ref(el);
                                       subtaskTitleRefs.current[index] = el;
                                     }}
-                                    className="border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0" 
+                                    className="border-none bg-transparent shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0" 
                                   />
                                 </FormControl>
                                 <FormMessage className="pl-3" />
@@ -668,9 +668,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="pb-0">
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
-          {taskToEdit ? (
-            <DialogDescription>Cập nhật chi tiết nhiệm vụ của bạn.</DialogDescription>
-          ) : null}
+          {taskToEdit ? null : taskType === 'recurring' ? null : null}
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
@@ -858,5 +856,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
