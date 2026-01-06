@@ -412,7 +412,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     }
 
     if (isAfter(startDate, now)) {
-        return 'border-muted';
+        return 'border-primary';
     }
     
     return 'border-muted';
