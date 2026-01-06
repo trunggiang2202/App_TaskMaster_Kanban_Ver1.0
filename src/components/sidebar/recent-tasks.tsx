@@ -135,7 +135,7 @@ function TaskProgress({ task }: { task: Task }) {
     if (task.status === 'Done') return 'text-emerald-500';
     if (isOverdue) return 'text-destructive';
     if (isWarning) return 'text-destructive';
-    if (isUpcoming) return 'text-sky-500';
+    if (isUpcoming) return 'text-sidebar-foreground/80';
     return 'text-sidebar-foreground/80';
   };
 
