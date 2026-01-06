@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
@@ -410,7 +409,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                   <Input 
                                     placeholder="Nhập tên công việc" 
                                     {...field}
-                                    className="border-none bg-transparent shadow-none focus-visible:ring-0" 
+                                    className="border-none bg-transparent shadow-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0" 
                                   />
                                 </FormControl>
                                 <FormMessage className="pl-3" />
