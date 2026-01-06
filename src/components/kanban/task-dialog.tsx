@@ -229,18 +229,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       } else {
         const currentYear = String(new Date().getFullYear());
         const dateWithYearOnly = `__-__-${currentYear}`;
-        const defaultSubtasks = initialTaskType === 'deadline' 
-            ? [{ 
-                title: "", 
-                description: "", 
-                startDate: dateWithYearOnly,
-                startTime: '04:00', 
-                endDate: dateWithYearOnly,
-                endTime: '23:59', 
-                attachments: [] 
-              }]
-            : [];
-
+        
         form.reset({
           title: '',
           description: '',
@@ -250,7 +239,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           endDate: dateWithYearOnly,
           endTime: '23:59',
           recurringDays: [],
-          subtasks: initialTaskType === 'recurring' ? [] : defaultSubtasks,
+          subtasks: [],
         });
       }
     }
