@@ -243,30 +243,35 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                  <SidebarMenuItem className="flex-1">
-                    <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
-                      <Clock />
-                      <span>Deadline</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem className="flex-1">
-                    <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
-                      <Repeat />
-                      <span>Lặp lại</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-              </div>
-              <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    variant="ghost" 
-                    className="w-full justify-start" 
-                    onClick={() => setIsStatsDialogOpen(true)}
-                  >
-                      <BarChart3 />
-                      <span>Thống kê</span>
-                  </SidebarMenuButton>
+            <div className="flex items-center gap-2">
+              <SidebarMenuItem className="flex-1">
+                <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('deadline')} className="w-full">
+                  <Clock />
+                  <span>Deadline</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem className="flex-1">
+                <SidebarMenuButton onClick={() => handleOpenNewTaskDialog('recurring')} className="w-full">
+                  <Repeat />
+                  <span>Lặp lại</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton 
+                        variant="ghost" 
+                        size="icon"
+                        className="w-full"
+                        onClick={() => setIsStatsDialogOpen(true)}
+                      >
+                          <BarChart3 />
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      Thống kê
+                    </TooltipContent>
+                  </Tooltip>
               </SidebarMenuItem>
             </div>
           </SidebarMenu>
@@ -359,5 +364,7 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
 
     
