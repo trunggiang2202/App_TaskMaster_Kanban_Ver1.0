@@ -42,29 +42,29 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
             <Button
                 variant="outline"
                 className={cn(
-                    "h-24 justify-start p-4 text-left",
-                    selectedType === 'deadline' && 'bg-primary text-primary-foreground'
+                    "h-auto justify-start p-4 text-left flex-row items-center gap-3",
+                    selectedType === 'deadline' && 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
                 )}
                 onClick={() => handleSelect('deadline')}
             >
-                <Zap className="h-5 w-5 mr-3" />
+                <Zap className="h-5 w-5 shrink-0" />
                 <div className="flex flex-col">
                     <span className="font-semibold">Có deadline</span>
-                    <span className="text-xs text-muted-foreground">Ngày hết hạn cụ thể</span>
+                    <span className={cn("text-xs", selectedType === 'deadline' ? 'text-primary-foreground/80' : 'text-muted-foreground')}>Ngày hết hạn cụ thể</span>
                 </div>
             </Button>
             <Button
                 variant="outline"
                  className={cn(
-                    "h-24 justify-start p-4 text-left",
-                    selectedType === 'recurring' && 'bg-primary text-primary-foreground'
+                    "h-auto justify-start p-4 text-left flex-row items-center gap-3",
+                    selectedType === 'recurring' && 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
                 )}
                 onClick={() => handleSelect('recurring')}
             >
-                <Repeat className="h-5 w-5 mr-3" />
+                <Repeat className="h-5 w-5 shrink-0" />
                 <div className="flex flex-col">
                     <span className="font-semibold">Lặp lại</span>
-                    <span className="text-xs text-muted-foreground">Theo các ngày trong tuần</span>
+                    <span className={cn("text-xs", selectedType === 'recurring' ? 'text-primary-foreground/80' : 'text-muted-foreground')}>Theo các ngày trong tuần</span>
                 </div>
             </Button>
         </div>
