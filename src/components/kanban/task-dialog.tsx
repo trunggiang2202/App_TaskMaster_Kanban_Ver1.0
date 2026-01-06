@@ -365,10 +365,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     
     return 'border-muted';
   };
-
-  const isTaskTabInvalid = Object.keys(form.formState.errors).some(key =>
-    ['title', 'startDate', 'startTime', 'endDate', 'endTime', 'recurringDays', 'subtasks'].includes(key) && key !== 'subtasks'
-  ) || !!form.formState.errors.root;
+  
+  const isTaskTabInvalid = taskToEdit ? !form.formState.isValid : (!form.formState.isValid && form.formState.isDirty);
 
 
   const renderSubtasks = () => (
@@ -798,9 +796,3 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
-    
-
-    
-
