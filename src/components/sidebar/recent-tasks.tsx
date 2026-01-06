@@ -111,7 +111,7 @@ function TaskProgress({ task }: { task: Task }) {
           <div className={cn("flex items-center gap-2", isTaskForToday && "text-emerald-500 font-semibold")}>
             <Repeat size={12} className={cn(isTaskForToday && "animate-spin")} />
             <span>
-              {isTaskForToday ? 'Đang diễn ra' : `Lặp lại vào ${recurringDaysText}`}
+              {isTaskForToday ? 'Đang diễn ra' : 'Chưa bắt đầu'}
             </span>
           </div>
        </div>
@@ -230,5 +230,3 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
     </SidebarGroup>
   );
 }
-
-    
