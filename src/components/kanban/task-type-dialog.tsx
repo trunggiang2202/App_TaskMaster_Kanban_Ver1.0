@@ -6,13 +6,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Zap, Repeat } from 'lucide-react';
 import type { TaskType } from '@/lib/types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 interface TaskTypeDialogProps {
   isOpen: boolean;
@@ -33,11 +33,9 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Chọn loại nhiệm vụ</DialogTitle>
-          <DialogDescription>
-            Bạn muốn tạo một nhiệm vụ có hạn cuối cụ thể hay một nhiệm vụ lặp lại hàng tuần?
-          </DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+        <Separator />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             <button
                 className={cn(
                     "p-4 text-left rounded-lg border transition-all flex items-center gap-4",
