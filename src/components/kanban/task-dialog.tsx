@@ -670,8 +670,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
           {taskToEdit ? (
             <DialogDescription>Cập nhật chi tiết nhiệm vụ của bạn.</DialogDescription>
-          ) : taskType === 'recurring' ? (
-            <DialogDescription>Nhiệm vụ lặp lại vào các ngày cố định trong tuần.</DialogDescription>
           ) : null}
         </DialogHeader>
 
