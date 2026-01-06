@@ -135,7 +135,6 @@ function TaskProgress({ task }: { task: Task }) {
     if (task.status === 'Done') return 'text-emerald-500';
     if (isOverdue) return 'text-destructive';
     if (isWarning) return 'text-destructive';
-    if (isUpcoming) return 'text-sidebar-foreground/80';
     return 'text-sidebar-foreground/80';
   };
 
@@ -160,6 +159,7 @@ function TaskProgress({ task }: { task: Task }) {
           <div className={cn("flex items-center gap-2", isStarted && "text-emerald-500")}>
             <Calendar size={12} />
             <span>Bắt đầu: {formattedStartDate}</span>
+            {isUpcoming && <span>(Chưa bắt đầu)</span>}
             {isStarted && <span>(Đã bắt đầu)</span>}
           </div>
           {task.status === 'Done' ? (
