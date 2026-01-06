@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
@@ -249,7 +250,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           endDate: dateWithYearOnly,
           endTime: '23:59',
           recurringDays: [],
-          subtasks: defaultSubtasks,
+          subtasks: initialTaskType === 'recurring' ? [] : defaultSubtasks,
         });
       }
     }
@@ -641,7 +642,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <FormItem>
                           <FormLabel>Tên nhiệm vụ</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tên nhiệm vụ" {...field} className="bg-primary/5"/>
+                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-primary"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -742,7 +743,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                       <FormItem>
                         <FormLabel>Tên nhiệm vụ</FormLabel>
                         <FormControl>
-                          <Input placeholder="Tên nhiệm vụ" {...field} className="bg-primary/5"/>
+                          <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-primary"/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
