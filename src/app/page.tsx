@@ -229,63 +229,67 @@ function TaskKanban() {
                 )}
             </div>
             {isEditingName && nameError && <p className="text-destructive text-xs mt-1 absolute top-full left-4">{nameError}</p>}
-            {!isEditingName && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6 text-sidebar-foreground/70 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                onClick={() => setIsEditingName(true)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            )}
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2">
-            <div className="flex items-center justify-around gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton 
+            <div className="space-y-2">
+              <div className="flex items-center justify-around gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleOpenNewTaskDialog('deadline')}
+                    >
+                      <Clock />
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Nhiệm vụ có Deadline
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleOpenNewTaskDialog('recurring')}
+                    >
+                      <Repeat />
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Nhiệm vụ lặp lại
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton 
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setIsStatsDialogOpen(true)}
+                    >
+                      <BarChart3 />
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Thống kê
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              {!isEditingName && (
+                <div className="flex justify-center">
+                  <Button 
                     variant="outline"
-                    className="flex-1"
-                    onClick={() => handleOpenNewTaskDialog('deadline')}
+                    size="icon" 
+                    className="h-8 w-8 text-sidebar-foreground/70"
+                    onClick={() => setIsEditingName(true)}
                   >
-                    <Clock />
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Nhiệm vụ có Deadline
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton 
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleOpenNewTaskDialog('recurring')}
-                  >
-                    <Repeat />
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Nhiệm vụ lặp lại
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton 
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setIsStatsDialogOpen(true)}
-                  >
-                    <BarChart3 />
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Thống kê
-                </TooltipContent>
-              </Tooltip>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </SidebarMenu>
           <Separator className="my-2" />
