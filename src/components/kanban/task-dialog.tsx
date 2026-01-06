@@ -472,7 +472,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                 name={`subtasks.${index}.attachments`}
                                 render={() => (
                                     <FormItem>
-                                        <Button type="button" variant="ghost" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-foreground">
+                                        <Button type="button" variant="ghost" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 hover:bg-primary/20">
                                             <Paperclip className="mr-2 h-4 w-4" />
                                             Đính kèm tệp
                                         </Button>
@@ -813,6 +813,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
 
