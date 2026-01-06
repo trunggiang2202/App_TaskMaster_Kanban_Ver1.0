@@ -259,17 +259,17 @@ function TaskKanban() {
         <SidebarContent>
         <SidebarMenu className="px-2 grid grid-cols-4 gap-2">
             <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
-                <Clock className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+                <Clock className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
-                <Repeat className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+                <Repeat className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
-                <BarChart3 className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+                <BarChart3 className="h-4 w-4" />
             </IconButton>
             {!isEditingName && (
                 <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
-                    <Pencil className="h-4 w-4 transition-transform duration-200 group-hover:scale-125" />
+                    <Pencil className="h-4 w-4" />
                 </IconButton>
             )}
         </SidebarMenu>
