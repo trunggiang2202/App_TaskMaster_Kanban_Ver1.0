@@ -51,7 +51,6 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
                 <Zap className={cn("h-5 w-5 shrink-0", selectedType === 'deadline' && 'text-primary')} />
                 <div>
                     <p className={cn("font-semibold", selectedType === 'deadline' ? 'text-primary' : 'text-card-foreground')}>Có deadline</p>
-                    <p className="text-xs">Ngày hết hạn cụ thể</p>
                 </div>
             </button>
             <button
@@ -67,7 +66,6 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
                 <Repeat className={cn("h-5 w-5 shrink-0", selectedType === 'recurring' && 'text-primary')} />
                 <div>
                     <p className={cn("font-semibold", selectedType === 'recurring' ? 'text-primary' : 'text-card-foreground')}>Lặp lại</p>
-                    <p className="text-xs">Theo các ngày trong tuần</p>
                 </div>
             </button>
         </div>
