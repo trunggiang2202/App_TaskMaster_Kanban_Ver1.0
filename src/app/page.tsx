@@ -234,7 +234,7 @@ function TaskKanban() {
         <SidebarContent>
           <SidebarMenu className="px-2">
               <div className="flex items-center justify-around">
-                <TooltipProvider>
+                <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
