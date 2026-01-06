@@ -7,8 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Zap, Repeat } from 'lucide-react';
+import { Clock, Repeat } from 'lucide-react';
 import type { TaskType } from '@/lib/types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -46,7 +45,7 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
                 )}
                 onClick={() => handleSelect('deadline')}
             >
-                <Zap className={cn("h-5 w-5 shrink-0", selectedType === 'deadline' && 'text-primary')} />
+                <Clock className={cn("h-5 w-5 shrink-0", selectedType === 'deadline' && 'text-primary')} />
                 <div>
                     <p className={cn("font-semibold", selectedType === 'deadline' ? 'text-primary' : 'text-card-foreground')}>Có deadline</p>
                 </div>
