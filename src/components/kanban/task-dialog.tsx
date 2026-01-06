@@ -472,7 +472,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                 name={`subtasks.${index}.attachments`}
                                 render={() => (
                                     <FormItem>
-                                        <Button type="button" variant="ghost" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 text-primary hover:bg-primary/20">
+                                        <Button type="button" variant="ghost" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-foreground">
                                             <Paperclip className="mr-2 h-4 w-4" />
                                             Đính kèm tệp
                                         </Button>
@@ -645,7 +645,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <FormItem>
                           <FormLabel>Tên nhiệm vụ</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-0 focus-visible:ring-offset-0"/>
+                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -747,7 +747,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                       <FormItem>
                         <FormLabel>Tên nhiệm vụ</FormLabel>
                         <FormControl>
-                          <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5 focus-visible:ring-0 focus-visible:ring-offset-0"/>
+                          <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5"/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -813,5 +813,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
