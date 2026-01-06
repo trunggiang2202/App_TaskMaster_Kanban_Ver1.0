@@ -588,7 +588,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
             type="button"
             variant="outline"
             size="sm"
-            className="mt-2"
+            className="mt-2 hover:bg-primary hover:text-primary-foreground"
             onClick={() => {
                 const currentYear = String(new Date().getFullYear());
                 const dateWithYearOnly = `__-__-${currentYear}`;
@@ -810,4 +810,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   );
 }
 
+    
     
