@@ -49,6 +49,7 @@ const attachmentSchema = z.object({
 });
 
 const subtaskSchema = z.object({
+  id: z.string().optional(),
   title: z.string().optional(),
   description: z.string().optional(),
   startDate: z.string().optional(),
@@ -234,6 +235,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           endTime: taskToEdit.endDate ? new Date(taskToEdit.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
           recurringDays: taskToEdit.recurringDays || [],
           subtasks: taskToEdit.subtasks.map(st => ({
+              id: st.id,
               title: st.title,
               description: st.description || '',
               startDate: st.startDate ? new Date(st.startDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-') : '',
@@ -314,26 +316,32 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         task.endDate = taskEndDate;
         task.subtasks = data.subtasks ? data.subtasks
             .filter(st => st.title && st.title.trim() !== '')
-            .map((st, index) => ({
-                id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
-                title: st.title ?? '',
-                description: st.description,
-                completed: taskToEdit?.subtasks[index]?.completed || false,
-                startDate: parseDateTime(st.startDate, st.startTime) as Date,
-                endDate: parseDateTime(st.endDate, st.endTime) as Date,
-                attachments: st.attachments,
-            })) : [];
+            .map((st) => {
+                const originalSubtask = taskToEdit?.subtasks.find(original => original.id === st.id);
+                return {
+                    id: st.id || crypto.randomUUID(),
+                    title: st.title ?? '',
+                    description: st.description,
+                    completed: originalSubtask?.completed || false,
+                    startDate: parseDateTime(st.startDate, st.startTime) as Date,
+                    endDate: parseDateTime(st.endDate, st.endTime) as Date,
+                    attachments: st.attachments,
+                };
+            }) : [];
     } else { // recurring
         task.recurringDays = data.recurringDays;
         task.subtasks = data.subtasks ? data.subtasks
             .filter(st => st.title && st.title.trim() !== '')
-            .map((st, index) => ({
-                id: taskToEdit?.subtasks[index]?.id || crypto.randomUUID(),
-                title: st.title ?? '',
-                description: st.description,
-                completed: taskToEdit?.subtasks[index]?.completed || false,
-                attachments: st.attachments,
-            })) : [];
+            .map((st) => {
+                const originalSubtask = taskToEdit?.subtasks.find(original => original.id === st.id);
+                return {
+                    id: st.id || crypto.randomUUID(),
+                    title: st.title ?? '',
+                    description: st.description,
+                    completed: originalSubtask?.completed || false,
+                    attachments: st.attachments,
+                };
+            }) : [];
     }
     
     const finalTask: Task = {
@@ -384,11 +392,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   const subtasksFromForm = form.watch('subtasks');
   
   const uncompletedSubtasksCount = useMemo(() => {
-    const allSubtasks = taskToEdit?.subtasks || [];
-    return (subtasksFromForm || []).filter((st, index) => {
-      const originalSubtask = allSubtasks[index];
-      const isCompleted = originalSubtask ? originalSubtask.completed : false;
-      return !isCompleted && st.title && st.title.trim() !== '';
+    return (subtasksFromForm || []).filter((st) => {
+      const originalSubtask = taskToEdit?.subtasks.find(original => original.id === st.id);
+      return originalSubtask ? !originalSubtask.completed : (st.title && st.title.trim() !== '');
     }).length;
   }, [subtasksFromForm, taskToEdit]);
 
@@ -399,7 +405,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     const subtask = form.watch(`subtasks.${index}`);
     const now = new Date();
 
-    const isCompleted = taskToEdit?.subtasks[index]?.completed || false;
+    const originalSubtask = taskToEdit?.subtasks.find(original => original.id === subtask.id);
+    const isCompleted = originalSubtask ? originalSubtask.completed : false;
+
     if (isCompleted) return 'border-chart-2';
 
     const startDate = parseDateTime(subtask.startDate, subtask.startTime);
@@ -856,7 +864,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
 
     

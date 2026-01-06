@@ -30,3 +30,5 @@ export interface Task {
   recurringDays?: number[]; // 0 (Sun) to 6 (Sat)
   lastCompletedAt?: Date;
 }
+
+    
