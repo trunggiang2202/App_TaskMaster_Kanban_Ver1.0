@@ -397,7 +397,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
     if (isCompleted) return 'border-chart-2';
     
-    if (taskType === 'recurring') return 'border-muted';
+    if (taskType === 'recurring') return 'border-primary';
 
     const startDate = parseDateTime(subtask.startDate, subtask.startTime);
     const endDate = parseDateTime(subtask.endDate, subtask.endTime);
@@ -852,5 +852,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
