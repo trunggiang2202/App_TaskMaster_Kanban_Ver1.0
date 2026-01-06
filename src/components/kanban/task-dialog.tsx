@@ -293,7 +293,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
   const handleSubmit = useCallback((data: TaskFormData) => {
     // Final validation before submitting
-    if ((data.subtasks || []).length > 0 && !(data.subtasks || []).some(st => st.title && st.title.trim() !== '')) {
+    const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
+    if ((data.subtasks || []).length > 0 && !hasTitledSubtask) {
       form.setError("subtasks", { type: "manual", message: "Nhiệm vụ phải có ít nhất một công việc." });
       return;
     }
@@ -421,21 +422,23 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   };
   
   const isTaskTabInvalid = useMemo(() => {
-      const state = form.getFieldState('title');
-      const startDateState = form.getFieldState('startDate');
-      const startTimeState = form.getFieldState('startTime');
-      const endDateState = form.getFieldState('endDate');
-      const endTimeState = form.getFieldState('endTime');
-      const recurringDaysState = form.getFieldState('recurringDays');
-  
-      if (taskType === 'deadline') {
-        return !!state.error || !!startDateState.error || !!startTimeState.error || !!endDateState.error || !!endTimeState.error;
-      }
-      if (taskType === 'recurring') {
-        return !!state.error || !!recurringDaysState.error;
-      }
-      return false;
-    }, [form.formState.errors, taskType]);
+    const state = form.getFieldState('title');
+    const startDateState = form.getFieldState('startDate');
+    const startTimeState = form.getFieldState('startTime');
+    const endDateState = form.getFieldState('endDate');
+    const endTimeState = form.getFieldState('endTime');
+    const recurringDaysState = form.getFieldState('recurringDays');
+
+    if (taskToEdit) return false;
+
+    if (taskType === 'deadline') {
+      return !form.formState.isValid;
+    }
+    if (taskType === 'recurring') {
+       return !form.formState.isValid;
+    }
+    return false;
+  }, [form.formState, taskType, taskToEdit]);
 
 
   const renderSubtasks = () => (
@@ -646,9 +649,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
             </Accordion>
           <Button
             type="button"
-            variant="outline"
+            variant="default"
             size="sm"
-            className="mt-2 hover:bg-primary hover:text-primary-foreground"
+            className="mt-2"
             onClick={addEmptySubtask}
           >
             <Plus className="mr-2 h-4 w-4" />
