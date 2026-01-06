@@ -198,9 +198,9 @@ function TaskKanban() {
       <Sidebar>
         <SidebarHeader className="p-4 group">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 min-w-0 relative">
+            <div className="flex items-center gap-1 relative">
                 {isEditingName ? (
-                    <div className="w-full">
+                    <div className="w-full relative">
                         <Input
                         type="text"
                         value={userName || ''}
