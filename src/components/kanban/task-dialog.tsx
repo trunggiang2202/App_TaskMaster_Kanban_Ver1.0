@@ -242,6 +242,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         const tomorrow = addDays(now, 1);
         
         const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
         form.reset({
           title: '',
@@ -472,7 +473,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                 name={`subtasks.${index}.attachments`}
                                 render={() => (
                                     <FormItem>
-                                        <Button type="button" variant="ghost" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 hover:bg-primary/20">
+                                        <Button type="button" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="text-foreground bg-primary/10 hover:bg-primary/20">
                                             <Paperclip className="mr-2 h-4 w-4" />
                                             Đính kèm tệp
                                         </Button>
@@ -813,6 +814,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
 
