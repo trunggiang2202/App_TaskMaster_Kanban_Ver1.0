@@ -43,28 +43,28 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
                 variant="outline"
                 className={cn(
                     "h-auto justify-start p-4 text-left flex-row items-center gap-3",
-                    selectedType === 'deadline' && 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
+                    selectedType === 'deadline' && 'border-primary ring-2 ring-primary'
                 )}
                 onClick={() => handleSelect('deadline')}
             >
                 <Zap className="h-5 w-5 shrink-0" />
                 <div className="flex flex-col">
                     <span className="font-semibold">Có deadline</span>
-                    <span className={cn("text-xs", selectedType === 'deadline' ? 'text-primary-foreground/80' : 'text-muted-foreground')}>Ngày hết hạn cụ thể</span>
+                    <span className={cn("text-xs", selectedType === 'deadline' ? 'text-primary' : 'text-muted-foreground')}>Ngày hết hạn cụ thể</span>
                 </div>
             </Button>
             <Button
                 variant="outline"
                  className={cn(
                     "h-auto justify-start p-4 text-left flex-row items-center gap-3",
-                    selectedType === 'recurring' && 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
+                    selectedType === 'recurring' && 'border-primary ring-2 ring-primary'
                 )}
                 onClick={() => handleSelect('recurring')}
             >
                 <Repeat className="h-5 w-5 shrink-0" />
                 <div className="flex flex-col">
                     <span className="font-semibold">Lặp lại</span>
-                    <span className={cn("text-xs", selectedType === 'recurring' ? 'text-primary-foreground/80' : 'text-muted-foreground')}>Theo các ngày trong tuần</span>
+                    <span className={cn("text-xs", selectedType === 'recurring' ? 'text-primary' : 'text-muted-foreground')}>Theo các ngày trong tuần</span>
                 </div>
             </Button>
         </div>
