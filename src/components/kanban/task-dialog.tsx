@@ -238,20 +238,19 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           })),
         });
       } else {
-         const now = new Date();
+        const now = new Date();
         const tomorrow = addDays(now, 1);
         
         const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-        const formatTime = (date: Date) => date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
         form.reset({
           title: '',
           description: '',
           taskType: initialTaskType,
           startDate: formatDate(now),
-          startTime: formatTime(now),
+          startTime: '04:00',
           endDate: formatDate(tomorrow),
-          endTime: formatTime(now),
+          endTime: '23:59',
           recurringDays: [],
           subtasks: [],
         });
@@ -415,7 +414,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                   <Input 
                                     placeholder="Nhập tên công việc" 
                                     {...field}
-                                    className="border-none bg-transparent shadow-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0" 
+                                    className="border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0" 
                                   />
                                 </FormControl>
                                 <FormMessage className="pl-3" />
