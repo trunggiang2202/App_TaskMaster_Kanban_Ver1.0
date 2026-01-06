@@ -765,7 +765,12 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                     className="grid grid-cols-4 sm:grid-cols-7 gap-2"
                                 >
                                     {WEEKDAY_INDICES.map((dayIndex, arrayIndex) => (
-                                        <ToggleGroupItem key={dayIndex} value={String(dayIndex)} aria-label={`Toggle ${WEEKDAY_ABBREVIATIONS[arrayIndex]}`}>
+                                        <ToggleGroupItem 
+                                          key={dayIndex} 
+                                          value={String(dayIndex)} 
+                                          aria-label={`Toggle ${WEEKDAY_ABBREVIATIONS[arrayIndex]}`}
+                                          className="bg-primary/5 border-primary/20 hover:bg-primary/10 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                                        >
                                             {WEEKDAY_ABBREVIATIONS[arrayIndex]}
                                         </ToggleGroupItem>
                                     ))}
@@ -804,5 +809,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
 
     
