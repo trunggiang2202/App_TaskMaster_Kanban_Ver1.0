@@ -25,33 +25,6 @@ import type { TaskType, Task } from '@/lib/types';
 
 type FilterType = 'all' | 'today' | 'week';
 
-interface GradientButtonProps {
-  onClick: () => void;
-  tooltip: string;
-  children: React.ReactNode;
-}
-
-const GradientButton: React.FC<GradientButtonProps> = ({ onClick, tooltip, children }) => (
-  <TooltipProvider delayDuration={0}>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={onClick}
-          className="relative p-2 rounded-lg bg-sidebar-accent/80 hover:bg-sidebar-accent/100 transition-colors"
-        >
-          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 opacity-50 group-hover:opacity-75 transition-opacity"></div>
-          <div className="relative text-sidebar-foreground">
-            {children}
-          </div>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">
-        <p>{tooltip}</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
-
 
 function TaskKanban() {
   const { tasks, selectedTaskId, setSelectedTaskId } = useTasks();
@@ -266,21 +239,43 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
         <SidebarMenu className="px-2">
-          <div className="group flex items-center justify-around">
-            <GradientButton onClick={() => handleOpenNewTaskDialog('deadline')} tooltip="Nhiệm vụ có Deadline">
-              <Clock className="h-4 w-4" />
-            </GradientButton>
-            <GradientButton onClick={() => handleOpenNewTaskDialog('recurring')} tooltip="Nhiệm vụ lặp lại">
-              <Repeat className="h-4 w-4" />
-            </GradientButton>
-            <GradientButton onClick={() => setIsStatsDialogOpen(true)} tooltip="Thống kê">
-              <BarChart3 className="h-4 w-4" />
-            </GradientButton>
-            {!isEditingName && (
-              <GradientButton onClick={() => setIsEditingName(true)} tooltip="Sửa tên">
-                <Pencil className="h-4 w-4" />
-              </GradientButton>
-            )}
+          <div className="flex items-center justify-around p-1 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" onClick={() => handleOpenNewTaskDialog('deadline')}>
+                            <Clock className="h-5 w-5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom"><p>Nhiệm vụ có Deadline</p></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" onClick={() => handleOpenNewTaskDialog('recurring')}>
+                            <Repeat className="h-5 w-5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom"><p>Nhiệm vụ lặp lại</p></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" onClick={() => setIsStatsDialogOpen(true)}>
+                            <BarChart3 className="h-5 w-5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom"><p>Thống kê</p></TooltipContent>
+                </Tooltip>
+                {!isEditingName && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white" onClick={() => setIsEditingName(true)}>
+                                <Pencil className="h-5 w-5" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom"><p>Sửa tên</p></TooltipContent>
+                    </Tooltip>
+                )}
+            </TooltipProvider>
           </div>
         </SidebarMenu>
           <Separator className="my-2" />
@@ -372,5 +367,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
