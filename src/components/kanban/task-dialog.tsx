@@ -666,15 +666,13 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
-        <DialogHeader>
+        <DialogHeader className="pb-0">
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
           {taskToEdit ? (
             <DialogDescription>Cập nhật chi tiết nhiệm vụ của bạn.</DialogDescription>
           ) : taskType === 'recurring' ? (
             <DialogDescription>Nhiệm vụ lặp lại vào các ngày cố định trong tuần.</DialogDescription>
-          ) : (
-            <Separator />
-          )}
+          ) : null}
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
