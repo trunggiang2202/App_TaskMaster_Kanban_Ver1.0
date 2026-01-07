@@ -159,14 +159,14 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
 
   const statsData = [
     { 
-      status: 'Đang làm', 
-      tasks: stats.inProgress, 
-      icon: <Clock className="h-5 w-5 text-amber-500" />,
-    },
-    { 
       status: 'Chưa bắt đầu', 
       tasks: stats.upcoming, 
       icon: <Circle className="h-5 w-5 text-primary" />,
+    },
+    { 
+      status: 'Đang làm', 
+      tasks: stats.inProgress, 
+      icon: <Clock className="h-5 w-5 text-amber-500" />,
     },
     { 
       status: 'Đã xong', 
