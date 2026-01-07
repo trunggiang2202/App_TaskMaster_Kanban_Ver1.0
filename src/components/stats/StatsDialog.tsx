@@ -193,7 +193,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
             Thống kê công việc
           </DialogTitle>
         </DialogHeader>
-        <Separator />
+        <Separator className="bg-border" />
         
         <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-primary/10">
@@ -213,7 +213,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                 <span className="text-foreground">{stats.total}</span>
             </div>
 
-            <Separator />
+            <Separator className="bg-border" />
             <Accordion type="multiple" className="w-full">
               {displayedStats.map((item) => (
                 <AccordionItem value={item.status} key={item.status}>
