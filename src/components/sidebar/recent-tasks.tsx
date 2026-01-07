@@ -222,6 +222,8 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
     <SidebarGroup>
       <div className="space-y-3 px-2 pt-2">
         {recentTasks.map(task => {
+          const completedSubtasks = task.subtasks.filter(st => st.completed).length;
+          const totalSubtasks = task.subtasks.length;
           return (
             <div 
               key={task.id}
@@ -232,7 +234,14 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
               )}
             >
               <div className="flex justify-between items-start">
-                <p className="text-sm text-sidebar-foreground truncate pr-6">{task.title}</p>
+                <p className="text-sm text-sidebar-foreground flex-grow truncate pr-1">
+                  {task.title}
+                  {totalSubtasks > 0 && (
+                    <span className="text-sidebar-foreground/70 ml-2">
+                      ({completedSubtasks}/{totalSubtasks})
+                    </span>
+                  )}
+                </p>
               </div>
               
               <TaskProgress 
