@@ -6,7 +6,6 @@ import type { Task, Subtask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, getDay } from 'date-fns';
 import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, ChevronDown, Repeat } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
@@ -205,12 +204,6 @@ type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong';
 
 type CategorizedSubtasks = Record<SubtaskStatus, Subtask[]>;
 
-const initialCategorizedSubtasks: CategorizedSubtasks = {
-  'Chưa làm': [],
-  'Đang làm': [],
-  'Xong': [],
-};
-
 export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const { deleteTask, toggleSubtask } = useTasks();
   const [selectedSubtask, setSelectedSubtask] = React.useState<Subtask | null>(null);
@@ -234,43 +227,48 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   };
   
   const categorizedSubtasks = React.useMemo<CategorizedSubtasks>(() => {
-    if (task.taskType === 'recurring') {
-      return initialCategorizedSubtasks;
-    }
     const categories: CategorizedSubtasks = {
       'Chưa làm': [],
       'Đang làm': [],
       'Xong': [],
     };
     
+    const todayDay = getDay(currentTime);
+    const isRecurringToday = task.taskType === 'recurring' && task.recurringDays?.includes(todayDay);
+
     task.subtasks.forEach(st => {
       if (st.completed) {
         categories['Xong'].push(st);
-      } else if (st.startDate && isAfter(currentTime, st.startDate)) {
+      } else if (task.taskType === 'deadline' && st.startDate && isAfter(currentTime, st.startDate)) {
         categories['Đang làm'].push(st);
-      } else {
+      } else if (task.taskType === 'recurring' && isRecurringToday) {
+        categories['Đang làm'].push(st);
+      }
+      else {
         categories['Chưa làm'].push(st);
       }
     });
     return categories;
-  }, [task.subtasks, task.taskType, currentTime]);
+  }, [task.subtasks, task.taskType, task.recurringDays, currentTime]);
 
 
   const now = new Date();
 
   const getSubtaskStyling = (subtask: Subtask, columnTitle?: SubtaskStatus) => {
     if (subtask.completed) {
-        const wasOverdue = subtask.endDate && isBefore(subtask.endDate, now);
+        const wasOverdue = task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now);
         return wasOverdue ? 'border-l-4 border-destructive' : 'border-l-4 border-chart-2';
     }
-    if (task.taskType === 'recurring') {
-      return task.recurringDays?.includes(getDay(new Date())) ? 'border-l-4 border-accent' : 'border-l-4 border-primary';
+    
+    if (columnTitle === 'Đang làm') {
+        if (task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now)) {
+          return 'border-l-4 border-destructive'; // Overdue for deadline tasks
+        }
+        return 'border-l-4 border-accent'; // In Progress for both types
     }
-    if (columnTitle === 'Đang làm' && subtask.endDate && isBefore(subtask.endDate, now)) {
-      return 'border-l-4 border-destructive';
+    if (columnTitle === 'Chưa làm') {
+        return 'border-l-4 border-primary';
     }
-    if (columnTitle === 'Đang làm') return 'border-l-4 border-accent';
-    if (columnTitle === 'Chưa làm') return 'border-l-4 border-primary';
     return 'border-l-4 border-muted';
   };
 
@@ -320,7 +318,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
             </div>
         </div>
         
-        <Separator />
+        <div className="my-1 h-px bg-slate-300 dark:bg-slate-700" />
 
         <div className="space-y-6">
             <div className="p-4 rounded-md border bg-primary/10">
@@ -345,76 +343,49 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
             </div>
             <div className="space-y-4">
               <Progress value={subtaskProgress} className="h-2 bg-border" indicatorClassName="bg-primary" />
-
-              {task.taskType === 'deadline' ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  {kanbanColumns.map(column => (
-                    <div key={column.title} className="flex flex-col">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <h3 className={`font-semibold text-sm ${column.titleColor}`}>{column.title} ({column.subtasks.length})</h3>
-                      </div>
-                      <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
-                        {column.subtasks.length > 0 ? (
-                          column.subtasks.map(st => {
-                            const isOverdue = column.title === 'Đang làm' && !st.completed && !!st.endDate && isBefore(st.endDate, now);
-                            return (
-                              <Card 
-                                  key={st.id} 
-                                  className={cn(
-                                      "bg-background shadow-sm border transition-colors",
-                                      getSubtaskStyling(st, column.title)
-                                  )}
-                              >
-                                <CardContent className="p-3">
-                                  <SubtaskItem 
-                                      subtask={st}
-                                      taskType={task.taskType}
-                                      onToggle={(subtaskId) => toggleSubtask(task.id, subtaskId)}
-                                      onTitleClick={() => handleSubtaskClick(st)}
-                                      isClickable={column.isClickable}
-                                      isInProgress={column.title === 'Đang làm'}
-                                      isOverdue={isOverdue}
-                                  />
-                                </CardContent>
-                              </Card>
-                            )
-                          })
-                        ) : (
-                          <div className="flex items-center justify-center h-full">
-                            <p className="text-xs text-muted-foreground">Không có công việc</p>
-                          </div>
-                        )}
-                      </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {kanbanColumns.map(column => (
+                  <div key={column.title} className="flex flex-col">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <h3 className={`font-semibold text-sm ${column.titleColor}`}>{column.title} ({column.subtasks.length})</h3>
                     </div>
-                  ))}
-                </div>
-              ) : ( // Recurring Task View
-                <div className="bg-accent/5 rounded-lg p-2 space-y-2 min-h-24">
-                  {task.subtasks.map(st => (
-                    <Card
-                      key={st.id}
-                      className={cn(
-                        "bg-background shadow-sm border transition-colors",
-                        getSubtaskStyling(st)
+                    <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
+                      {column.subtasks.length > 0 ? (
+                        column.subtasks.map(st => {
+                          const isOverdue = column.title === 'Đang làm' && task.taskType === 'deadline' && !st.completed && !!st.endDate && isBefore(st.endDate, now);
+                          const isInProgress = column.title === 'Đang làm' || (task.taskType === 'recurring' && task.recurringDays?.includes(getDay(now)) || false);
+                          return (
+                            <Card 
+                                key={st.id} 
+                                className={cn(
+                                    "bg-background shadow-sm border transition-colors",
+                                    getSubtaskStyling(st, column.title)
+                                )}
+                            >
+                              <CardContent className="p-3">
+                                <SubtaskItem 
+                                    subtask={st}
+                                    taskType={task.taskType}
+                                    recurringDays={task.recurringDays}
+                                    onToggle={(subtaskId) => toggleSubtask(task.id, subtaskId)}
+                                    onTitleClick={() => handleSubtaskClick(st)}
+                                    isClickable={column.isClickable || (task.taskType === 'recurring' && isInProgress)}
+                                    isInProgress={isInProgress}
+                                    isOverdue={isOverdue}
+                                />
+                              </CardContent>
+                            </Card>
+                          )
+                        })
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-xs text-muted-foreground">Không có công việc</p>
+                        </div>
                       )}
-                    >
-                      <CardContent className="p-3">
-                        <SubtaskItem
-                          subtask={st}
-                          taskType={task.taskType}
-                          recurringDays={task.recurringDays}
-                          onToggle={(subtaskId) => toggleSubtask(task.id, subtaskId)}
-                          onTitleClick={() => handleSubtaskClick(st)}
-                          isClickable={true}
-                          isInProgress={task.recurringDays?.includes(getDay(new Date())) || false}
-                          isOverdue={false}
-                        />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -433,5 +404,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
 
+
+    
 
     
