@@ -21,16 +21,16 @@ import {
 } from "@/components/ui/accordion"
 import { Button } from '../ui/button';
 
-interface SubtaskWithParent extends Subtask {
-  parentTaskTitle: string;
-  parentTaskId: string;
+interface TaskInfo {
+  id: string;
+  title: string;
 }
 
-interface SubtaskStats {
-  inProgress: SubtaskWithParent[];
-  upcoming: SubtaskWithParent[];
-  done: SubtaskWithParent[];
-  overdue: SubtaskWithParent[];
+interface TaskStats {
+  inProgress: TaskInfo[];
+  upcoming: TaskInfo[];
+  done: TaskInfo[];
+  overdue: TaskInfo[];
   total: number;
 }
 
@@ -46,13 +46,21 @@ interface StatsDialogProps {
 export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: StatsDialogProps) {
   const [filter, setFilter] = React.useState<StatsFilter>('all');
 
-  const stats = React.useMemo<SubtaskStats>(() => {
+  const stats = React.useMemo<TaskStats>(() => {
     const now = new Date();
     const today = startOfDay(now);
     
-    const initialStats: SubtaskStats = { inProgress: [], upcoming: [], done: [], overdue: [], total: 0 };
+    const initialStats: TaskStats = { inProgress: [], upcoming: [], done: [], overdue: [], total: 0 };
+    const taskSets = {
+        inProgress: new Map<string, string>(),
+        upcoming: new Map<string, string>(),
+        done: new Map<string, string>(),
+        overdue: new Map<string, string>(),
+    };
+
 
     tasks.forEach(task => {
+      let totalSubtasksInFilter = 0;
       task.subtasks.forEach(subtask => {
         let include = false;
         if (filter === 'all') {
@@ -62,31 +70,41 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
           if (filter === 'today' && isToday(subtaskDate)) include = true;
           if (filter === 'week' && isThisWeek(subtaskDate, { weekStartsOn: 1 })) include = true;
           if (filter === 'month' && isThisMonth(subtaskDate)) include = true;
+        } else if (filter !== 'all' && task.taskType === 'recurring') {
+            // Include recurring tasks for today/week/month filters if they are active
+            const dateToTest = new Date();
+            if (filter === 'today' && isToday(dateToTest)) include = true;
+            if (filter === 'week' && isThisWeek(dateToTest, { weekStartsOn: 1 })) include = true;
+            if (filter === 'month' && isThisMonth(dateToTest)) include = true;
         }
         
         if (include) {
-            initialStats.total++;
-            const subtaskWithParent: SubtaskWithParent = { ...subtask, parentTaskTitle: task.title, parentTaskId: task.id };
-
+            totalSubtasksInFilter++;
             if (subtask.completed) {
-              initialStats.done.push(subtaskWithParent);
+              taskSets.done.set(task.id, task.title);
             } else if (!subtask.startDate || !subtask.endDate) {
-              initialStats.upcoming.push(subtaskWithParent);
+              taskSets.upcoming.set(task.id, task.title);
             } else if (isBefore(today, startOfDay(subtask.startDate))) {
-              initialStats.upcoming.push(subtaskWithParent);
+              taskSets.upcoming.set(task.id, task.title);
             } else if (isAfter(now, subtask.endDate)) {
-              initialStats.overdue.push(subtaskWithParent);
+              taskSets.overdue.set(task.id, task.title);
             } else {
-              initialStats.inProgress.push(subtaskWithParent);
+              taskSets.inProgress.set(task.id, task.title);
             }
         }
       });
+      initialStats.total += totalSubtasksInFilter;
     });
+    
+    initialStats.inProgress = Array.from(taskSets.inProgress, ([id, title]) => ({ id, title }));
+    initialStats.upcoming = Array.from(taskSets.upcoming, ([id, title]) => ({ id, title }));
+    initialStats.done = Array.from(taskSets.done, ([id, title]) => ({ id, title }));
+    initialStats.overdue = Array.from(taskSets.overdue, ([id, title]) => ({ id, title }));
 
     return initialStats;
   }, [tasks, filter]);
   
-  const handleSubtaskClick = (taskId: string) => {
+  const handleTaskClick = (taskId: string) => {
     onTaskSelect(taskId);
     onOpenChange(false);
   };
@@ -94,22 +112,22 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
   const statsData = [
     { 
       status: 'Đang làm', 
-      subtasks: stats.inProgress, 
+      tasks: stats.inProgress, 
       icon: <Clock className="h-5 w-5 text-amber-500" />,
     },
     { 
       status: 'Sắp làm', 
-      subtasks: stats.upcoming, 
+      tasks: stats.upcoming, 
       icon: <Circle className="h-5 w-5 text-sky-500" />,
     },
     { 
       status: 'Đã xong', 
-      subtasks: stats.done,
+      tasks: stats.done,
       icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />,
     },
     { 
       status: 'Quá hạn', 
-      subtasks: stats.overdue, 
+      tasks: stats.overdue, 
       icon: <AlertTriangle className="h-5 w-5 text-destructive" />,
     },
   ];
@@ -153,24 +171,21 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                               {item.icon}
                               <span className="font-medium text-foreground">{item.status}</span>
                           </div>
-                          <span className="text-foreground pr-2">{item.subtasks.length}</span>
+                          <span className="text-foreground pr-2">{item.tasks.length}</span>
                       </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-2 pt-2">
-                    {item.subtasks.length > 0 ? (
+                    {item.tasks.length > 0 ? (
                       <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
-                        {item.subtasks.map((subtask) => (
+                        {item.tasks.map((task) => (
                           <Button
-                            key={subtask.id} 
+                            key={task.id} 
                             variant="outline"
                             className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-muted/50 rounded-md border"
-                            onClick={() => handleSubtaskClick(subtask.parentTaskId)}
+                            onClick={() => handleTaskClick(task.id)}
                           >
                             <div>
-                              <p className="font-medium text-foreground truncate">{subtask.title}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                Nhiệm vụ: {subtask.parentTaskTitle}
-                              </p>
+                              <p className="font-medium text-foreground truncate">{task.title}</p>
                             </div>
                           </Button>
                         ))}
