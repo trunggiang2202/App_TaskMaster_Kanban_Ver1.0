@@ -9,9 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { isBefore, isAfter, startOfDay } from 'date-fns';
+import { isBefore, isAfter, startOfDay, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SubtaskStats {
   inProgress: number;
@@ -21,6 +22,8 @@ interface SubtaskStats {
   total: number;
 }
 
+type StatsFilter = 'all' | 'today' | 'week' | 'month';
+
 interface StatsDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -28,13 +31,32 @@ interface StatsDialogProps {
 }
 
 export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
+  const [filter, setFilter] = React.useState<StatsFilter>('all');
+
+  const filteredTasks = React.useMemo(() => {
+    if (filter === 'all') return tasks;
+    
+    return tasks.map(task => {
+      const subtasks = task.subtasks.filter(st => {
+        if (!st.startDate) return false;
+        const subtaskDate = new Date(st.startDate);
+        if (filter === 'today') return isToday(subtaskDate);
+        if (filter === 'week') return isThisWeek(subtaskDate, { weekStartsOn: 1 });
+        if (filter === 'month') return isThisMonth(subtaskDate);
+        return false;
+      });
+      return { ...task, subtasks };
+    }).filter(task => task.subtasks.length > 0);
+
+  }, [tasks, filter]);
+
   const stats = React.useMemo<SubtaskStats>(() => {
     const now = new Date();
     const today = startOfDay(now);
     
     const initialStats: SubtaskStats = { inProgress: 0, upcoming: 0, done: 0, overdue: 0, total: 0 };
 
-    return tasks.reduce((acc, task) => {
+    return filteredTasks.reduce((acc, task) => {
       acc.total += task.subtasks.length;
       task.subtasks.forEach(subtask => {
         if (subtask.completed) {
@@ -52,7 +74,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
 
       return acc;
     }, initialStats);
-  }, [tasks]);
+  }, [filteredTasks]);
 
   const statsData = [
     { 
@@ -87,6 +109,15 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
           </DialogTitle>
         </DialogHeader>
         
+        <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full pt-2">
+          <TabsList className="grid w-full grid-cols-4 bg-primary/10">
+            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tất cả</TabsTrigger>
+            <TabsTrigger value="today" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Hôm nay</TabsTrigger>
+            <TabsTrigger value="week" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tuần này</TabsTrigger>
+            <TabsTrigger value="month" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tháng này</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         <div className="space-y-4 py-2">
             <div className="flex items-center justify-between p-2">
                 <div className="flex items-center gap-3">
