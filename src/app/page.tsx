@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
 import type { TaskType, Task } from '@/lib/types';
+import { DateSearchDialog } from '@/components/sidebar/date-search-dialog';
 
 type FilterType = 'all' | 'today' | 'week';
 
@@ -51,6 +52,7 @@ function TaskKanban() {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [isStatsDialogOpen, setIsStatsDialogOpen] = useState(false);
   const [isTaskTypeDialogOpen, setIsTaskTypeDialogOpen] = useState(false);
+  const [isDateSearchDialogOpen, setIsDateSearchDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<import('@/lib/types').Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
@@ -218,6 +220,12 @@ function TaskKanban() {
     setNameError(null);
   }
 
+  const handleDateSearch = (date: Date) => {
+    setCurrentDate(date);
+    setSelectedDay(date);
+    setIsDateSearchDialogOpen(false);
+  };
+
 
   return (
     <SidebarProvider>
@@ -296,6 +304,7 @@ function TaskKanban() {
               onPrevWeek={handlePrevWeek}
               onNextWeek={handleNextWeek}
               onGoToToday={handleGoToToday}
+              onOpenDateSearch={() => setIsDateSearchDialogOpen(true)}
             />
           )}
           <RecentTasks 
@@ -348,6 +357,11 @@ function TaskKanban() {
         onOpenChange={setShowWelcomeDialog}
         todayTaskCount={todaysSubtaskCount}
         dailyQuote={getDailyQuote()}
+      />
+      <DateSearchDialog
+        isOpen={isDateSearchDialogOpen}
+        onOpenChange={setIsDateSearchDialogOpen}
+        onDateSelect={handleDateSearch}
       />
     </SidebarProvider>
   );

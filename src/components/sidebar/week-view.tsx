@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -7,7 +8,7 @@ import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 interface WeekViewProps {
   tasks: Task[];
@@ -17,9 +18,10 @@ interface WeekViewProps {
   onPrevWeek: () => void;
   onNextWeek: () => void;
   onGoToToday: () => void;
+  onOpenDateSearch: () => void;
 }
 
-export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevWeek, onNextWeek, onGoToToday }: WeekViewProps) {
+export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevWeek, onNextWeek, onGoToToday, onOpenDateSearch }: WeekViewProps) {
   const today = new Date();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Bắt đầu từ thứ 2
 
@@ -52,9 +54,14 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onPrevWeek}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h3 className="text-sm font-semibold text-sidebar-foreground">
-             Tháng {format(currentDate, 'M, yyyy')}
-          </h3>
+          <div className="flex items-center gap-1">
+            <h3 className="text-sm font-semibold text-sidebar-foreground">
+              Tháng {format(currentDate, 'M, yyyy')}
+            </h3>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onOpenDateSearch}>
+                <Search className="h-4 w-4" />
+            </Button>
+          </div>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onNextWeek}>
             <ChevronRight className="h-4 w-4" />
           </Button>
