@@ -208,7 +208,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
               onClick={() => onSelectTask(task.id)}
               className={cn(
                   'p-2.5 rounded-lg space-y-2 relative group cursor-pointer transition-colors bg-sidebar-accent/50 hover:bg-sidebar-accent/80 border-sidebar-border border',
-                  selectedTaskId === task.id ? 'ring-2 ring-sidebar-primary bg-sidebar-accent' : ''
+                  selectedTaskId === task.id ? 'ring-2 ring-sidebar-primary bg-sidebar-accent/80' : ''
               )}
             >
               <div className="flex justify-between items-start">
