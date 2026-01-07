@@ -5,7 +5,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp } from 'lucide-react';
+import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp, GanttChartSquare, Activity } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay } from 'date-fns';
@@ -23,6 +23,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
 import type { TaskType, Task } from '@/lib/types';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
 
 type FilterType = 'all' | 'today' | 'week';
 type AllTasksFilterType = 'deadline' | 'recurring';
@@ -63,6 +65,7 @@ function TaskKanban() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [initialTaskType, setInitialTaskType] = useState<TaskType>('deadline');
+
 
 
   useEffect(() => {
@@ -274,7 +277,7 @@ function TaskKanban() {
           </div>
         </SidebarHeader>
         <SidebarContent>
-        <SidebarMenu className="px-2 grid grid-cols-4 gap-2">
+        <SidebarMenu className="px-2 grid grid-cols-5 gap-2">
             <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
                 <Clock className="h-4 w-4" />
             </IconButton>
@@ -282,6 +285,9 @@ function TaskKanban() {
                 <Repeat className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
+                <BarChart3 className="h-4 w-4" />
+            </IconButton>
+            <IconButton tooltipText="Biểu đồ Gantt" onClick={() => {}}>
                 <TrendingUp className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
@@ -306,16 +312,21 @@ function TaskKanban() {
           </div>
           {activeFilter === 'all' && (
             <div className="px-2 pt-2">
-              <Tabs value={allTasksFilter} onValueChange={(value) => setAllTasksFilter(value as AllTasksFilterType)} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-sidebar-accent/60 h-8">
-                  <TabsTrigger value="deadline" className="text-xs text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none h-6">
-                    Deadline ({allTasksCounts.deadline})
-                  </TabsTrigger>
-                  <TabsTrigger value="recurring" className="text-xs text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none h-6">
-                    Lặp lại ({allTasksCounts.recurring})
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <ToggleGroup 
+                type="single" 
+                value={allTasksFilter} 
+                onValueChange={(value) => {
+                  if (value) setAllTasksFilter(value as AllTasksFilterType)
+                }} 
+                className="w-full h-8"
+              >
+                <ToggleGroupItem value="deadline" aria-label="Deadline tasks" className="w-full text-xs h-full bg-sidebar-accent/60 text-sidebar-foreground/80 data-[state=on]:bg-sidebar-primary data-[state=on]:text-sidebar-primary-foreground rounded-r-none">
+                  Deadline ({allTasksCounts.deadline})
+                </ToggleGroupItem>
+                <ToggleGroupItem value="recurring" aria-label="Recurring tasks" className="w-full text-xs h-full bg-sidebar-accent/60 text-sidebar-foreground/80 data-[state=on]:bg-sidebar-primary data-[state=on]:text-sidebar-primary-foreground rounded-l-none">
+                  Lặp lại ({allTasksCounts.recurring})
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
           )}
           {activeFilter === 'week' && (
@@ -394,3 +405,7 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
+
+    
