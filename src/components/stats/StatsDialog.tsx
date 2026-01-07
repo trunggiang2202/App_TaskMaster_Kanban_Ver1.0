@@ -180,6 +180,10 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
     },
   ];
 
+  const displayedStats = filter === 'today' 
+    ? statsData.filter(item => item.status !== 'Chưa bắt đầu') 
+    : statsData;
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -211,7 +215,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
 
             <Separator />
             <Accordion type="multiple" className="w-full">
-              {statsData.map((item) => (
+              {displayedStats.map((item) => (
                 <AccordionItem value={item.status} key={item.status}>
                   <AccordionTrigger className="hover:no-underline px-2 hover:bg-primary/10 rounded-md">
                       <div className="flex items-center justify-between w-full">
