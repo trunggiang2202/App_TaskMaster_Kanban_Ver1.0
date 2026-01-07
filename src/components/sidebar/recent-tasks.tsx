@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Task } from '@/lib/types';
+import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar, Repeat } from 'lucide-react';
@@ -193,14 +193,34 @@ interface RecentTasksProps {
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
   activeFilter: 'all' | 'today' | 'week';
+  allTasksFilter?: 'deadline' | 'recurring';
 }
 
 
-export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, activeFilter }: RecentTasksProps) {
+export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, activeFilter, allTasksFilter }: RecentTasksProps) {
   
+  const getEmptyMessage = () => {
+    switch (activeFilter) {
+        case 'today':
+            return 'Không có nhiệm vụ nào cho hôm nay';
+        case 'week':
+            return 'Không có nhiệm vụ cho ngày này';
+        case 'all':
+            if (allTasksFilter === 'deadline') {
+                return "Không có nhiệm vụ 'Deadline' nào";
+            }
+            if (allTasksFilter === 'recurring') {
+                return "Không có nhiệm vụ 'Lặp lại' nào";
+            }
+            return 'Không có nhiệm vụ nào';
+        default:
+            return 'Không có nhiệm vụ nào';
+    }
+  };
+
   return (
     <SidebarGroup>
-      <div className="space-y-3 px-2">
+      <div className="space-y-3 px-2 pt-2">
         {recentTasks.map(task => {
           return (
             <div 
@@ -223,9 +243,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
         })}
          {recentTasks.length === 0 && (
           <p className="text-sm text-center text-sidebar-foreground/60 py-4">
-            {activeFilter === 'today' ? 'Không có nhiệm vụ nào cho hôm nay' : 
-             activeFilter === 'week' ? 'Không có nhiệm vụ cho ngày này' :
-             'Không có nhiệm vụ nào'}
+            {getEmptyMessage()}
           </p>
         )}
       </div>

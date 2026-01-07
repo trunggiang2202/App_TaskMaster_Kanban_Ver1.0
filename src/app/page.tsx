@@ -5,7 +5,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, BarChart3, Pencil, Clock, Repeat } from 'lucide-react';
+import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay } from 'date-fns';
@@ -25,6 +25,7 @@ import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
 import type { TaskType, Task } from '@/lib/types';
 
 type FilterType = 'all' | 'today' | 'week';
+type AllTasksFilterType = 'deadline' | 'recurring';
 
 const IconButton = ({ children, tooltipText, onClick, className }: { children: React.ReactNode, tooltipText: string, onClick?: () => void, className?: string }) => (
     <TooltipProvider delayDuration={0}>
@@ -53,6 +54,7 @@ function TaskKanban() {
   const [isTaskTypeDialogOpen, setIsTaskTypeDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<import('@/lib/types').Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [allTasksFilter, setAllTasksFilter] = useState<AllTasksFilterType>('deadline');
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -157,9 +159,11 @@ function TaskKanban() {
         }).sort(sortTasks);
       case 'all':
       default:
-        return [...tasks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).sort(sortTasks);
+        const allUncompleted = tasks.filter(task => task.status !== 'Done');
+        const filtered = allUncompleted.filter(task => task.taskType === allTasksFilter);
+        return filtered.sort(sortTasks);
     }
-  }, [activeFilter, tasks, selectedDay, todaysTasks]);
+  }, [activeFilter, allTasksFilter, tasks, selectedDay, todaysTasks]);
 
   const selectedTask = useMemo(() => tasks.find(task => task.id === selectedTaskId), [tasks, selectedTaskId]);
 
@@ -223,6 +227,14 @@ function TaskKanban() {
     setSelectedDay(date);
   };
 
+  const allTasksCounts = useMemo(() => {
+    const uncompleted = tasks.filter(task => task.status !== 'Done');
+    return {
+      deadline: uncompleted.filter(t => t.taskType === 'deadline').length,
+      recurring: uncompleted.filter(t => t.taskType === 'recurring').length,
+    }
+  }, [tasks]);
+
 
   return (
     <SidebarProvider>
@@ -270,7 +282,7 @@ function TaskKanban() {
                 <Repeat className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
-                <BarChart3 className="h-4 w-4" />
+                <TrendingUp className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
                 <Pencil className="h-4 w-4" />
@@ -292,6 +304,20 @@ function TaskKanban() {
               </TabsList>
             </Tabs>
           </div>
+          {activeFilter === 'all' && (
+            <div className="px-2 pt-2">
+              <Tabs value={allTasksFilter} onValueChange={(value) => setAllTasksFilter(value as AllTasksFilterType)} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-sidebar-accent/60 h-8">
+                  <TabsTrigger value="deadline" className="text-xs text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none h-6">
+                    Deadline ({allTasksCounts.deadline})
+                  </TabsTrigger>
+                  <TabsTrigger value="recurring" className="text-xs text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none h-6">
+                    Lặp lại ({allTasksCounts.recurring})
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
           {activeFilter === 'week' && (
             <WeekView 
               tasks={tasks}
@@ -309,6 +335,7 @@ function TaskKanban() {
             selectedTaskId={selectedTaskId}
             onSelectTask={setSelectedTaskId}
             activeFilter={activeFilter}
+            allTasksFilter={allTasksFilter}
           />
         </SidebarContent>
       </Sidebar>
