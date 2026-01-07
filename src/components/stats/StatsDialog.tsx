@@ -109,7 +109,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
           </DialogTitle>
         </DialogHeader>
         
-        <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full pt-2">
+        <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-primary/10">
             <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tất cả</TabsTrigger>
             <TabsTrigger value="today" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Hôm nay</TabsTrigger>
