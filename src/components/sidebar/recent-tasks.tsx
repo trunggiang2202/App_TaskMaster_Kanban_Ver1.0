@@ -223,6 +223,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
       <div className="space-y-3 px-2 pt-2">
         {recentTasks.map(task => {
           const totalSubtasks = task.subtasks.length;
+          const completedSubtasks = task.subtasks.filter(st => st.completed).length;
           return (
             <div 
               key={task.id}
@@ -237,7 +238,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                   {task.title}
                   {totalSubtasks > 0 && (
                     <span className="text-sidebar-foreground/70 ml-2">
-                      ({totalSubtasks} công việc)
+                      ({completedSubtasks}/{totalSubtasks})
                     </span>
                   )}
                 </p>
