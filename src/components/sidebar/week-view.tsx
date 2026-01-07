@@ -33,7 +33,6 @@ const DateSearchBar = ({ onDateSelect, onClose }: { onDateSelect: (date: Date) =
         
         if (isValid(parsedDate) && parsedDate.getFullYear() === parseInt(year) && (parsedDate.getMonth() + 1) === parseInt(month) && parsedDate.getDate() === parseInt(day)) {
           onDateSelect(parsedDate);
-          onClose();
         } else {
           setError('Ngày không hợp lệ.');
         }
