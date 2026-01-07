@@ -117,7 +117,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader className="pb-0">
           <DialogTitle className="flex items-center gap-2">
             <TrendingUp className="h-6 w-6" />
             Thống kê công việc
@@ -162,8 +162,8 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                         {item.subtasks.map((subtask) => (
                           <Button
                             key={subtask.id} 
-                            variant="ghost"
-                            className="w-full h-auto text-left justify-start p-2 bg-background rounded-md border"
+                            variant="outline"
+                            className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-muted/50 rounded-md border"
                             onClick={() => handleSubtaskClick(subtask.parentTaskId)}
                           >
                             <div>
