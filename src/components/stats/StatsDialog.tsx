@@ -93,7 +93,20 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
             }
         }
       });
-      initialStats.total += totalSubtasksInFilter;
+      if(task.subtasks.length === 0 && filter === 'all') {
+        if(task.status === 'Done') {
+          taskSets.done.set(task.id, task.title);
+        } else if (task.taskType === 'deadline' && task.startDate && isBefore(now, task.startDate)) {
+          taskSets.upcoming.set(task.id, task.title);
+        } else if (task.taskType === 'deadline' && task.endDate && isAfter(now, task.endDate)) {
+          taskSets.overdue.set(task.id, task.title);
+        } else if (task.taskType === 'deadline' && task.startDate && isAfter(now, task.startDate)){
+            taskSets.inProgress.set(task.id, task.title);
+        } else {
+            taskSets.upcoming.set(task.id, task.title);
+        }
+      }
+      initialStats.total += totalSubtasksInFilter || (filter === 'all' ? 1 : 0);
     });
     
     initialStats.inProgress = Array.from(taskSets.inProgress, ([id, title]) => ({ id, title }));
@@ -169,9 +182,8 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                       <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">
                               {item.icon}
-                              <span className="font-medium text-foreground">{item.status}</span>
+                              <span className="font-medium text-foreground">{item.status} ({item.tasks.length})</span>
                           </div>
-                          <span className="text-foreground pr-2">{item.tasks.length}</span>
                       </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-2 pt-2">
