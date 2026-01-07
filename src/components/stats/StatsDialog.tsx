@@ -221,7 +221,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                       <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">
                               {item.icon}
-                              <span className="font-medium text-foreground">{item.status} ({item.tasks.length})</span>
+                              <span className="font-medium text-foreground">{item.status}</span>
                           </div>
                       </div>
                   </AccordionTrigger>
