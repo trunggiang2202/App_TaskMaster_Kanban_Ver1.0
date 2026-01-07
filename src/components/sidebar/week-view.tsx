@@ -71,7 +71,7 @@ const DateSearchBar = ({ onDateSelect, onClose }: { onDateSelect: (date: Date) =
             </div>
             {error && <p className="text-sm text-destructive text-center -mt-2">{error}</p>}
             <div className="grid grid-cols-2 gap-2">
-                <Button onClick={onClose} variant="ghost" size="sm">Hủy</Button>
+                <Button onClick={onClose} variant="outline" size="sm" className="bg-sidebar-accent border-sidebar-border hover:bg-sidebar-accent/80">Hủy</Button>
                 <Button onClick={handleSearch} size="sm">
                     <Search className="mr-2 h-4 w-4" />
                     Tìm
@@ -120,10 +120,15 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
 
   const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
+  const handleDateSearchSubmit = (date: Date) => {
+    onDateSearch(date);
+    // Do not close the search bar upon submission
+  };
+
   return (
     <div className="px-2 pt-3 pb-2">
       {showSearch ? (
-        <DateSearchBar onDateSelect={onDateSearch} onClose={() => setShowSearch(false)} />
+        <DateSearchBar onDateSelect={handleDateSearchSubmit} onClose={() => setShowSearch(false)} />
       ) : (
         <div className="flex items-center justify-between px-2 mb-2">
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onPrevWeek}>
