@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import type { Task } from '@/lib/types';
+import type { Subtask, Task } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
@@ -13,12 +13,22 @@ import { isBefore, isAfter, startOfDay, isToday, isThisWeek, isThisMonth } from 
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
+interface SubtaskWithParent extends Subtask {
+  parentTaskTitle: string;
+}
 
 interface SubtaskStats {
-  inProgress: number;
-  upcoming: number;
-  done: number;
-  overdue: number;
+  inProgress: SubtaskWithParent[];
+  upcoming: SubtaskWithParent[];
+  done: SubtaskWithParent[];
+  overdue: SubtaskWithParent[];
   total: number;
 }
 
@@ -33,68 +43,65 @@ interface StatsDialogProps {
 export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
   const [filter, setFilter] = React.useState<StatsFilter>('all');
 
-  const filteredTasks = React.useMemo(() => {
-    if (filter === 'all') return tasks;
-    
-    return tasks.map(task => {
-      const subtasks = task.subtasks.filter(st => {
-        if (!st.startDate) return false;
-        const subtaskDate = new Date(st.startDate);
-        if (filter === 'today') return isToday(subtaskDate);
-        if (filter === 'week') return isThisWeek(subtaskDate, { weekStartsOn: 1 });
-        if (filter === 'month') return isThisMonth(subtaskDate);
-        return false;
-      });
-      return { ...task, subtasks };
-    }).filter(task => task.subtasks.length > 0);
-
-  }, [tasks, filter]);
-
   const stats = React.useMemo<SubtaskStats>(() => {
     const now = new Date();
     const today = startOfDay(now);
     
-    const initialStats: SubtaskStats = { inProgress: 0, upcoming: 0, done: 0, overdue: 0, total: 0 };
+    const initialStats: SubtaskStats = { inProgress: [], upcoming: [], done: [], overdue: [], total: 0 };
 
-    return filteredTasks.reduce((acc, task) => {
-      acc.total += task.subtasks.length;
+    tasks.forEach(task => {
       task.subtasks.forEach(subtask => {
-        if (subtask.completed) {
-          acc.done++;
-        } else if (!subtask.startDate || !subtask.endDate) {
-          acc.upcoming++;
-        } else if (isBefore(today, startOfDay(subtask.startDate))) {
-          acc.upcoming++;
-        } else if (isAfter(now, subtask.endDate)) {
-          acc.overdue++;
-        } else {
-          acc.inProgress++;
+        let include = false;
+        if (filter === 'all') {
+          include = true;
+        } else if (subtask.startDate) {
+          const subtaskDate = new Date(subtask.startDate);
+          if (filter === 'today' && isToday(subtaskDate)) include = true;
+          if (filter === 'week' && isThisWeek(subtaskDate, { weekStartsOn: 1 })) include = true;
+          if (filter === 'month' && isThisMonth(subtaskDate)) include = true;
+        }
+        
+        if (include) {
+            initialStats.total++;
+            const subtaskWithParent: SubtaskWithParent = {...subtask, parentTaskTitle: task.title};
+
+            if (subtask.completed) {
+              initialStats.done.push(subtaskWithParent);
+            } else if (!subtask.startDate || !subtask.endDate) {
+              initialStats.upcoming.push(subtaskWithParent);
+            } else if (isBefore(today, startOfDay(subtask.startDate))) {
+              initialStats.upcoming.push(subtaskWithParent);
+            } else if (isAfter(now, subtask.endDate)) {
+              initialStats.overdue.push(subtaskWithParent);
+            } else {
+              initialStats.inProgress.push(subtaskWithParent);
+            }
         }
       });
+    });
 
-      return acc;
-    }, initialStats);
-  }, [filteredTasks]);
+    return initialStats;
+  }, [tasks, filter]);
 
   const statsData = [
     { 
       status: 'Đang làm', 
-      count: stats.inProgress, 
+      subtasks: stats.inProgress, 
       icon: <Clock className="h-5 w-5 text-amber-500" />,
     },
     { 
       status: 'Sắp làm', 
-      count: stats.upcoming, 
+      subtasks: stats.upcoming, 
       icon: <Circle className="h-5 w-5 text-sky-500" />,
     },
     { 
       status: 'Đã xong', 
-      count: stats.done,
+      subtasks: stats.done,
       icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />,
     },
     { 
       status: 'Quá hạn', 
-      count: stats.overdue, 
+      subtasks: stats.overdue, 
       icon: <AlertTriangle className="h-5 w-5 text-destructive" />,
     },
   ];
@@ -129,25 +136,39 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
             </div>
 
             <Separator />
-
-            <div className="px-2 space-y-3">
-                <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Trạng thái</span>
-                    <span>Số lượng</span>
-                </div>
-                {statsData.map((item, index) => (
-                    <React.Fragment key={item.status}>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                {item.icon}
-                                <span className="font-medium text-foreground">{item.status}</span>
-                            </div>
-                            <span className="text-foreground">{item.count}</span>
-                        </div>
-                        {index < statsData.length -1 && <Separator />}
-                    </React.Fragment>
-                ))}
-            </div>
+            <Accordion type="multiple" className="w-full">
+              {statsData.map((item) => (
+                <AccordionItem value={item.status} key={item.status}>
+                  <AccordionTrigger className="hover:no-underline px-2">
+                      <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                              {item.icon}
+                              <span className="font-medium text-foreground">{item.status}</span>
+                          </div>
+                          <span className="text-foreground pr-2">{item.subtasks.length}</span>
+                      </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-2 pt-2">
+                    {item.subtasks.length > 0 ? (
+                      <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
+                        {item.subtasks.map((subtask) => (
+                          <div key={subtask.id} className="text-sm p-2 bg-background rounded-md border">
+                            <p className="font-medium text-foreground truncate">{subtask.title}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              Nhiệm vụ: {subtask.parentTaskTitle}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-center text-muted-foreground py-4">
+                        Không có công việc nào.
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
         </div>
       </DialogContent>
     </Dialog>
