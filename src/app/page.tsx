@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp, GanttChartSquare, Activity, ListFilter } from 'lucide-react';
+import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay } from 'date-fns';
@@ -25,7 +25,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 
 type FilterType = 'all' | 'today' | 'week';
-type AllTasksFilterType = 'deadline' | 'recurring' | 'longest' | 'shortest';
+type AllTasksFilterType = 'all' | 'deadline' | 'recurring';
+type AllTasksSortType = 'newest' | 'longest' | 'shortest';
 
 const IconButton = ({ children, tooltipText, onClick, className }: { children: React.ReactNode, tooltipText: string, onClick?: () => void, className?: string }) => (
     <TooltipProvider delayDuration={0}>
@@ -51,12 +52,27 @@ const FilterSelect = ({ value, onValueChange }: { value: AllTasksFilterType, onV
     <SelectTrigger className="w-full h-9 bg-sidebar-accent/60 border-sidebar-border text-sidebar-foreground focus:ring-sidebar-ring">
       <div className="flex items-center gap-2">
         <ListFilter className="h-4 w-4" />
-        <SelectValue placeholder="Lọc & Sắp xếp" />
+        <SelectValue placeholder="Lọc theo loại" />
       </div>
     </SelectTrigger>
     <SelectContent>
+      <SelectItem value="all">Tất cả</SelectItem>
       <SelectItem value="deadline">Nhiệm vụ có Deadline</SelectItem>
       <SelectItem value="recurring">Nhiệm vụ lặp lại</SelectItem>
+    </SelectContent>
+  </Select>
+);
+
+const SortSelect = ({ value, onValueChange, disabled }: { value: AllTasksSortType, onValueChange: (value: AllTasksSortType) => void, disabled: boolean }) => (
+  <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+    <SelectTrigger className="w-full h-9 bg-sidebar-accent/60 border-sidebar-border text-sidebar-foreground focus:ring-sidebar-ring">
+       <div className="flex items-center gap-2">
+        <ArrowUpDown className="h-4 w-4" />
+        <SelectValue placeholder="Sắp xếp" />
+      </div>
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="newest">Mới nhất</SelectItem>
       <SelectItem value="longest">Thời gian dài nhất</SelectItem>
       <SelectItem value="shortest">Thời gian ngắn nhất</SelectItem>
     </SelectContent>
@@ -71,7 +87,8 @@ function TaskKanban() {
   const [isTaskTypeDialogOpen, setIsTaskTypeDialogOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<import('@/lib/types').Task | undefined>(undefined);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [allTasksFilter, setAllTasksFilter] = useState<AllTasksFilterType>('deadline');
+  const [allTasksFilter, setAllTasksFilter] = useState<AllTasksFilterType>('all');
+  const [allTasksSort, setAllTasksSort] = useState<AllTasksSortType>('newest');
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -81,6 +98,12 @@ function TaskKanban() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [initialTaskType, setInitialTaskType] = useState<TaskType>('deadline');
 
+  useEffect(() => {
+    // Reset sort when filter changes to something that doesn't support duration sorting
+    if (allTasksFilter === 'recurring') {
+      setAllTasksSort('newest');
+    }
+  }, [allTasksFilter]);
 
 
   useEffect(() => {
@@ -179,29 +202,42 @@ function TaskKanban() {
       default:
         let allUncompleted = tasks.filter(task => task.status !== 'Done');
         
-        if (allTasksFilter === 'deadline' || allTasksFilter === 'recurring') {
-          return allUncompleted
-            .filter(task => task.taskType === allTasksFilter)
-            .sort(sortTasks);
+        // 1. Filter by type
+        let typeFilteredTasks = allUncompleted;
+        if (allTasksFilter !== 'all') {
+          typeFilteredTasks = allUncompleted.filter(task => task.taskType === allTasksFilter);
         }
 
+        // 2. Sort the filtered tasks
         const getTaskDuration = (task: Task) => {
           if (task.taskType !== 'deadline' || !task.startDate || !task.endDate) return 0;
           return new Date(task.endDate).getTime() - new Date(task.startDate).getTime();
         }
 
-        let deadlineTasks = allUncompleted.filter(task => task.taskType === 'deadline');
-
-        if (allTasksFilter === 'longest') {
-            return deadlineTasks.sort((a, b) => getTaskDuration(b) - getTaskDuration(a));
+        switch(allTasksSort) {
+          case 'newest':
+            return typeFilteredTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          case 'longest':
+             // Only sort deadline tasks by duration
+            return typeFilteredTasks.sort((a, b) => {
+                if (a.taskType === 'deadline' && b.taskType === 'deadline') {
+                    return getTaskDuration(b) - getTaskDuration(a);
+                }
+                return 0; // Keep original order for non-deadline tasks
+            });
+          case 'shortest':
+            // Only sort deadline tasks by duration
+            return typeFilteredTasks.sort((a, b) => {
+                if (a.taskType === 'deadline' && b.taskType === 'deadline') {
+                    return getTaskDuration(a) - getTaskDuration(b);
+                }
+                return 0; // Keep original order for non-deadline tasks
+            });
+          default:
+            return typeFilteredTasks;
         }
-        if (allTasksFilter === 'shortest') {
-            return deadlineTasks.sort((a, b) => getTaskDuration(a) - getTaskDuration(b));
-        }
-
-        return allUncompleted;
     }
-  }, [activeFilter, allTasksFilter, tasks, selectedDay, todaysTasks]);
+  }, [activeFilter, allTasksFilter, allTasksSort, tasks, selectedDay, todaysTasks]);
 
   const selectedTask = useMemo(() => tasks.find(task => task.id === selectedTaskId), [tasks, selectedTaskId]);
 
@@ -346,8 +382,13 @@ function TaskKanban() {
             </Tabs>
           </div>
           {activeFilter === 'all' && (
-            <div className="px-2 pt-2">
-              <FilterSelect value={allTasksFilter} onValueChange={(value) => setAllTasksFilter(value as AllTasksFilterType)} />
+             <div className="px-2 pt-2 grid grid-cols-2 gap-2">
+                <FilterSelect value={allTasksFilter} onValueChange={(v) => setAllTasksFilter(v as AllTasksFilterType)} />
+                <SortSelect 
+                  value={allTasksSort} 
+                  onValueChange={(v) => setAllTasksSort(v as AllTasksSortType)}
+                  disabled={allTasksFilter === 'recurring'}
+                />
             </div>
           )}
           {activeFilter === 'week' && (

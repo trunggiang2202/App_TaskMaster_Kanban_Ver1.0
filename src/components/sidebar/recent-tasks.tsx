@@ -193,7 +193,7 @@ interface RecentTasksProps {
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
   activeFilter: 'all' | 'today' | 'week';
-  allTasksFilter?: 'deadline' | 'recurring';
+  allTasksFilter?: 'all' | 'deadline' | 'recurring';
 }
 
 
