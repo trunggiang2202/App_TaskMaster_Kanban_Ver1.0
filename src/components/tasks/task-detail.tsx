@@ -173,7 +173,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
             </div>
             {isExpanded && !subtask.completed && hasDeadline && !isOverdue && taskType === 'deadline' && (
                 <div className="flex flex-col gap-2">
-                    <Separator className="my-1 bg-border" />
+                    <div className="my-1 h-px bg-slate-300 dark:bg-slate-700" />
                     <div className="flex flex-col gap-2">
                          <div className="flex items-center justify-between text-xs pt-1">
                             <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
@@ -344,7 +344,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
               <span className="text-sm font-medium text-muted-foreground">{Math.round(subtaskProgress)}% đã hoàn thành</span>
             </div>
             <div className="space-y-4">
-              <Progress value={subtaskProgress} className="h-2" />
+              <Progress value={subtaskProgress} className="h-2 bg-border" indicatorClassName="bg-primary" />
 
               {task.taskType === 'deadline' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -432,3 +432,6 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
 
     
 
+
+
+    
