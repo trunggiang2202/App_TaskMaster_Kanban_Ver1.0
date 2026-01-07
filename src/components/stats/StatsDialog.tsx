@@ -108,6 +108,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
             Thống kê công việc
           </DialogTitle>
         </DialogHeader>
+        <Separator />
         
         <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-primary/10">
