@@ -193,7 +193,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                           <Button
                             key={task.id} 
                             variant="outline"
-                            className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-muted/50 rounded-md border"
+                            className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-primary/10 rounded-md border"
                             onClick={() => handleTaskClick(task.id)}
                           >
                             <div>
