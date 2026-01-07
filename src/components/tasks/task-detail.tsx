@@ -200,7 +200,7 @@ interface TaskDetailProps {
   onEditTask: (task: Task) => void;
 }
 
-type SubtaskStatus = 'Chưa làm' | 'Đang làm' | 'Xong';
+type SubtaskStatus = 'Chưa bắt đầu' | 'Đang làm' | 'Xong';
 
 type CategorizedSubtasks = Record<SubtaskStatus, Subtask[]>;
 
@@ -228,7 +228,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   
   const categorizedSubtasks = React.useMemo<CategorizedSubtasks>(() => {
     const categories: CategorizedSubtasks = {
-      'Chưa làm': [],
+      'Chưa bắt đầu': [],
       'Đang làm': [],
       'Xong': [],
     };
@@ -245,7 +245,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         categories['Đang làm'].push(st);
       }
       else {
-        categories['Chưa làm'].push(st);
+        categories['Chưa bắt đầu'].push(st);
       }
     });
     return categories;
@@ -266,14 +266,14 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         }
         return 'border-l-4 border-accent'; // In Progress for both types
     }
-    if (columnTitle === 'Chưa làm') {
+    if (columnTitle === 'Chưa bắt đầu') {
         return 'border-l-4 border-primary';
     }
     return 'border-l-4 border-muted';
   };
 
   const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
-    { title: 'Chưa làm', subtasks: categorizedSubtasks['Chưa làm'], isClickable: false, titleColor: 'text-primary', bgColor: 'bg-primary/5' },
+    { title: 'Chưa bắt đầu', subtasks: categorizedSubtasks['Chưa bắt đầu'], isClickable: false, titleColor: 'text-primary', bgColor: 'bg-primary/5' },
     { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-accent', bgColor: 'bg-primary/5' },
     { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-chart-2', bgColor: 'bg-primary/5' },
   ];
