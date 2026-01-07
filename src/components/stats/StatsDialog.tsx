@@ -216,7 +216,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
             <Separator className="bg-border" />
             <Accordion type="multiple" className="w-full">
               {displayedStats.map((item) => (
-                <div className="border-b" key={item.status}>
+                <div className="border-b border-border" key={item.status}>
                   <AccordionItem value={item.status} className="border-b-0">
                     <AccordionTrigger className="hover:no-underline px-2 hover:bg-primary/10 rounded-md">
                         <div className="flex items-center justify-between w-full">
