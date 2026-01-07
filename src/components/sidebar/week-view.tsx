@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 const DateSearchBar = ({ onDateSelect, onClose }: { onDateSelect: (date: Date) => void, onClose: () => void }) => {
     const [day, setDay] = React.useState('');
@@ -99,26 +101,37 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
 
   const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
-  const hasTasksOnDay = (day: Date) => {
+  const getTaskCountOnDay = (day: Date): number => {
     const sDay = startOfDay(day);
     const dayOfWeek = getDay(sDay);
 
-    return tasks.some(task => {
-      if (task.taskType === 'recurring') {
-        return task.recurringDays?.includes(dayOfWeek);
-      }
-      return task.subtasks.some(st => {
-        if (!st.startDate || !st.endDate) return false;
-        const subtaskStart = startOfDay(st.startDate);
-        const subtaskEnd = startOfDay(st.endDate);
-        return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
-      })
-    });
+    return tasks.reduce((total, task) => {
+        if (task.status === 'Done') return total;
+        
+        let count = 0;
+        if (task.taskType === 'recurring') {
+            if (task.recurringDays?.includes(dayOfWeek)) {
+                count = task.subtasks.filter(st => !st.completed).length;
+            }
+        } else {
+            count = task.subtasks.filter(st => {
+                if (!st.completed && st.startDate && st.endDate) {
+                    const subtaskStart = startOfDay(st.startDate);
+                    const subtaskEnd = startOfDay(st.endDate);
+                    return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
+                }
+                return false;
+            }).length;
+        }
+        return total + count;
+    }, 0);
   };
   
   const isCurrentWeek = isSameWeek(currentDate, today, { weekStartsOn: 1 });
 
   const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const fullDayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+
 
   const handleDateSearchSubmit = (date: Date) => {
     onDateSearch(date);
@@ -148,31 +161,50 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
         </div>
       )}
       <div className="grid grid-cols-7 gap-1">
-        {weekDays.map(day => (
-          <button
-            key={day.toISOString()}
-            onClick={() => onSelectDay(day)}
-            className={cn(
-              "flex flex-col items-center justify-center p-1 rounded-md transition-none h-14",
-              isSameDay(day, selectedDay)
-                ? "bg-sidebar-primary/90 text-sidebar-primary-foreground"
-                : "hover:bg-sidebar-accent/80",
-              isSameDay(day, today) && !isSameDay(day, selectedDay)
-                ? "bg-sidebar-accent/50"
-                : ""
-            )}
-          >
-            <span className="text-xs font-medium uppercase">
-              {dayNames[getDay(day)]}
-            </span>
-            <span className="text-lg font-bold">
-              {format(day, 'd')}
-            </span>
-            {hasTasksOnDay(day) && (
-              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-0.5"></div>
-            )}
-          </button>
-        ))}
+        {weekDays.map(day => {
+          const taskCount = getTaskCountOnDay(day);
+          const hasTasks = taskCount > 0;
+          const dayComponent = (
+            <button
+                key={day.toISOString()}
+                onClick={() => onSelectDay(day)}
+                className={cn(
+                  "flex flex-col items-center justify-center p-1 rounded-md transition-none h-14 w-full",
+                  isSameDay(day, selectedDay)
+                    ? "bg-sidebar-primary/90 text-sidebar-primary-foreground"
+                    : "hover:bg-sidebar-accent/80",
+                  isSameDay(day, today) && !isSameDay(day, selectedDay)
+                    ? "bg-sidebar-accent/50"
+                    : ""
+                )}
+              >
+                <span className="text-xs font-medium uppercase">
+                  {dayNames[getDay(day)]}
+                </span>
+                <span className="text-lg font-bold">
+                  {format(day, 'd')}
+                </span>
+                {hasTasks && (
+                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-0.5"></div>
+                )}
+              </button>
+          );
+
+          if (hasTasks) {
+            return (
+              <TooltipProvider key={`tp-${day.toISOString()}`} delayDuration={0}>
+                  <Tooltip>
+                      <TooltipTrigger asChild>{dayComponent}</TooltipTrigger>
+                      <TooltipContent>
+                          <p>{fullDayNames[getDay(day)]} có {taskCount} công việc</p>
+                      </TooltipContent>
+                  </Tooltip>
+              </TooltipProvider>
+            );
+          }
+          
+          return dayComponent;
+        })}
       </div>
       {!isCurrentWeek && (
         <div className="mt-2 px-2">
