@@ -354,7 +354,7 @@ function TaskKanban() {
           </div>
         </SidebarHeader>
         <SidebarContent>
-        <SidebarMenu className="px-2 grid grid-cols-5 gap-2">
+        <SidebarMenu className="px-2 grid grid-cols-4 gap-2">
             <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
                 <Clock className="h-4 w-4" />
             </IconButton>
@@ -362,9 +362,6 @@ function TaskKanban() {
                 <Repeat className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
-                <BarChart3 className="h-4 w-4" />
-            </IconButton>
-            <IconButton tooltipText="Biểu đồ Gantt" onClick={() => {}}>
                 <TrendingUp className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Sửa tên" onClick={() => setIsEditingName(true)}>
