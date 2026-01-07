@@ -173,7 +173,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
             </div>
             {isExpanded && !subtask.completed && hasDeadline && !isOverdue && taskType === 'deadline' && (
                 <div className="flex flex-col gap-2">
-                    <Separator className="my-1" />
+                    <Separator className="my-1 bg-border" />
                     <div className="flex flex-col gap-2">
                          <div className="flex items-center justify-between text-xs pt-1">
                             <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
@@ -431,3 +431,4 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+
