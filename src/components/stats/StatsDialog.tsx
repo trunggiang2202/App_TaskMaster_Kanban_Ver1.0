@@ -164,7 +164,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
       icon: <Clock className="h-5 w-5 text-amber-500" />,
     },
     { 
-      status: 'Sắp làm', 
+      status: 'Chưa bắt đầu', 
       tasks: stats.upcoming, 
       icon: <Circle className="h-5 w-5 text-sky-500" />,
     },
@@ -200,7 +200,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
           </TabsList>
         </Tabs>
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-4">
             <div className="flex items-center justify-between p-2">
                 <div className="flex items-center gap-3">
                     <ListTodo className="h-5 w-5 text-primary" />
