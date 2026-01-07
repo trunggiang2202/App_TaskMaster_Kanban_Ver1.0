@@ -398,11 +398,11 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     if (isCompleted) return 'border-chart-2';
     
     if (taskType === 'recurring') {
-      const recurringDays = form.watch('recurringDays');
-      if (recurringDays?.includes(getDay(now))) {
-        return 'border-accent'; // Active today
-      }
-      return 'border-primary'; // Not active today
+        const recurringDays = form.watch('recurringDays');
+        if (recurringDays?.includes(getDay(now))) {
+            return 'border-accent'; 
+        }
+        return 'border-primary';
     }
 
     const startDate = parseDateTime(subtask.startDate, subtask.startTime);
@@ -837,7 +837,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           <DialogFooter className="pt-4 mt-auto">
             {taskType === 'deadline' && activeTab === 'task' ? (
               <>
-                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
                 <Button type="button" disabled={isTaskTabInvalid} onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
               </>
             ) : taskType === 'deadline' && activeTab === 'subtasks' ? (
@@ -847,7 +847,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
               </>
             ) : ( // Recurring task footer
                <>
-                <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Hủy</Button>              <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>              <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
               </>
             )}
           </DialogFooter>

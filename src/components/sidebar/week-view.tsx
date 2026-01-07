@@ -71,7 +71,7 @@ const DateSearchBar = ({ onDateSelect, onClose }: { onDateSelect: (date: Date) =
             </div>
             {error && <p className="text-sm text-destructive text-center -mt-2">{error}</p>}
             <div className="grid grid-cols-2 gap-2">
-                <Button onClick={onClose} variant="outline" size="sm" className="bg-sidebar-accent border-sidebar-border hover:bg-sidebar-accent/80">Hủy</Button>
+                <Button onClick={onClose} variant="outline" size="sm">Hủy</Button>
                 <Button onClick={handleSearch} size="sm">
                     <Search className="mr-2 h-4 w-4" />
                     Tìm
