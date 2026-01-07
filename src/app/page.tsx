@@ -1,11 +1,9 @@
-
-
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp, GanttChartSquare, Activity } from 'lucide-react';
+import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp, GanttChartSquare, Activity, ListFilter } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay } from 'date-fns';
@@ -23,11 +21,11 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
 import type { TaskType, Task } from '@/lib/types';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 type FilterType = 'all' | 'today' | 'week';
-type AllTasksFilterType = 'deadline' | 'recurring';
+type AllTasksFilterType = 'deadline' | 'recurring' | 'longest' | 'shortest';
 
 const IconButton = ({ children, tooltipText, onClick, className }: { children: React.ReactNode, tooltipText: string, onClick?: () => void, className?: string }) => (
     <TooltipProvider delayDuration={0}>
@@ -46,6 +44,23 @@ const IconButton = ({ children, tooltipText, onClick, className }: { children: R
             <TooltipContent side="bottom"><p>{tooltipText}</p></TooltipContent>
         </Tooltip>
     </TooltipProvider>
+);
+
+const FilterSelect = ({ value, onValueChange }: { value: AllTasksFilterType, onValueChange: (value: AllTasksFilterType) => void }) => (
+  <Select value={value} onValueChange={onValueChange}>
+    <SelectTrigger className="w-full h-9 bg-sidebar-accent/60 border-sidebar-border text-sidebar-foreground focus:ring-sidebar-ring">
+      <div className="flex items-center gap-2">
+        <ListFilter className="h-4 w-4" />
+        <SelectValue placeholder="Lọc & Sắp xếp" />
+      </div>
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="deadline">Nhiệm vụ có Deadline</SelectItem>
+      <SelectItem value="recurring">Nhiệm vụ lặp lại</SelectItem>
+      <SelectItem value="longest">Thời gian dài nhất</SelectItem>
+      <SelectItem value="shortest">Thời gian ngắn nhất</SelectItem>
+    </SelectContent>
+  </Select>
 );
 
 
@@ -162,9 +177,29 @@ function TaskKanban() {
         }).sort(sortTasks);
       case 'all':
       default:
-        const allUncompleted = tasks.filter(task => task.status !== 'Done');
-        const filtered = allUncompleted.filter(task => task.taskType === allTasksFilter);
-        return filtered.sort(sortTasks);
+        let allUncompleted = tasks.filter(task => task.status !== 'Done');
+        
+        if (allTasksFilter === 'deadline' || allTasksFilter === 'recurring') {
+          return allUncompleted
+            .filter(task => task.taskType === allTasksFilter)
+            .sort(sortTasks);
+        }
+
+        const getTaskDuration = (task: Task) => {
+          if (task.taskType !== 'deadline' || !task.startDate || !task.endDate) return 0;
+          return new Date(task.endDate).getTime() - new Date(task.startDate).getTime();
+        }
+
+        let deadlineTasks = allUncompleted.filter(task => task.taskType === 'deadline');
+
+        if (allTasksFilter === 'longest') {
+            return deadlineTasks.sort((a, b) => getTaskDuration(b) - getTaskDuration(a));
+        }
+        if (allTasksFilter === 'shortest') {
+            return deadlineTasks.sort((a, b) => getTaskDuration(a) - getTaskDuration(b));
+        }
+
+        return allUncompleted;
     }
   }, [activeFilter, allTasksFilter, tasks, selectedDay, todaysTasks]);
 
@@ -312,21 +347,7 @@ function TaskKanban() {
           </div>
           {activeFilter === 'all' && (
             <div className="px-2 pt-2">
-              <ToggleGroup 
-                type="single" 
-                value={allTasksFilter} 
-                onValueChange={(value) => {
-                  if (value) setAllTasksFilter(value as AllTasksFilterType)
-                }} 
-                className="w-full h-8"
-              >
-                <ToggleGroupItem value="deadline" aria-label="Deadline tasks" className="w-full text-xs h-full bg-sidebar-accent/60 text-sidebar-foreground/80 data-[state=on]:bg-sidebar-primary data-[state=on]:text-sidebar-primary-foreground rounded-r-none">
-                  Deadline ({allTasksCounts.deadline})
-                </ToggleGroupItem>
-                <ToggleGroupItem value="recurring" aria-label="Recurring tasks" className="w-full text-xs h-full bg-sidebar-accent/60 text-sidebar-foreground/80 data-[state=on]:bg-sidebar-primary data-[state=on]:text-sidebar-primary-foreground rounded-l-none">
-                  Lặp lại ({allTasksCounts.recurring})
-                </ToggleGroupItem>
-              </ToggleGroup>
+              <FilterSelect value={allTasksFilter} onValueChange={(value) => setAllTasksFilter(value as AllTasksFilterType)} />
             </div>
           )}
           {activeFilter === 'week' && (
@@ -405,7 +426,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
-
-    
