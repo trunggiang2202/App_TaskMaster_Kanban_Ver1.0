@@ -222,7 +222,6 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
     <SidebarGroup>
       <div className="space-y-3 px-2 pt-2">
         {recentTasks.map(task => {
-          const completedSubtasks = task.subtasks.filter(st => st.completed).length;
           const totalSubtasks = task.subtasks.length;
           return (
             <div 
@@ -238,7 +237,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                   {task.title}
                   {totalSubtasks > 0 && (
                     <span className="text-sidebar-foreground/70 ml-2">
-                      ({completedSubtasks}/{totalSubtasks})
+                      ({totalSubtasks} công việc)
                     </span>
                   )}
                 </p>
