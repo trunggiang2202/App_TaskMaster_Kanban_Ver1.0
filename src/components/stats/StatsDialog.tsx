@@ -216,39 +216,41 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
             <Separator className="bg-border" />
             <Accordion type="multiple" className="w-full">
               {displayedStats.map((item) => (
-                <AccordionItem value={item.status} key={item.status}>
-                  <AccordionTrigger className="hover:no-underline px-2 hover:bg-primary/10 rounded-md">
-                      <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-3">
-                              {item.icon}
-                              <span className="font-medium text-foreground">{item.status} ({item.tasks.reduce((acc, task) => acc + task.subtaskCount, 0)})</span>
-                          </div>
-                      </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-2 pt-2">
-                    {item.tasks.length > 0 ? (
-                      <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
-                        {item.tasks.map((task) => (
-                          <Button
-                            key={task.id} 
-                            variant="outline"
-                            className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-primary/10 rounded-md border"
-                            onClick={() => handleTaskClick(task.id)}
-                          >
-                            <div>
-                              <p className="font-medium text-foreground truncate">{task.title}</p>
-                              <p className="text-xs text-muted-foreground">{task.subtaskCount} công việc</p>
+                <div className="border-b" key={item.status}>
+                  <AccordionItem value={item.status} className="border-b-0">
+                    <AccordionTrigger className="hover:no-underline px-2 hover:bg-primary/10 rounded-md">
+                        <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-3">
+                                {item.icon}
+                                <span className="font-medium text-foreground">{item.status} ({item.tasks.reduce((acc, task) => acc + task.subtaskCount, 0)})</span>
                             </div>
-                          </Button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm text-center text-muted-foreground py-4">
-                        Không có công việc nào.
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-2 pt-2">
+                      {item.tasks.length > 0 ? (
+                        <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
+                          {item.tasks.map((task) => (
+                            <Button
+                              key={task.id} 
+                              variant="outline"
+                              className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-primary/10 rounded-md border"
+                              onClick={() => handleTaskClick(task.id)}
+                            >
+                              <div>
+                                <p className="font-medium text-foreground truncate">{task.title}</p>
+                                <p className="text-xs text-muted-foreground">{task.subtaskCount} công việc</p>
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-center text-muted-foreground py-4">
+                          Không có công việc nào.
+                        </div>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+                </div>
               ))}
             </Accordion>
         </div>
