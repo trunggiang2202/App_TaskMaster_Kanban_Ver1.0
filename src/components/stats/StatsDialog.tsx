@@ -166,7 +166,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
     { 
       status: 'Chưa bắt đầu', 
       tasks: stats.upcoming, 
-      icon: <Circle className="h-5 w-5 text-sky-500" />,
+      icon: <Circle className="h-5 w-5 text-primary" />,
     },
     { 
       status: 'Đã xong', 
