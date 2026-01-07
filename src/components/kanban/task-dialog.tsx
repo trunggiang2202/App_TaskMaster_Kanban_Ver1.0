@@ -797,7 +797,19 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         </FormItem>
                       )}
                     />
-                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} className="bg-primary/5"/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                         control={form.control}
                         name="recurringDays"
