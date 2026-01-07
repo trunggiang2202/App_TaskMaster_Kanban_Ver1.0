@@ -106,7 +106,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
             taskSets.upcoming.set(task.id, task.title);
         }
       }
-      initialStats.total += totalSubtasksInFilter || (filter === 'all' ? 1 : 0);
+      initialStats.total += totalSubtasksInFilter || (filter === 'all' && task.subtasks.length === 0 ? 1 : 0);
     });
     
     initialStats.inProgress = Array.from(taskSets.inProgress, ([id, title]) => ({ id, title }));
@@ -178,7 +178,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
             <Accordion type="multiple" className="w-full">
               {statsData.map((item) => (
                 <AccordionItem value={item.status} key={item.status}>
-                  <AccordionTrigger className="hover:no-underline px-2">
+                  <AccordionTrigger className="hover:no-underline px-2 hover:bg-muted/50 rounded-md">
                       <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">
                               {item.icon}
