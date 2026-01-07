@@ -169,7 +169,6 @@ function TaskKanban() {
   }, []);
   
   const todaysTasks = useMemo(() => tasks.filter(isTaskForToday), [tasks, isTaskForToday]);
-  const uncompletedTasksCount = useMemo(() => tasks.filter(task => task.status !== 'Done').length, [tasks]);
 
   const filteredTasksForSidebar = useMemo(() => {
     const sDay = startOfDay(selectedDay);
@@ -200,12 +199,12 @@ function TaskKanban() {
         }).sort(sortTasks);
       case 'all':
       default:
-        let allUncompleted = tasks.filter(task => task.status !== 'Done');
+        let allTasks = [...tasks];
         
         // 1. Filter by type
-        let typeFilteredTasks = allUncompleted;
+        let typeFilteredTasks = allTasks;
         if (allTasksFilter !== 'all') {
-          typeFilteredTasks = allUncompleted.filter(task => task.taskType === allTasksFilter);
+          typeFilteredTasks = allTasks.filter(task => task.taskType === allTasksFilter);
         }
 
         // 2. Sort the filtered tasks
@@ -213,28 +212,41 @@ function TaskKanban() {
           if (task.taskType !== 'deadline' || !task.startDate || !task.endDate) return 0;
           return new Date(task.endDate).getTime() - new Date(task.startDate).getTime();
         }
+        
+        // Define a base sort that always puts 'Done' tasks at the bottom
+        const baseSort = (a: Task, b: Task) => {
+            if (a.status === 'Done' && b.status !== 'Done') return 1;
+            if (a.status !== 'Done' && b.status === 'Done') return -1;
+            return 0;
+        }
 
         switch(allTasksSort) {
           case 'newest':
-            return typeFilteredTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          case 'longest':
-             // Only sort deadline tasks by duration
             return typeFilteredTasks.sort((a, b) => {
+                const statusSort = baseSort(a, b);
+                if (statusSort !== 0) return statusSort;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+          case 'longest':
+            return typeFilteredTasks.sort((a, b) => {
+                const statusSort = baseSort(a, b);
+                if (statusSort !== 0) return statusSort;
                 if (a.taskType === 'deadline' && b.taskType === 'deadline') {
                     return getTaskDuration(b) - getTaskDuration(a);
                 }
-                return 0; // Keep original order for non-deadline tasks
+                return 0;
             });
           case 'shortest':
-            // Only sort deadline tasks by duration
             return typeFilteredTasks.sort((a, b) => {
+                const statusSort = baseSort(a, b);
+                if (statusSort !== 0) return statusSort;
                 if (a.taskType === 'deadline' && b.taskType === 'deadline') {
                     return getTaskDuration(a) - getTaskDuration(b);
                 }
-                return 0; // Keep original order for non-deadline tasks
+                return 0;
             });
           default:
-            return typeFilteredTasks;
+            return typeFilteredTasks.sort(baseSort);
         }
     }
   }, [activeFilter, allTasksFilter, allTasksSort, tasks, selectedDay, todaysTasks]);
@@ -301,13 +313,7 @@ function TaskKanban() {
     setSelectedDay(date);
   };
 
-  const allTasksCounts = useMemo(() => {
-    const uncompleted = tasks.filter(task => task.status !== 'Done');
-    return {
-      deadline: uncompleted.filter(t => t.taskType === 'deadline').length,
-      recurring: uncompleted.filter(t => t.taskType === 'recurring').length,
-    }
-  }, [tasks]);
+  const allTasksCount = useMemo(() => tasks.length, [tasks]);
 
 
   return (
@@ -370,7 +376,7 @@ function TaskKanban() {
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-sidebar-accent/60">
                 <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
-                  Tất cả ({uncompletedTasksCount})
+                  Tất cả ({allTasksCount})
                 </TabsTrigger>
                 <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
                   Hôm nay ({todaysSubtaskCount})
