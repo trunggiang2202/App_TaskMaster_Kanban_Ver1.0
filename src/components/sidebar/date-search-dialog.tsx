@@ -7,15 +7,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { isValid, parse } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
 
 interface DateSearchDialogProps {
   isOpen: boolean;
@@ -66,10 +65,8 @@ export function DateSearchDialog({ isOpen, onOpenChange, onDateSelect }: DateSea
             <Search className="h-5 w-5" />
             Tìm kiếm ngày
           </DialogTitle>
-          <DialogDescription>
-            Nhập ngày, tháng, năm để nhảy đến ngày đó.
-          </DialogDescription>
         </DialogHeader>
+        <Separator />
         <div className="grid grid-cols-3 gap-2 py-4">
           <div className="space-y-1">
             <Label htmlFor="day" className="text-right">
