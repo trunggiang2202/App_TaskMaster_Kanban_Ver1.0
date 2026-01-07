@@ -19,9 +19,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Button } from '../ui/button';
 
 interface SubtaskWithParent extends Subtask {
   parentTaskTitle: string;
+  parentTaskId: string;
 }
 
 interface SubtaskStats {
@@ -38,9 +40,10 @@ interface StatsDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   tasks: Task[];
+  onTaskSelect: (taskId: string | null) => void;
 }
 
-export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
+export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: StatsDialogProps) {
   const [filter, setFilter] = React.useState<StatsFilter>('all');
 
   const stats = React.useMemo<SubtaskStats>(() => {
@@ -63,7 +66,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
         
         if (include) {
             initialStats.total++;
-            const subtaskWithParent: SubtaskWithParent = {...subtask, parentTaskTitle: task.title};
+            const subtaskWithParent: SubtaskWithParent = { ...subtask, parentTaskTitle: task.title, parentTaskId: task.id };
 
             if (subtask.completed) {
               initialStats.done.push(subtaskWithParent);
@@ -82,6 +85,11 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
 
     return initialStats;
   }, [tasks, filter]);
+  
+  const handleSubtaskClick = (taskId: string) => {
+    onTaskSelect(taskId);
+    onOpenChange(false);
+  };
 
   const statsData = [
     { 
@@ -152,12 +160,19 @@ export function StatsDialog({ isOpen, onOpenChange, tasks }: StatsDialogProps) {
                     {item.subtasks.length > 0 ? (
                       <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
                         {item.subtasks.map((subtask) => (
-                          <div key={subtask.id} className="text-sm p-2 bg-background rounded-md border">
-                            <p className="font-medium text-foreground truncate">{subtask.title}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              Nhiệm vụ: {subtask.parentTaskTitle}
-                            </p>
-                          </div>
+                          <Button
+                            key={subtask.id} 
+                            variant="ghost"
+                            className="w-full h-auto text-left justify-start p-2 bg-background rounded-md border"
+                            onClick={() => handleSubtaskClick(subtask.parentTaskId)}
+                          >
+                            <div>
+                              <p className="font-medium text-foreground truncate">{subtask.title}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                Nhiệm vụ: {subtask.parentTaskTitle}
+                              </p>
+                            </div>
+                          </Button>
                         ))}
                       </div>
                     ) : (

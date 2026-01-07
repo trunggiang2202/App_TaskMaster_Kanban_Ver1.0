@@ -347,7 +347,8 @@ function TaskKanban() {
       <StatsDialog 
         tasks={tasks} 
         isOpen={isStatsDialogOpen} 
-        onOpenChange={setIsStatsDialogOpen} 
+        onOpenChange={setIsStatsDialogOpen}
+        onTaskSelect={setSelectedTaskId}
       />
        <WelcomeDialog
         isOpen={showWelcomeDialog}
