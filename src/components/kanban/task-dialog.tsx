@@ -314,9 +314,25 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
 
   const handleSubmit = useCallback((data: TaskFormData) => {
-    if (data.taskType === 'idea') {
-        handleIdeaSubmit(data);
-        return;
+    if (taskType === 'idea') {
+      const task: Omit<Task, 'id' | 'createdAt' | 'status' | 'subtasks'> & { subtasks: any } = {
+        title: data.title,
+        description: data.description,
+        taskType: data.taskType,
+        subtasks: [],
+      };
+
+      const finalTask: Task = {
+        ...task,
+        id: crypto.randomUUID(),
+        status: 'To Do',
+        createdAt: new Date(),
+        subtasks: [],
+      };
+      
+      addTask(finalTask);
+      onOpenChange(false);
+      return;
     }
     
     // Final validation for non-idea tasks
@@ -384,7 +400,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       addTask(finalTask);
     }
     onOpenChange(false);
-  }, [taskToEdit, addTask, updateTask, onOpenChange, form]);
+  }, [taskToEdit, addTask, updateTask, onOpenChange, form, taskType]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
       const file = e.target.files?.[0];
@@ -712,7 +728,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="pb-0">
-          <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : 'Thêm nhiệm vụ mới'}</DialogTitle>
+          <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : (taskType === 'idea' ? 'Thêm ý tưởng mới' : 'Thêm nhiệm vụ mới')}</DialogTitle>
           {taskToEdit ? null : taskType === 'recurring' ? null : null}
         </DialogHeader>
 
@@ -920,7 +936,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
                         <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
                         {ideas.map((idea) => (
-                            <div key={idea.id} className="flex items-center justify-between p-2 bg-background rounded-md">
+                            <div key={idea.id} className="flex items-center justify-between p-2 bg-background rounded-md border">
                                 <div>
                                     <p className="font-medium text-foreground">{idea.title}</p>
                                     {idea.description && <p className="text-xs text-muted-foreground">{idea.description}</p>}
@@ -939,22 +955,24 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           </div>
           
           <DialogFooter className="pt-4 mt-auto">
-            {taskType === 'deadline' && activeTab === 'task' ? (
-              <>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
-                <Button type="button" disabled={isTaskTabInvalid} onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
-              </>
-            ) : taskType === 'deadline' && activeTab === 'subtasks' ? (
-              <>
-                  <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
-                  <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
-              </>
+            {taskType === 'deadline' ? (
+              activeTab === 'task' ? (
+                <>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
+                  <Button type="button" disabled={isTaskTabInvalid} onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
+                </>
+              ) : (
+                <>
+                    <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
+                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                </>
+              )
             ) : taskType === 'idea' ? (
                  <>
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         {ideas.length > 0 ? 'Đóng' : 'Hủy'}
                     </Button>
-                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>Lưu ý tưởng</Button>
+                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleIdeaSubmit)}>Lưu ý tưởng</Button>
                 </>
             ) : ( // Recurring task footer
                <>
@@ -968,5 +986,3 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
