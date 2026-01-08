@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
-import type { TaskType, Task } from '@/lib/types';
+import type { TaskType, Task, Subtask } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
@@ -160,17 +160,17 @@ function TaskKanban() {
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
     const today = startOfDay(new Date());
     if (task.taskType === 'recurring') {
-      return task.recurringDays?.includes(getDay(today));
+        const dayOfWeek = getDay(today);
+        return task.recurringDays?.includes(dayOfWeek) || task.subtasks.some(st => st.isManuallyStarted);
     }
     if (task.taskType === 'idea') {
         return isSameDay(task.createdAt, today);
     }
     return task.subtasks.some(st => 
-      st.startDate && 
-      st.endDate &&
-      isWithinInterval(today, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) })
+        st.isManuallyStarted ||
+        (st.startDate && st.endDate && isWithinInterval(today, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) }))
     );
-  }, []);
+}, []);
   
   const todaysTasks = useMemo(() => tasks.filter(isTaskForToday), [tasks, isTaskForToday]);
 
@@ -280,25 +280,23 @@ function TaskKanban() {
     const today = startOfDay(new Date());
     const dayOfWeek = getDay(today);
 
-    tasks.forEach(task => {
-        if (task.taskType === 'idea') return;
+    const isSubtaskForToday = (subtask: Subtask, task: Task): boolean => {
       if (task.taskType === 'recurring') {
-        if (task.recurringDays?.includes(dayOfWeek)) {
-          total += task.subtasks.length;
-          completed += task.subtasks.filter(st => st.completed).length;
-        }
-      } else { // deadline
-        const todaySubtasks = task.subtasks.filter(st => {
-          if (st.startDate && st.endDate) {
-            const subtaskStart = startOfDay(st.startDate);
-            const subtaskEnd = startOfDay(st.endDate);
-            return isWithinInterval(today, { start: subtaskStart, end: subtaskEnd });
-          }
-          return false;
-        });
-        total += todaySubtasks.length;
-        completed += todaySubtasks.filter(st => st.completed).length;
+        return task.recurringDays?.includes(dayOfWeek) || !!subtask.isManuallyStarted;
       }
+      // deadline task
+      return !!subtask.isManuallyStarted || (!!subtask.startDate && !!subtask.endDate && isWithinInterval(today, {
+        start: startOfDay(subtask.startDate),
+        end: startOfDay(subtask.endDate)
+      }));
+    };
+
+    tasks.forEach(task => {
+      if (task.taskType === 'idea') return;
+
+      const subtasksForToday = task.subtasks.filter(st => isSubtaskForToday(st, task));
+      total += subtasksForToday.length;
+      completed += subtasksForToday.filter(st => st.completed).length;
     });
 
     return { completedTodaysSubtasks: completed, totalTodaysSubtasks: total };
@@ -548,3 +546,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
