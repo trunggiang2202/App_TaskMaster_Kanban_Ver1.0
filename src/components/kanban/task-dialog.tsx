@@ -41,7 +41,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { TaskTypeDialog } from './task-type-dialog';
 import { Separator } from '../ui/separator';
 
-type Idea = { id: string; title: string; description?: string };
+type Idea = { id: string; title: string; };
 const IDEAS_STORAGE_KEY = 'taskmaster-ideas';
 
 const attachmentSchema = z.object({
@@ -321,7 +321,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     const newIdea: Idea = {
         id: crypto.randomUUID(),
         title: data.title,
-        description: data.description,
     };
     setIdeas(prev => [...prev, newIdea]);
     form.reset({
@@ -940,19 +939,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Thêm chi tiết cho ý tưởng..." {...field} className="bg-primary/5"/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
                 {ideas.length > 0 && (
                   <>
                     <Separator />
@@ -960,11 +947,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
                         <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
                         {ideas.map((idea) => (
-                            <div key={idea.id} className="flex items-center justify-between p-2 bg-primary/5 rounded-md border transition-colors">
-                                <div>
-                                    <p className="font-medium text-foreground">{idea.title}</p>
-                                    
-                                </div>
+                            <div key={idea.id} className="flex items-center justify-between p-2 bg-primary/5 rounded-md border">
+                                <p className="font-medium text-foreground">{idea.title}</p>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full" onClick={() => removeIdea(idea.id)}>
                                     <Trash2 className="h-4 w-4 text-destructive"/>
                                 </Button>
@@ -1010,11 +994,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
-
-    
-
-
 
     
