@@ -176,7 +176,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                          <div className="flex items-center justify-between text-xs pt-1">
                             <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
                                 <Clock className="h-3 w-3" />
-                                {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft}
+                                {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft} ({Math.round(timeProgress)}%)
                             </span>
                         </div>
                         <Progress 
@@ -412,4 +412,5 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+
 
