@@ -30,5 +30,5 @@ export interface Task {
   endDate?: Date;
   recurringDays?: number[]; // 0 (Sun) to 6 (Sat)
   lastCompletedAt?: Date;
-  convertedFrom?: string; // ID of the idea it was converted from
+  convertedFrom?: string;
 }
