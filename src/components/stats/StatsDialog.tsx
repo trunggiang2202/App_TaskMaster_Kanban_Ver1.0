@@ -177,18 +177,23 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
 
             <Separator className="bg-slate-300" />
             <div className="w-full space-y-2">
-              {statsData.map((item) => (
-                 item.tasks.length > 0 && (
+              {statsData.map((item) => {
+                const hasTasks = item.tasks.length > 0;
+                return (
                     <div className="border-b border-slate-300" key={item.status}>
-                        <button className="flex items-center justify-between w-full px-2 py-3 text-left" onClick={() => toggleSection(item.status)}>
+                        <button 
+                            className="flex items-center justify-between w-full px-2 py-3 text-left disabled:opacity-50 disabled:cursor-not-allowed" 
+                            onClick={() => hasTasks && toggleSection(item.status)}
+                            disabled={!hasTasks}
+                        >
                             <div className="flex items-center gap-3">
                                 {item.icon}
                                 <span className="font-medium text-foreground">{item.status} ({item.tasks.reduce((acc, task) => acc + task.subtaskCount, 0)})</span>
                             </div>
-                            <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", openSections[item.status] && "rotate-180")} />
+                            <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", openSections[item.status] && hasTasks && "rotate-180")} />
                         </button>
                         
-                        {openSections[item.status] && (
+                        {hasTasks && openSections[item.status] && (
                             <div className="px-2 pb-3">
                                 <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
                                 {item.tasks.map((task) => (
@@ -209,12 +214,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
                         )}
                     </div>
                 )
-              ))}
-                {stats.total > 0 && statsData.every(item => item.tasks.length === 0) && (
-                     <div className="text-sm text-center text-muted-foreground py-4">
-                        Không có công việc nào trong bộ lọc này.
-                     </div>
-                )}
+              })}
                 {stats.total === 0 && (
                     <div className="text-sm text-center text-muted-foreground py-4">
                         Không có công việc nào.
