@@ -246,10 +246,13 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   useEffect(() => {
     if (isOpen) {
       replace([]); // IMPORTANT: Safely clear the field array
-      form.clearErrors();
+      form.clearErrors(); // Clear previous validation errors
       setActiveTab('task');
+
+      let defaultValues: TaskFormData;
+
       if (taskToEdit) {
-        form.reset({
+        defaultValues = {
           title: taskToEdit.title,
           description: taskToEdit.description || '',
           taskType: taskToEdit.taskType,
@@ -268,14 +271,13 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
               endTime: st.endDate ? new Date(st.endDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '',
               attachments: st.attachments || [],
           })),
-        });
+        };
       } else {
         const now = new Date();
         const tomorrow = addDays(now, 1);
-        
         const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
         
-        form.reset({
+        defaultValues = {
           title: taskToConvert?.title || '',
           description: '',
           taskType: initialTaskType,
@@ -284,9 +286,10 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
           endDate: formatDate(tomorrow),
           endTime: '23:59',
           recurringDays: [],
-          subtasks: initialTaskType === 'idea' ? [] : undefined,
-        });
+          subtasks: initialTaskType === 'idea' ? [] : [],
+        };
       }
+      form.reset(defaultValues);
     }
   }, [taskToEdit, isOpen, initialTaskType, taskToConvert, replace, form]);
 

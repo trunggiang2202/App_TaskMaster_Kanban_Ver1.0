@@ -163,14 +163,14 @@ function TaskKanban() {
   }, []);
   
   const handleConvertToTask = useCallback((title: string, id: string) => {
-    setIsTaskDialogOpen(false); // Close the idea dialog
-    // Use a timeout to ensure the state updates before reopening
-    setTimeout(() => {
-        setTaskToConvert({ title, id });
-        setInitialTaskType('deadline');
-        setTaskToEdit(undefined);
-        setIsTaskDialogOpen(true);
-    }, 50);
+    // Set the task to convert and change the type.
+    // The dialog will close because its `key` will change in the parent.
+    // A new dialog will open with the correct data.
+    setTaskToConvert({ title, id });
+    setInitialTaskType('deadline');
+    setTaskToEdit(undefined);
+    setIsTaskDialogOpen(false); // Close the current dialog
+    setIsTaskDialogOpen(true); // Open the new one
   }, []);
 
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
