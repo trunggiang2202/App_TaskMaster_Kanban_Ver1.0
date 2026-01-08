@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -9,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { isBefore, isAfter, startOfDay, isToday, isThisWeek, isThisMonth, getDay, eachDayOfInterval, isWithinInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { isBefore, isAfter, startOfDay, getDay, eachDayOfInterval, isWithinInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,90 +48,122 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
 
   const stats = React.useMemo<TaskStats>(() => {
     const now = new Date();
+    const today = startOfDay(now);
     
     const initialStats: TaskStats = { inProgress: [], upcoming: [], done: [], overdue: [], total: 0 };
-    const taskSets = {
-        inProgress: new Map<string, { title: string; count: number }>(),
-        upcoming: new Map<string, { title: string; count: number }>(),
-        done: new Map<string, { title: string; count: number }>(),
-        overdue: new Map<string, { title: string; count: number }>(),
+    const taskSubtaskMap = {
+        inProgress: new Map<string, { title: string; subtasks: Subtask[] }>(),
+        upcoming: new Map<string, { title: string; subtasks: Subtask[] }>(),
+        done: new Map<string, { title: string; subtasks: Subtask[] }>(),
+        overdue: new Map<string, { title: string; subtasks: Subtask[] }>(),
     };
-    
-    let filterInterval: Interval | null = null;
+
+    let interval: Interval | null = null;
     if (filter === 'week') {
-        filterInterval = { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+        interval = { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
     } else if (filter === 'month') {
-        filterInterval = { start: startOfMonth(now), end: endOfMonth(now) };
+        interval = { start: startOfMonth(now), end: endOfMonth(now) };
     }
 
-    const isSubtaskInFilter = (subtask: Subtask, task: Task): boolean => {
-      if (filter === 'all') return true;
-      const today = startOfDay(now);
+    const relevantSubtasks: Subtask[] = [];
 
-      if (filter === 'today') {
-          if (task.taskType === 'recurring') {
-              return !!task.recurringDays?.includes(getDay(today));
-          }
-          return !!subtask.startDate && !!subtask.endDate && isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) });
-      }
-      
-      if (filterInterval) {
-          if (task.taskType === 'recurring' && task.recurringDays) {
-              const daysInInterval = eachDayOfInterval(filterInterval);
-              return daysInInterval.some(day => task.recurringDays?.includes(getDay(day)));
-          }
-          if (task.taskType === 'deadline' && subtask.startDate && subtask.endDate) {
-              // Check for overlap: (StartA <= EndB) and (EndA >= StartB)
-              return isAfter(subtask.endDate, filterInterval.start) && isBefore(subtask.startDate, filterInterval.end);
-          }
-      }
-      return false;
-    };
-
-
-    tasks.forEach(task => {
-        let totalSubtasksInFilterForThisTask = 0;
-
-        task.subtasks.forEach(subtask => {
-            if (isSubtaskInFilter(subtask, task)) {
-                totalSubtasksInFilterForThisTask++;
-                const statusMap = subtask.completed ? taskSets.done :
-                                  (task.taskType === 'deadline' && subtask.endDate && isAfter(now, subtask.endDate)) ? taskSets.overdue :
-                                  (task.taskType === 'deadline' && subtask.startDate && isBefore(now, subtask.startDate)) ? taskSets.upcoming :
-                                  taskSets.inProgress;
-
-                const existing = statusMap.get(task.id);
-                if (existing) {
-                    existing.count++;
-                } else {
-                    statusMap.set(task.id, { title: task.title, count: 1 });
+    if (filter === 'all' || filter === 'today') {
+        tasks.forEach(task => {
+            task.subtasks.forEach(subtask => {
+                let isRelevant = false;
+                if (filter === 'all') {
+                    isRelevant = true;
+                } else if (filter === 'today') {
+                    const dayOfWeek = getDay(today);
+                    if (task.taskType === 'recurring') {
+                        if (task.recurringDays?.includes(dayOfWeek)) {
+                            isRelevant = true;
+                        }
+                    } else { // deadline
+                        if (subtask.startDate && subtask.endDate) {
+                            if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
+                                isRelevant = true;
+                            }
+                        }
+                    }
                 }
-            }
-        });
-        initialStats.total += totalSubtasksInFilterForThisTask;
 
-        // Handle tasks with no subtasks but matching filter criteria
-        if (task.subtasks.length === 0 && isSubtaskInFilter({} as Subtask, task)) {
-          initialStats.total++;
-          const taskInfo = { title: task.title, count: 1 };
-           const statusMap = task.status === 'Done' ? taskSets.done :
-                              (task.taskType === 'deadline' && task.endDate && isAfter(now, task.endDate)) ? taskSets.overdue :
-                              (task.taskType === 'deadline' && task.startDate && isBefore(now, task.startDate)) ? taskSets.upcoming :
-                              taskSets.inProgress;
-          
-          const existing = statusMap.get(task.id);
-          if (existing) {
-              existing.count++;
-          } else {
-              statusMap.set(task.id, taskInfo);
-          }
+                if (isRelevant) {
+                    const statusMap = subtask.completed ? taskSubtaskMap.done :
+                                  (task.taskType === 'deadline' && subtask.endDate && isAfter(now, subtask.endDate)) ? taskSubtaskMap.overdue :
+                                  (task.taskType === 'deadline' && subtask.startDate && isBefore(now, subtask.startDate)) ? taskSubtaskMap.upcoming :
+                                  taskSubtaskMap.inProgress;
+                    
+                    if (!statusMap.has(task.id)) {
+                        statusMap.set(task.id, { title: task.title, subtasks: [] });
+                    }
+                    statusMap.get(task.id)!.subtasks.push(subtask);
+                    initialStats.total++;
+                }
+            });
+        });
+    } else if (interval) { // Week or Month
+        const daysInInterval = eachDayOfInterval(interval);
+        daysInInterval.forEach(day => {
+            const sDay = startOfDay(day);
+            const dayOfWeek = getDay(sDay);
+
+            tasks.forEach(task => {
+                task.subtasks.forEach(subtask => {
+                    let isRelevantToday = false;
+                    if (task.taskType === 'recurring') {
+                        if (task.recurringDays?.includes(dayOfWeek)) {
+                            isRelevantToday = true;
+                        }
+                    } else { // deadline
+                        if (subtask.startDate && subtask.endDate) {
+                            if (isWithinInterval(sDay, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
+                                isRelevantToday = true;
+                            }
+                        }
+                    }
+                    
+                    if (isRelevantToday) {
+                        const statusMap = subtask.completed ? taskSubtaskMap.done :
+                                  (task.taskType === 'deadline' && subtask.endDate && isAfter(now, subtask.endDate)) ? taskSubtaskMap.overdue :
+                                  (task.taskType === 'deadline' && subtask.startDate && isBefore(now, subtask.startDate)) ? taskSubtaskMap.upcoming :
+                                  taskSubtaskMap.inProgress;
+
+                        // This logic prevents double-counting subtasks within the same status category for a task
+                        if (!statusMap.has(task.id)) {
+                             statusMap.set(task.id, { title: task.title, subtasks: [] });
+                        }
+                        const existingSubtasks = statusMap.get(task.id)!.subtasks;
+                        if (!existingSubtasks.some(st => st.id === subtask.id)) {
+                           existingSubtasks.push(subtask);
+                        }
+                    }
+                });
+            });
+        });
+
+        // Calculate total and populate initialStats from the map
+        Object.values(taskSubtaskMap).forEach(statusMap => {
+            statusMap.forEach((taskData, taskId) => {
+                const info = { id: taskId, title: taskData.title, subtaskCount: taskData.subtasks.length };
+                 if (statusMap === taskSubtaskMap.inProgress) initialStats.inProgress.push(info);
+                 else if (statusMap === taskSubtaskMap.upcoming) initialStats.upcoming.push(info);
+                 else if (statusMap === taskSubtaskMap.done) initialStats.done.push(info);
+                 else if (statusMap === taskSubtaskMap.overdue) initialStats.overdue.push(info);
+
+                initialStats.total += taskData.subtasks.length;
+            });
+        });
+
+        // This part is for filters 'all' and 'today' which directly mutate initialStats
+        if (filter !== 'week' && filter !== 'month') {
+            initialStats.inProgress = Array.from(taskSubtaskMap.inProgress, ([id, data]) => ({ id, title: data.title, subtaskCount: data.subtasks.length }));
+            initialStats.upcoming = Array.from(taskSubtaskMap.upcoming, ([id, data]) => ({ id, title: data.title, subtaskCount: data.subtasks.length }));
+            initialStats.done = Array.from(taskSubtaskMap.done, ([id, data]) => ({ id, title: data.title, subtaskCount: data.subtasks.length }));
+            initialStats.overdue = Array.from(taskSubtaskMap.overdue, ([id, data]) => ({ id, title: data.title, subtaskCount: data.subtasks.length }));
         }
-    });
-    
-    initialStats.inProgress = Array.from(taskSets.inProgress, ([id, data]) => ({ id, title: data.title, subtaskCount: data.count }));
-    initialStats.upcoming = Array.from(taskSets.upcoming, ([id, data]) => ({ id, title: data.title, subtaskCount: data.count }));
-    initialStats.done = Array.from(taskSets.done, ([id, data]) => ({ id, title: data.title, subtaskCount: data.count }));
-    initialStats.overdue = Array.from(taskSets.overdue, ([id, data]) => ({ id, title: data.title, subtaskCount: data.count }));
+    }
+
 
     return initialStats;
   }, [tasks, filter]);
