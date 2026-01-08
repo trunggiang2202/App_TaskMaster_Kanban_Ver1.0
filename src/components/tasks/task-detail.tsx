@@ -121,7 +121,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
             return <AlertTriangle className="h-5 w-5 text-destructive" />;
         }
         if (isInProgress) {
-            return <LoaderCircle className="h-5 w-5 text-accent animate-spin" />;
+            return <LoaderCircle className="h-5 w-5 text-amber-500 animate-spin" />;
         }
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     };
@@ -183,7 +183,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                             value={timeProgress} 
                             className="h-1.5" 
                             indicatorClassName={cn(
-                                isWarning ? "bg-destructive" : isInProgress ? "bg-accent" : "bg-primary"
+                                isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-primary"
                             )}
                         />
                     </div>
@@ -263,7 +263,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         if (task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now)) {
           return 'border-l-4 border-destructive'; // Overdue for deadline tasks
         }
-        return 'border-l-4 border-accent'; // In Progress for both types
+        return 'border-l-4 border-amber-500'; // In Progress for both types
     }
     if (columnTitle === 'Chưa bắt đầu') {
         return 'border-l-4 border-primary';
@@ -273,7 +273,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
 
   const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
     { title: 'Chưa bắt đầu', subtasks: categorizedSubtasks['Chưa bắt đầu'], isClickable: false, titleColor: 'text-primary', bgColor: 'bg-primary/5' },
-    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-accent', bgColor: 'bg-primary/5' },
+    { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500', bgColor: 'bg-primary/5' },
     { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-chart-2', bgColor: 'bg-primary/5' },
   ];
   
@@ -412,5 +412,4 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
-
 

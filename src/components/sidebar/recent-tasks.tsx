@@ -134,7 +134,7 @@ function TaskProgress({ task }: { task: Task }) {
   const getTimeLeftColor = () => {
     if (task.status === 'Done') return 'text-emerald-500';
     if (isOverdue) return 'text-destructive';
-    if (isWarning) return 'text-destructive';
+    if (isWarning) return 'text-amber-500';
     return 'text-sidebar-foreground/80';
   };
 
