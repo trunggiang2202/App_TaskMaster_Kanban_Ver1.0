@@ -965,7 +965,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                                     <p className="font-medium text-foreground">{idea.title}</p>
                                     {idea.description && <p className="text-xs text-muted-foreground">{idea.description}</p>}
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeIdea(idea.id)}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full" onClick={() => removeIdea(idea.id)}>
                                     <Trash2 className="h-4 w-4 text-destructive"/>
                                 </Button>
                             </div>
@@ -1014,3 +1014,4 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     
 
     
+
