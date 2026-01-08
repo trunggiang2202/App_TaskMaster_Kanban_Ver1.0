@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -347,7 +346,12 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                 {kanbanColumns.map(column => (
                   <div key={column.title} className="flex flex-col">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <h3 className={`font-semibold text-sm ${column.titleColor}`}>{column.title} ({column.subtasks.length})</h3>
+                       <h3 className={`font-semibold text-sm ${column.titleColor}`}>
+                        {column.title === 'Xong' 
+                          ? `${column.title} (${completedSubtasks}/${totalSubtasks})`
+                          : `${column.title} (${column.subtasks.length})`
+                        }
+                      </h3>
                     </div>
                     <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
                       {column.subtasks.length > 0 ? (
@@ -408,3 +412,4 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+
