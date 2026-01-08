@@ -122,7 +122,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
             return <AlertTriangle className="h-5 w-5 text-destructive" />;
         }
         if (isInProgress || isManuallyStarted) {
-            return <LoaderCircle className={cn("h-5 w-5 animate-spin", isManuallyStarted ? "text-primary" : "text-amber-500")} />;
+            return <LoaderCircle className={cn("h-5 w-5 animate-spin", isManuallyStarted ? "text-blue-600 dark:text-blue-400" : "text-amber-500")} />;
         }
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     };
@@ -424,4 +424,5 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+
 
