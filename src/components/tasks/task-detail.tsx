@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -124,7 +125,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
         if (isInProgress || isManuallyStarted) {
             return <LoaderCircle className={cn("h-5 w-5 animate-spin", isManuallyStarted ? "text-blue-600 dark:text-blue-400" : "text-amber-500")} />;
         }
-        return <Circle className="h-5 w-5 text-muted-foreground" />;
+        return <Circle className="h-5 w-5 text-primary" />;
     };
     
     const isToDoClickable = !isInProgress && !isOverdue && !subtask.completed;
@@ -263,7 +264,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
     if (columnTitle === 'Đang làm') {
         if (subtask.isManuallyStarted) {
-            return 'border-l-4 border-primary';
+            return 'border-l-4 border-blue-600';
         }
         if (task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now)) {
           return 'border-l-4 border-destructive'; // Overdue for deadline tasks
@@ -424,5 +425,6 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+
 
 
