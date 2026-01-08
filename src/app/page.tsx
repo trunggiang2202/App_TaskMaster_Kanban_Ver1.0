@@ -305,36 +305,35 @@ function TaskKanban() {
     let completed = 0;
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd }).map(d => getDay(d));
+    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-    weeklyFilteredTasks.forEach(task => {
-      if (task.taskType === 'recurring') {
-          // Count subtasks for each day the task recurs in the current week
-          const recurringDaysInWeek = task.recurringDays?.filter(day => weekDays.includes(day)) || [];
-          total += recurringDaysInWeek.length * task.subtasks.length;
-          // A recurring task is either all done for the week or not. We can't track completion per day.
-          // Let's assume completion resets weekly. If it's done, all are completed.
-          if (task.status === 'Done') {
-             completed += recurringDaysInWeek.length * task.subtasks.length;
-          }
-      } else {
-          // For deadline tasks, count subtasks that overlap with the week interval.
-          const subtasksForWeek = task.subtasks.filter(st => {
-            if (st.startDate && st.endDate) {
-              const subtaskInterval = { start: startOfDay(st.startDate), end: startOfDay(st.endDate) };
-              return isWithinInterval(subtaskInterval.start, { start: weekStart, end: weekEnd }) ||
-                    isWithinInterval(subtaskInterval.end, { start: weekStart, end: weekEnd }) ||
-                    (isBefore(subtaskInterval.start, weekStart) && isAfter(subtaskInterval.end, weekEnd));
+    weekDays.forEach(day => {
+        const sDay = startOfDay(day);
+        const dayOfWeek = getDay(sDay);
+
+        tasks.forEach(task => {
+            if (task.taskType === 'recurring') {
+                if (task.recurringDays?.includes(dayOfWeek)) {
+                    total += task.subtasks.length;
+                    completed += task.subtasks.filter(st => st.completed).length;
+                }
+            } else { // deadline
+                const subtasksForDay = task.subtasks.filter(st => {
+                    if (st.startDate && st.endDate) {
+                        const subtaskStart = startOfDay(st.startDate);
+                        const subtaskEnd = startOfDay(st.endDate);
+                        return isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd });
+                    }
+                    return false;
+                });
+                total += subtasksForDay.length;
+                completed += subtasksForDay.filter(st => st.completed).length;
             }
-            return false;
-          });
-          total += subtasksForWeek.length;
-          completed += subtasksForWeek.filter(st => st.completed).length;
-      }
+        });
     });
 
     return { completed, total };
-  }, [weeklyFilteredTasks, currentDate]);
+  }, [tasks, currentDate]);
 
 
   const welcomeDialogTaskCount = useMemo(() => totalTodaysSubtasks - completedTodaysSubtasks, [totalTodaysSubtasks, completedTodaysSubtasks]);
