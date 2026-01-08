@@ -349,7 +349,15 @@ function TaskKanban() {
     setSelectedDay(date);
   };
 
-  const allTasksCount = useMemo(() => tasks.length, [tasks]);
+  const allSubtasksCount = useMemo(() => {
+    let total = 0;
+    let completed = 0;
+    tasks.forEach(task => {
+      total += task.subtasks.length;
+      completed += task.subtasks.filter(st => st.completed).length;
+    });
+    return { total, completed };
+  }, [tasks]);
 
 
   return (
@@ -409,7 +417,7 @@ function TaskKanban() {
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="all">
-                  Tất cả ({allTasksCount})
+                  Tất cả ({allSubtasksCount.completed}/{allSubtasksCount.total})
                 </TabsTrigger>
                 <TabsTrigger value="today">
                   Hôm nay ({completedTodaysSubtasks}/{totalTodaysSubtasks})
