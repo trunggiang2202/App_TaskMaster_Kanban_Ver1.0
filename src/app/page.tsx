@@ -286,8 +286,6 @@ function TaskKanban() {
   }, [tasks]);
 
   const weekViewCounts = useMemo(() => {
-    if (activeFilter !== 'week') return { completed: 0, total: 0 };
-    
     let total = 0;
     let completed = 0;
     const sDay = startOfDay(selectedDay);
@@ -311,7 +309,7 @@ function TaskKanban() {
     });
 
     return { completed, total };
-  }, [tasks, selectedDay, activeFilter]);
+  }, [tasks, selectedDay]);
 
 
   const welcomeDialogTaskCount = useMemo(() => totalTodaysSubtasks - completedTodaysSubtasks, [totalTodaysSubtasks, completedTodaysSubtasks]);
@@ -417,7 +415,7 @@ function TaskKanban() {
                   Hôm nay ({completedTodaysSubtasks}/{totalTodaysSubtasks})
                 </TabsTrigger>
                 <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
-                   {activeFilter === 'week' ? `Xem tuần (${weekViewCounts.completed}/${weekViewCounts.total})` : 'Xem tuần'}
+                   Xem tuần ({weekViewCounts.completed}/{weekViewCounts.total})
                 </TabsTrigger>
               </TabsList>
             </Tabs>
