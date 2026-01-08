@@ -156,11 +156,10 @@ function TaskKanban() {
   }, []);
 
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
-    if (task.taskType === 'recurring') {
-      return task.recurringDays?.includes(getDay(new Date()));
-    }
-
     const today = startOfDay(new Date());
+    if (task.taskType === 'recurring') {
+      return task.recurringDays?.includes(getDay(today));
+    }
     return task.subtasks.some(st => 
       st.startDate && 
       st.endDate &&
@@ -170,10 +169,33 @@ function TaskKanban() {
   
   const todaysTasks = useMemo(() => tasks.filter(isTaskForToday), [tasks, isTaskForToday]);
 
-  const filteredTasksForSidebar = useMemo(() => {
+  const weeklyFilteredTasks = useMemo(() => {
     const sDay = startOfDay(selectedDay);
     const dayOfWeek = getDay(sDay);
 
+    const sortTasks = (a: Task, b: Task) => {
+        if (a.taskType === 'recurring' && b.taskType !== 'recurring') return -1;
+        if (a.taskType !== 'recurring' && b.taskType === 'recurring') return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    };
+
+    return tasks.filter(task => {
+      if (task.taskType === 'recurring') {
+        return task.recurringDays?.includes(dayOfWeek);
+      }
+      // For deadline tasks, check if any subtask falls on the selected day
+      return task.subtasks.some(st => {
+        if (!st.startDate || !st.endDate) return false;
+        return isWithinInterval(sDay, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) });
+      });
+    }).sort((a,b) => {
+        if (a.status === 'Done' && b.status !== 'Done') return 1;
+        if (a.status !== 'Done' && b.status === 'Done') return -1;
+        return sortTasks(a,b);
+    });
+  }, [tasks, selectedDay]);
+
+  const filteredTasksForSidebar = useMemo(() => {
     const sortTasks = (a: Task, b: Task) => {
         if (a.taskType === 'recurring' && b.taskType !== 'recurring') return -1;
         if (a.taskType !== 'recurring' && b.taskType === 'recurring') return 1;
@@ -188,19 +210,7 @@ function TaskKanban() {
             return sortTasks(a,b);
         });
       case 'week':
-        return tasks.filter(task => {
-          if (task.taskType === 'recurring') {
-            return task.recurringDays?.includes(dayOfWeek);
-          }
-          return task.subtasks.some(st => {
-            if (!st.startDate || !st.endDate) return false;
-            return isWithinInterval(sDay, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) });
-          });
-        }).sort((a,b) => {
-            if (a.status === 'Done' && b.status !== 'Done') return 1;
-            if (a.status !== 'Done' && b.status === 'Done') return -1;
-            return sortTasks(a,b);
-        });
+        return weeklyFilteredTasks;
       case 'all':
       default:
         let allTasks = [...tasks];
@@ -252,7 +262,7 @@ function TaskKanban() {
             return typeFilteredTasks.sort(baseSort);
         }
     }
-  }, [activeFilter, allTasksFilter, allTasksSort, tasks, selectedDay, todaysTasks]);
+  }, [activeFilter, allTasksFilter, allTasksSort, tasks, todaysTasks, weeklyFilteredTasks]);
 
   const selectedTask = useMemo(() => tasks.find(task => task.id === selectedTaskId), [tasks, selectedTaskId]);
 
@@ -284,32 +294,31 @@ function TaskKanban() {
 
     return { completedTodaysSubtasks: completed, totalTodaysSubtasks: total };
   }, [tasks]);
-
+  
   const weekViewCounts = useMemo(() => {
     let total = 0;
     let completed = 0;
     const sDay = startOfDay(selectedDay);
     const dayOfWeek = getDay(sDay);
 
-    tasks.forEach(task => {
-        const subtasksForDay = task.subtasks.filter(st => {
-            if (task.taskType === 'recurring') {
-                return task.recurringDays?.includes(dayOfWeek);
-            }
-            if (st.startDate && st.endDate) {
-                const subtaskStart = startOfDay(st.startDate);
-                const subtaskEnd = startOfDay(st.endDate);
-                return isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd });
-            }
-            return false;
-        });
-
-        total += subtasksForDay.length;
-        completed += subtasksForDay.filter(st => st.completed).length;
+    weeklyFilteredTasks.forEach(task => {
+      const subtasksForDay = task.subtasks.filter(st => {
+        if (task.taskType === 'recurring') {
+          // The parent task is already filtered, so all subtasks are for today.
+          return true;
+        }
+        // For deadline tasks, we need to re-check which subtasks fall on the selected day.
+        if (st.startDate && st.endDate) {
+          return isWithinInterval(sDay, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) });
+        }
+        return false;
+      });
+      total += subtasksForDay.length;
+      completed += subtasksForDay.filter(st => st.completed).length;
     });
 
     return { completed, total };
-  }, [tasks, selectedDay]);
+  }, [weeklyFilteredTasks, selectedDay]);
 
 
   const welcomeDialogTaskCount = useMemo(() => totalTodaysSubtasks - completedTodaysSubtasks, [totalTodaysSubtasks, completedTodaysSubtasks]);
@@ -416,13 +425,13 @@ function TaskKanban() {
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
               <TabsList className="grid w-full grid-cols-3 gap-1">
-                <TabsTrigger value="all">
+                <TabsTrigger value="all" className="text-xs">
                   Tất cả ({allSubtasksCount.completed}/{allSubtasksCount.total})
                 </TabsTrigger>
-                <TabsTrigger value="today">
+                <TabsTrigger value="today" className="text-xs">
                   Hôm nay ({completedTodaysSubtasks}/{totalTodaysSubtasks})
                 </TabsTrigger>
-                <TabsTrigger value="week">
+                <TabsTrigger value="week" className="text-xs">
                    Xem tuần ({weekViewCounts.completed}/{weekViewCounts.total})
                 </TabsTrigger>
               </TabsList>
