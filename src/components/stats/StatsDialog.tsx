@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { isBefore, isAfter, startOfDay, getDay, eachDayOfInterval, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
+import { isBefore, isAfter, startOfDay, getDay, isWithinInterval } from 'date-fns';
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,16 +29,17 @@ interface TaskStats {
   total: number;
 }
 
-type StatsFilter = 'all' | 'today' | 'week';
+type StatsFilter = 'all' | 'today';
 
 interface StatsDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   tasks: Task[];
   onTaskSelect: (taskId: string | null) => void;
+  onFilterChange: (filter: 'all' | 'today' | 'week') => void;
 }
 
-export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: StatsDialogProps) {
+export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilterChange }: StatsDialogProps) {
   const [filter, setFilter] = React.useState<StatsFilter>('all');
 
  const stats = React.useMemo<TaskStats>(() => {
@@ -80,33 +81,6 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                 }
             });
         });
-    } else if (filter === 'week') {
-        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-        const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-        weekDays.forEach(day => {
-            const sDay = startOfDay(day);
-            const dayOfWeek = getDay(sDay);
-
-            tasks.forEach(task => {
-                if (task.taskType === 'recurring') {
-                    if (task.recurringDays?.includes(dayOfWeek)) {
-                        task.subtasks.forEach(subtask => collectedSubtasks.set(subtask.id, { subtask, task }));
-                    }
-                } else { // deadline
-                    task.subtasks.forEach(subtask => {
-                        if (subtask.startDate && subtask.endDate) {
-                            const subtaskStart = startOfDay(subtask.startDate);
-                            const subtaskEnd = startOfDay(subtask.endDate);
-                            if (isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd })) {
-                                collectedSubtasks.set(subtask.id, { subtask, task });
-                            }
-                        }
-                    });
-                }
-            });
-        });
     }
 
     initialStats.total = collectedSubtasks.size;
@@ -132,6 +106,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
   }, [tasks, filter]);
   
   const handleTaskClick = (taskId: string) => {
+    onFilterChange('all');
     onTaskSelect(taskId);
     onOpenChange(false);
   };

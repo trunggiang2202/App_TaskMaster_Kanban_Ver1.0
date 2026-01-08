@@ -516,6 +516,7 @@ function TaskKanban() {
         isOpen={isStatsDialogOpen} 
         onOpenChange={setIsStatsDialogOpen}
         onTaskSelect={setSelectedTaskId}
+        onFilterChange={setActiveFilter}
       />
        <WelcomeDialog
         isOpen={showWelcomeDialog}
@@ -534,5 +535,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
