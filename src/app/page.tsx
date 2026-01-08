@@ -3,10 +3,10 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, BarChart3, Pencil, Clock, Repeat, TrendingUp, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical } from 'lucide-react';
+import { Plus, TrendingUp, Pencil, Clock, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay } from 'date-fns';
+import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInterval } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
@@ -164,7 +164,7 @@ function TaskKanban() {
     return task.subtasks.some(st => 
       st.startDate && 
       st.endDate &&
-      !isAfter(today, startOfDay(st.endDate)) && !isBefore(today, startOfDay(st.startDate))
+      isWithinInterval(today, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) })
     );
   }, []);
   
@@ -175,8 +175,6 @@ function TaskKanban() {
     const dayOfWeek = getDay(sDay);
 
     const sortTasks = (a: Task, b: Task) => {
-        if (a.status === 'Done' && b.status !== 'Done') return 1;
-        if (a.status !== 'Done' && b.status === 'Done') return -1;
         if (a.taskType === 'recurring' && b.taskType !== 'recurring') return -1;
         if (a.taskType !== 'recurring' && b.taskType === 'recurring') return 1;
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -184,7 +182,11 @@ function TaskKanban() {
 
     switch(activeFilter) {
       case 'today':
-        return [...todaysTasks].sort(sortTasks);
+         return [...todaysTasks].sort((a,b) => {
+            if (a.status === 'Done' && b.status !== 'Done') return 1;
+            if (a.status !== 'Done' && b.status === 'Done') return -1;
+            return sortTasks(a,b);
+        });
       case 'week':
         return tasks.filter(task => {
           if (task.taskType === 'recurring') {
@@ -192,11 +194,13 @@ function TaskKanban() {
           }
           return task.subtasks.some(st => {
             if (!st.startDate || !st.endDate) return false;
-            const subtaskStart = startOfDay(st.startDate);
-            const subtaskEnd = startOfDay(st.endDate);
-            return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
+            return isWithinInterval(sDay, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) });
           });
-        }).sort(sortTasks);
+        }).sort((a,b) => {
+            if (a.status === 'Done' && b.status !== 'Done') return 1;
+            if (a.status !== 'Done' && b.status === 'Done') return -1;
+            return sortTasks(a,b);
+        });
       case 'all':
       default:
         let allTasks = [...tasks];
@@ -213,7 +217,6 @@ function TaskKanban() {
           return new Date(task.endDate).getTime() - new Date(task.startDate).getTime();
         }
         
-        // Define a base sort that always puts 'Done' tasks at the bottom
         const baseSort = (a: Task, b: Task) => {
             if (a.status === 'Done' && b.status !== 'Done') return 1;
             if (a.status !== 'Done' && b.status === 'Done') return -1;
@@ -270,7 +273,7 @@ function TaskKanban() {
           if (st.startDate && st.endDate) {
             const subtaskStart = startOfDay(st.startDate);
             const subtaskEnd = startOfDay(st.endDate);
-            return !isAfter(today, subtaskEnd) && !isBefore(today, subtaskStart);
+            return isWithinInterval(today, { start: subtaskStart, end: subtaskEnd });
           }
           return false;
         });
@@ -281,6 +284,35 @@ function TaskKanban() {
 
     return { completedTodaysSubtasks: completed, totalTodaysSubtasks: total };
   }, [tasks]);
+
+  const weekViewCounts = useMemo(() => {
+    if (activeFilter !== 'week') return { completed: 0, total: 0 };
+    
+    let total = 0;
+    let completed = 0;
+    const sDay = startOfDay(selectedDay);
+    const dayOfWeek = getDay(sDay);
+
+    tasks.forEach(task => {
+        const subtasksForDay = task.subtasks.filter(st => {
+            if (task.taskType === 'recurring') {
+                return task.recurringDays?.includes(dayOfWeek);
+            }
+            if (st.startDate && st.endDate) {
+                const subtaskStart = startOfDay(st.startDate);
+                const subtaskEnd = startOfDay(st.endDate);
+                return isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd });
+            }
+            return false;
+        });
+
+        total += subtasksForDay.length;
+        completed += subtasksForDay.filter(st => st.completed).length;
+    });
+
+    return { completed, total };
+  }, [tasks, selectedDay, activeFilter]);
+
 
   const welcomeDialogTaskCount = useMemo(() => totalTodaysSubtasks - completedTodaysSubtasks, [totalTodaysSubtasks, completedTodaysSubtasks]);
 
@@ -385,7 +417,7 @@ function TaskKanban() {
                   Hôm nay ({completedTodaysSubtasks}/{totalTodaysSubtasks})
                 </TabsTrigger>
                 <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
-                  Xem tuần
+                   {activeFilter === 'week' ? `Xem tuần (${weekViewCounts.completed}/${weekViewCounts.total})` : 'Xem tuần'}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -476,5 +508,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
