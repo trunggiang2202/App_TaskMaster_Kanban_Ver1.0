@@ -415,7 +415,7 @@ function TaskKanban() {
           <Separator className="my-2" />
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-3 gap-1">
                 <TabsTrigger value="all">
                   Tất cả ({allSubtasksCount.completed}/{allSubtasksCount.total})
                 </TabsTrigger>
@@ -514,3 +514,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
