@@ -246,9 +246,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       replace([]); // IMPORTANT: Safely clear the field array
       form.clearErrors();
       setActiveTab('task');
-      if (taskType === 'idea') {
-        // Ideas are loaded from localStorage, no need to reset
-      }
       if (taskToEdit) {
         form.reset({
           title: taskToEdit.title,
@@ -289,7 +286,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         });
       }
     }
-  }, [taskToEdit, isOpen, initialTaskType, replace, form, taskType]);
+  }, [taskToEdit, isOpen, initialTaskType, replace, form]);
 
   const addEmptySubtask = () => {
     const newSubtask: Partial<Subtask> = { 
@@ -317,7 +314,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     }, 0);
   };
 
-  const handleIdeaSubmit = (data: TaskFormData) => {
+  const handleIdeaSubmit = useCallback(form.handleSubmit((data: TaskFormData) => {
     const newIdea: Idea = {
         id: crypto.randomUUID(),
         title: data.title,
@@ -329,7 +326,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         description: '',
     });
     form.setFocus('title');
-  };
+  }), [form, setIdeas]);
+
 
   const removeIdea = (id: string) => {
     setIdeas(prev => prev.filter(idea => idea.id !== id));
@@ -338,23 +336,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
   const handleSubmit = useCallback((data: TaskFormData) => {
     if (taskType === 'idea') {
-      const task: Omit<Task, 'id' | 'createdAt' | 'status' | 'subtasks'> & { subtasks: any } = {
-        title: data.title,
-        description: data.description,
-        taskType: data.taskType,
-        subtasks: [],
-      };
-
-      const finalTask: Task = {
-        ...task,
-        id: crypto.randomUUID(),
-        status: 'To Do',
-        createdAt: new Date(),
-        subtasks: [],
-      };
-      
-      addTask(finalTask);
-      onOpenChange(false);
       return;
     }
     
@@ -926,19 +907,32 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
               </div>
             ) : ( // Idea Task View
               <div className="py-4 space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tên ý tưởng</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nhập ý tưởng của bạn..." {...field} autoFocus className="bg-primary/5"/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <form onSubmit={handleIdeaSubmit} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tên ý tưởng</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Nhập ý tưởng của bạn..." 
+                            {...field} 
+                            autoFocus 
+                            className="bg-primary/5"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleIdeaSubmit();
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </form>
                 
                 {ideas.length > 0 && (
                   <>
@@ -980,7 +974,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         {ideas.length > 0 ? 'Đóng' : 'Hủy'}
                     </Button>
-                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleIdeaSubmit)}>Lưu ý tưởng</Button>
+                    <Button type="submit" disabled={!form.formState.isValid} onClick={handleIdeaSubmit}>Lưu ý tưởng</Button>
                 </>
             ) : ( // Recurring task footer
                <>
@@ -996,3 +990,4 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 }
 
     
+
