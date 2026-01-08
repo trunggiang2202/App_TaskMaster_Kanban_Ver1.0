@@ -73,8 +73,8 @@ const SortSelect = ({ value, onValueChange, disabled }: { value: AllTasksSortTyp
     </SelectTrigger>
     <SelectContent>
       <SelectItem value="newest">Mới nhất</SelectItem>
-      <SelectItem value="longest">Thời gian dài nhất</SelectItem>
-      <SelectItem value="shortest">Thời gian ngắn nhất</SelectItem>
+      <SelectItem value="longest">Dài -&gt; ngắn</SelectItem>
+      <SelectItem value="shortest">Ngắn -&gt; dài</SelectItem>
     </SelectContent>
   </Select>
 );
