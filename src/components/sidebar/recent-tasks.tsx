@@ -140,7 +140,6 @@ function TaskProgress({ task }: { task: Task }) {
 
   const getIndicatorColor = (progress: number) => {
     if (isOverdue) return 'bg-destructive';
-    if (isUpcoming) return 'bg-muted';
     if (progress > 60) {
       return 'bg-emerald-500';
     }
