@@ -41,6 +41,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { TaskTypeDialog } from './task-type-dialog';
 import { Separator } from '../ui/separator';
 
+type Idea = { id: string; title: string; description?: string };
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -190,6 +191,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
   const subtaskTitleRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [activeTab, setActiveTab] = useState('task');
+  const [ideas, setIdeas] = useState<Idea[]>([]);
   
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -220,6 +222,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       replace([]); // IMPORTANT: Safely clear the field array
       form.clearErrors();
       setActiveTab('task');
+      if (taskType === 'idea') {
+        setIdeas([]);
+      }
       if (taskToEdit) {
         form.reset({
           title: taskToEdit.title,
@@ -288,8 +293,32 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     }, 0);
   };
 
+  const handleIdeaSubmit = (data: TaskFormData) => {
+    const newIdea: Idea = {
+        id: crypto.randomUUID(),
+        title: data.title,
+        description: data.description,
+    };
+    setIdeas(prev => [...prev, newIdea]);
+    form.reset({
+        ...form.getValues(),
+        title: '',
+        description: '',
+    });
+    form.setFocus('title');
+  };
+
+  const removeIdea = (id: string) => {
+    setIdeas(prev => prev.filter(idea => idea.id !== id));
+  };
+
 
   const handleSubmit = useCallback((data: TaskFormData) => {
+    if (data.taskType === 'idea') {
+        handleIdeaSubmit(data);
+        return;
+    }
+    
     // Final validation for non-idea tasks
     if (data.taskType !== 'idea') {
       const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
@@ -340,8 +369,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     attachments: st.attachments,
                 };
             }) : [];
-    } else if (data.taskType === 'idea') {
-        task.subtasks = []; // Idea tasks don't have subtasks initially
     }
     
     const finalTask: Task = {
@@ -860,32 +887,53 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
               </div>
             ) : ( // Idea Task View
               <div className="py-4 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tên ý tưởng</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Nhập ý tưởng của bạn..." {...field} autoFocus className="bg-primary/5"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Thêm chi tiết cho ý tưởng..." {...field} className="bg-primary/5"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên ý tưởng</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nhập ý tưởng của bạn..." {...field} autoFocus className="bg-primary/5"/>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Thêm chi tiết cho ý tưởng..." {...field} className="bg-primary/5"/>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {ideas.length > 0 && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
+                        <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
+                        {ideas.map((idea) => (
+                            <div key={idea.id} className="flex items-center justify-between p-2 bg-background rounded-md">
+                                <div>
+                                    <p className="font-medium text-foreground">{idea.title}</p>
+                                    {idea.description && <p className="text-xs text-muted-foreground">{idea.description}</p>}
+                                </div>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeIdea(idea.id)}>
+                                    <Trash2 className="h-4 w-4 text-destructive"/>
+                                </Button>
+                            </div>
+                        ))}
+                        </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -901,9 +949,17 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                   <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
                   <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
               </>
-            ) : ( // Recurring & Idea task footer
+            ) : taskType === 'idea' ? (
+                 <>
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        {ideas.length > 0 ? 'Đóng' : 'Hủy'}
+                    </Button>
+                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>Lưu ý tưởng</Button>
+                </>
+            ) : ( // Recurring task footer
                <>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>              <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : taskType === 'idea' ? 'Lưu ý tưởng' : 'Tạo nhiệm vụ'}</Button>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
+                <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
               </>
             )}
           </DialogFooter>
@@ -912,3 +968,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
