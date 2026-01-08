@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import { startOfWeek, addDays, format, isSameDay, isSameWeek, getDay, isAfter, isBefore, startOfDay, isValid, parse } from 'date-fns';
+import { startOfWeek, addDays, format, isSameDay, isSameWeek, getDay, isAfter, isBefore, startOfDay, isValid, parse, isWithinInterval } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/types';
@@ -107,19 +107,19 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
     const dayOfWeek = getDay(sDay);
 
     return tasks.reduce((total, task) => {
-        if (task.status === 'Done') return total;
+        if (task.taskType === 'idea') return total;
         
         let count = 0;
         if (task.taskType === 'recurring') {
             if (task.recurringDays?.includes(dayOfWeek)) {
                 count = task.subtasks.filter(st => !st.completed).length;
             }
-        } else {
+        } else { // deadline
             count = task.subtasks.filter(st => {
                 if (!st.completed && st.startDate && st.endDate) {
                     const subtaskStart = startOfDay(st.startDate);
                     const subtaskEnd = startOfDay(st.endDate);
-                    return !isAfter(sDay, subtaskEnd) && !isBefore(sDay, subtaskStart);
+                    return isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd });
                 }
                 return false;
             }).length;
