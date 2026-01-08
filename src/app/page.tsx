@@ -173,7 +173,6 @@ function TaskKanban() {
   const weeklyFilteredTasks = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd }).map(d => getDay(d));
 
     const sortTasks = (a: Task, b: Task) => {
         if (a.taskType === 'recurring' && b.taskType !== 'recurring') return -1;
@@ -183,8 +182,7 @@ function TaskKanban() {
 
     return tasks.filter(task => {
       if (task.taskType === 'recurring') {
-        // Include recurring task if any of its recurring days are in the current week
-        // This is always true for a full week view, so just include all recurring tasks.
+        // For a week view, we always include recurring tasks as one of their days might be in the week.
         return true;
       }
       // For deadline tasks, check if any subtask falls within the week
@@ -307,25 +305,32 @@ function TaskKanban() {
     let completed = 0;
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd }).map(d => getDay(d));
 
     weeklyFilteredTasks.forEach(task => {
-      const subtasksForWeek = task.subtasks.filter(st => {
-        if (task.taskType === 'recurring') {
-          // If a recurring task is in the weekly filtered list, all its subtasks count.
-          return true;
-        }
-        // For deadline tasks, check if subtask interval overlaps with the week interval.
-        if (st.startDate && st.endDate) {
-           const subtaskInterval = { start: startOfDay(st.startDate), end: startOfDay(st.endDate) };
-           return isWithinInterval(subtaskInterval.start, { start: weekStart, end: weekEnd }) ||
-                  isWithinInterval(subtaskInterval.end, { start: weekStart, end: weekEnd }) ||
-                  (isBefore(subtaskInterval.start, weekStart) && isAfter(subtaskInterval.end, weekEnd));
-        }
-        return false;
-      });
-      total += subtasksForWeek.length;
-      completed += subtasksForWeek.filter(st => st.completed).length;
+      if (task.taskType === 'recurring') {
+          // Count subtasks for each day the task recurs in the current week
+          const recurringDaysInWeek = task.recurringDays?.filter(day => weekDays.includes(day)) || [];
+          total += recurringDaysInWeek.length * task.subtasks.length;
+          // A recurring task is either all done for the week or not. We can't track completion per day.
+          // Let's assume completion resets weekly. If it's done, all are completed.
+          if (task.status === 'Done') {
+             completed += recurringDaysInWeek.length * task.subtasks.length;
+          }
+      } else {
+          // For deadline tasks, count subtasks that overlap with the week interval.
+          const subtasksForWeek = task.subtasks.filter(st => {
+            if (st.startDate && st.endDate) {
+              const subtaskInterval = { start: startOfDay(st.startDate), end: startOfDay(st.endDate) };
+              return isWithinInterval(subtaskInterval.start, { start: weekStart, end: weekEnd }) ||
+                    isWithinInterval(subtaskInterval.end, { start: weekStart, end: weekEnd }) ||
+                    (isBefore(subtaskInterval.start, weekStart) && isAfter(subtaskInterval.end, weekEnd));
+            }
+            return false;
+          });
+          total += subtasksForWeek.length;
+          completed += subtasksForWeek.filter(st => st.completed).length;
+      }
     });
 
     return { completed, total };
@@ -462,13 +467,12 @@ function TaskKanban() {
             <WeekView 
               tasks={tasks}
               selectedDay={selectedDay}
-              onSelectDay={() => {}} // Pass empty function as selection is disabled
+              onSelectDay={setSelectedDay} 
               currentDate={currentDate}
               onPrevWeek={handlePrevWeek}
               onNextWeek={handleNextWeek}
               onGoToToday={handleGoToToday}
               onDateSearch={handleDateSearch}
-              isDaySelectionEnabled={false} // Disable day selection
             />
           )}
           <RecentTasks 
