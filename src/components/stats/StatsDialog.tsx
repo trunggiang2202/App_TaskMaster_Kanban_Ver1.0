@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { isBefore, isAfter, startOfDay, getDay, isWithinInterval } from 'date-fns';
-import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
+import { isBefore, isAfter, startOfDay, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo, ChevronDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 interface TaskInfo {
   id: string;
@@ -41,6 +42,12 @@ interface StatsDialogProps {
 
 export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilterChange }: StatsDialogProps) {
   const [filter, setFilter] = React.useState<StatsFilter>('all');
+  const [openSections, setOpenSections] = React.useState<Record<string, boolean>>({
+    'Chưa bắt đầu': true,
+    'Đang làm': true,
+    'Đã xong': true,
+    'Quá hạn': true,
+  });
 
  const stats = React.useMemo<TaskStats>(() => {
     const now = new Date();
@@ -53,39 +60,46 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
         done: new Map<string, { title: string; subtasks: Subtask[] }>(),
         overdue: new Map<string, { title: string; subtasks: Subtask[] }>(),
     };
+    
+    const collectedSubtasks = new Set<string>();
+    const subtaskDetails: { [id: string]: { subtask: Subtask, task: Task } } = {};
 
-    const collectedSubtasks = new Map<string, { subtask: Subtask, task: Task }>();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-    if (filter === 'all' || filter === 'today') {
-        tasks.forEach(task => {
-            task.subtasks.forEach(subtask => {
-                let isRelevant = false;
-                if (filter === 'all') {
-                    isRelevant = true;
-                } else if (filter === 'today') {
-                    const dayOfWeek = getDay(today);
-                    if (task.taskType === 'recurring') {
-                        if (task.recurringDays?.includes(dayOfWeek)) {
+    tasks.forEach(task => {
+        task.subtasks.forEach(subtask => {
+            let isRelevant = false;
+            if (filter === 'all') {
+                isRelevant = true;
+            } else if (filter === 'today') {
+                const dayOfWeek = getDay(today);
+                if (task.taskType === 'recurring') {
+                    if (task.recurringDays?.includes(dayOfWeek)) {
+                        isRelevant = true;
+                    }
+                } else { // deadline
+                    if (subtask.startDate && subtask.endDate) {
+                        if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
                             isRelevant = true;
-                        }
-                    } else { // deadline
-                        if (subtask.startDate && subtask.endDate) {
-                            if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
-                                isRelevant = true;
-                            }
                         }
                     }
                 }
-                if (isRelevant) {
-                    collectedSubtasks.set(subtask.id, { subtask, task });
-                }
-            });
+            }
+
+            if (isRelevant) {
+                collectedSubtasks.add(subtask.id);
+                subtaskDetails[subtask.id] = { subtask, task };
+            }
         });
-    }
+    });
+
 
     initialStats.total = collectedSubtasks.size;
 
-    collectedSubtasks.forEach(({ subtask, task }) => {
+    collectedSubtasks.forEach(subtaskId => {
+        const { subtask, task } = subtaskDetails[subtaskId];
         const statusMap = subtask.completed ? taskSubtaskMap.done :
                       (task.taskType === 'deadline' && subtask.endDate && isAfter(now, subtask.endDate)) ? taskSubtaskMap.overdue :
                       (task.taskType === 'deadline' && subtask.startDate && isBefore(now, subtask.startDate)) ? taskSubtaskMap.upcoming :
@@ -110,6 +124,10 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
     onTaskSelect(taskId);
     onOpenChange(false);
   };
+  
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const statsData = [
     { 
@@ -133,10 +151,6 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
       icon: <AlertTriangle className="h-5 w-5 text-destructive" />,
     },
   ];
-
-  const displayedStats = filter === 'today' 
-    ? statsData.filter(item => item.status !== 'Chưa bắt đầu') 
-    : statsData;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -167,36 +181,40 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
 
             <Separator className="bg-slate-300" />
             <div className="w-full space-y-2">
-              {displayedStats.map((item) => (
+              {statsData.map((item) => (
                  item.tasks.length > 0 && (
                     <div className="border-b border-slate-300" key={item.status}>
-                        <div className="flex items-center justify-between w-full px-2 py-3">
+                        <button className="flex items-center justify-between w-full px-2 py-3 text-left" onClick={() => toggleSection(item.status)}>
                             <div className="flex items-center gap-3">
                                 {item.icon}
                                 <span className="font-medium text-foreground">{item.status} ({item.tasks.reduce((acc, task) => acc + task.subtaskCount, 0)})</span>
                             </div>
-                        </div>
-                        <div className="px-2 pb-3">
-                            <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
-                            {item.tasks.map((task) => (
-                                <Button
-                                key={task.id} 
-                                variant="outline"
-                                className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-primary/10 rounded-md border"
-                                onClick={() => handleTaskClick(task.id)}
-                                >
-                                <div>
-                                    <p className="font-medium text-foreground truncate">{task.title}</p>
-                                    <p className="text-xs text-muted-foreground">{task.subtaskCount} công việc</p>
+                            <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", openSections[item.status] && "rotate-180")} />
+                        </button>
+                        
+                        {openSections[item.status] && (
+                            <div className="px-2 pb-3">
+                                <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
+                                {item.tasks.map((task) => (
+                                    <Button
+                                    key={task.id} 
+                                    variant="outline"
+                                    className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-primary/10 rounded-md border"
+                                    onClick={() => handleTaskClick(task.id)}
+                                    >
+                                    <div>
+                                        <p className="font-medium text-foreground truncate">{task.title}</p>
+                                        <p className="text-xs text-muted-foreground">{task.subtaskCount} công việc</p>
+                                    </div>
+                                    </Button>
+                                ))}
                                 </div>
-                                </Button>
-                            ))}
                             </div>
-                        </div>
+                        )}
                     </div>
                 )
               ))}
-                {stats.total > 0 && displayedStats.every(item => item.tasks.length === 0) && (
+                {stats.total > 0 && statsData.every(item => item.tasks.length === 0) && (
                      <div className="text-sm text-center text-muted-foreground py-4">
                         Không có công việc nào trong bộ lọc này.
                      </div>
