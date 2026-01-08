@@ -43,10 +43,10 @@ interface StatsDialogProps {
 export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilterChange }: StatsDialogProps) {
   const [filter, setFilter] = React.useState<StatsFilter>('all');
   const [openSections, setOpenSections] = React.useState<Record<string, boolean>>({
-    'Chưa bắt đầu': true,
-    'Đang làm': true,
-    'Đã xong': true,
-    'Quá hạn': true,
+    'Chưa bắt đầu': false,
+    'Đang làm': false,
+    'Đã xong': false,
+    'Quá hạn': false,
   });
 
  const stats = React.useMemo<TaskStats>(() => {
@@ -63,10 +63,6 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
     
     const collectedSubtasks = new Set<string>();
     const subtaskDetails: { [id: string]: { subtask: Subtask, task: Task } } = {};
-
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
     tasks.forEach(task => {
         task.subtasks.forEach(subtask => {
