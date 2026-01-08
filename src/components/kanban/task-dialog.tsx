@@ -936,7 +936,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
                         <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
                         {ideas.map((idea) => (
-                            <div key={idea.id} className="flex items-center justify-between p-2 bg-background rounded-md border">
+                            <div key={idea.id} className="flex items-center justify-between p-2 bg-muted/50 rounded-md border">
                                 <div>
                                     <p className="font-medium text-foreground">{idea.title}</p>
                                     {idea.description && <p className="text-xs text-muted-foreground">{idea.description}</p>}
