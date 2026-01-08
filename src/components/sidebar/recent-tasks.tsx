@@ -140,6 +140,7 @@ function TaskProgress({ task }: { task: Task }) {
 
   const getIndicatorColor = (progress: number) => {
     if (isOverdue) return 'bg-destructive';
+    if (isUpcoming) return 'bg-muted';
     if (progress > 60) {
       return 'bg-emerald-500';
     }
@@ -179,7 +180,7 @@ function TaskProgress({ task }: { task: Task }) {
                 <Clock size={12} /> 
                 <span>
                   {isUpcoming ? 'Tổng thời gian: ' : 'Thời gian còn lại: '}{timeLeft}
-                  {timeProgress < 100 && ` (${Math.round(timeProgress)}%)`}
+                  {` (${Math.round(timeProgress)}%)`}
                 </span>
               </div>
           )}
