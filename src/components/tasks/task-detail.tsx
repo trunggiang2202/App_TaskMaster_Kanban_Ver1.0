@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { cn, WEEKDAYS } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useTasks } from '@/contexts/TaskContext';
 
 interface SubtaskItemProps {
@@ -207,6 +207,16 @@ type SubtaskStatus = 'Chưa bắt đầu' | 'Đang làm' | 'Xong';
 
 type CategorizedSubtasks = Record<SubtaskStatus, Subtask[]>;
 
+const WEEKDAY_MAP: { [key: number]: string } = {
+  0: 'Chủ Nhật',
+  1: 'Thứ Hai',
+  2: 'Thứ Ba',
+  3: 'Thứ Tư',
+  4: 'Thứ Năm',
+  5: 'Thứ Sáu',
+  6: 'Thứ Bảy'
+};
+
 export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const { deleteTask, toggleSubtask } = useTasks();
   const [selectedSubtask, setSelectedSubtask] = React.useState<Subtask | null>(null);
@@ -284,8 +294,8 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   ];
   
   const recurringDaysText = task.recurringDays
-    ?.sort()
-    .map(day => WEEKDAYS[day])
+    ?.sort((a, b) => (a === 0 ? 7 : a) - (b === 0 ? 7 : b))
+    .map(day => WEEKDAY_MAP[day])
     .join(', ');
 
   return (
@@ -429,3 +439,6 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
 
 
 
+
+
+    
