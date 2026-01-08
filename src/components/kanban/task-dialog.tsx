@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Plus, Trash2, Paperclip, X, Zap, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
 import { isAfter, addDays, startOfDay, getDay } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -185,9 +185,11 @@ interface TaskDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   taskToEdit?: Task;
   initialTaskType: TaskType;
+  taskToConvert?: { title: string, id: string } | null;
+  onConvertToTask: (title: string, id: string) => void;
 }
 
-export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }: TaskDialogProps) {
+export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, taskToConvert, onConvertToTask }: TaskDialogProps) {
   const { addTask, updateTask } = useTasks();
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
   const subtaskTitleRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -274,7 +276,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
         
         form.reset({
-          title: '',
+          title: taskToConvert?.title || '',
           description: '',
           taskType: initialTaskType,
           startDate: formatDate(now),
@@ -286,7 +288,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         });
       }
     }
-  }, [taskToEdit, isOpen, initialTaskType, replace, form]);
+  }, [taskToEdit, isOpen, initialTaskType, taskToConvert, replace, form]);
 
   const addEmptySubtask = () => {
     const newSubtask: Partial<Subtask> = { 
@@ -359,12 +361,17 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       }
     }
 
-    const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any } = {
+    const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any, convertedFrom?: string } = {
         title: data.title,
         description: data.description,
         taskType: data.taskType,
         subtasks: [],
     };
+    
+    if (taskToConvert) {
+      task.convertedFrom = taskToConvert.id;
+    }
+
 
     if (data.taskType === 'deadline') {
         const taskStartDate = parseDateTime(data.startDate, data.startTime);
@@ -417,7 +424,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       addTask(finalTask);
     }
     onOpenChange(false);
-  }, [taskToEdit, addTask, updateTask, onOpenChange, form, taskType, ideas]);
+  }, [taskToEdit, addTask, updateTask, onOpenChange, form, taskType, ideas, taskToConvert]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
       const file = e.target.files?.[0];
@@ -965,10 +972,15 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
                         {ideas.map((idea) => (
                             <div key={idea.id} className="flex items-center justify-between p-2 bg-primary/5 border rounded-md transition-colors">
-                                <p className="font-medium text-foreground">{idea.title}</p>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeIdea(idea.id)}>
-                                    <Trash2 className="h-4 w-4 text-destructive"/>
-                                </Button>
+                                <p className="font-medium text-foreground flex-1 truncate pr-2">{idea.title}</p>
+                                <div className="flex items-center">
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10" onClick={() => onConvertToTask(idea.title, idea.id)}>
+                                      <ArrowRightCircle className="h-4 w-4 text-primary"/>
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeIdea(idea.id)}>
+                                      <Trash2 className="h-4 w-4 text-destructive"/>
+                                  </Button>
+                                </div>
                             </div>
                         ))}
                         </div>
@@ -1011,17 +1023,3 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
-
-    
-
-
-
-    
-
-    
-
-
-
-    
-
-    

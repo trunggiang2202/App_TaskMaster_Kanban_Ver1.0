@@ -108,11 +108,12 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addTask = useCallback((taskData: Task) => {
     setTasks(prevTasks => {
-      const newTasks = [taskData, ...prevTasks];
-      // Select new task only if it's the first one
-      if (prevTasks.length === 0) {
-        setSelectedTaskId(taskData.id);
+      let newTasks = [taskData, ...prevTasks];
+      // If the new task was converted from an idea, remove the original idea task
+      if (taskData.convertedFrom) {
+          newTasks = newTasks.filter(t => t.id !== taskData.convertedFrom);
       }
+      setSelectedTaskId(taskData.id);
       return newTasks;
     });
   }, []);

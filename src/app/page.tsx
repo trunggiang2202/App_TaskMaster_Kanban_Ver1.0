@@ -99,6 +99,8 @@ function TaskKanban() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [initialTaskType, setInitialTaskType] = useState<TaskType>('deadline');
+  const [taskToConvert, setTaskToConvert] = useState<{ title: string, id: string } | null>(null);
+
 
   useEffect(() => {
     // Reset sort when filter changes to something that doesn't support duration sorting
@@ -136,6 +138,7 @@ function TaskKanban() {
 
   const handleOpenNewTaskDialog = (type: TaskType) => {
     setTaskToEdit(undefined);
+    setTaskToConvert(null);
     setInitialTaskType(type);
     setIsTaskDialogOpen(true);
   };
@@ -148,13 +151,26 @@ function TaskKanban() {
 
   const handleOpenEditTaskDialog = useCallback((task: import('@/lib/types').Task) => {
     setTaskToEdit(task);
+    setTaskToConvert(null);
     setInitialTaskType(task.taskType);
     setIsTaskDialogOpen(true);
   }, []);
   
   const handleCloseTaskDialog = useCallback(() => {
     setTaskToEdit(undefined);
+    setTaskToConvert(null);
     setIsTaskDialogOpen(false);
+  }, []);
+  
+  const handleConvertToTask = useCallback((title: string, id: string) => {
+    setIsTaskDialogOpen(false); // Close the idea dialog
+    // Use a timeout to ensure the state updates before reopening
+    setTimeout(() => {
+        setTaskToConvert({ title, id });
+        setInitialTaskType('deadline');
+        setTaskToEdit(undefined);
+        setIsTaskDialogOpen(true);
+    }, 50);
   }, []);
 
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
@@ -521,6 +537,8 @@ function TaskKanban() {
         onOpenChange={handleCloseTaskDialog}
         taskToEdit={taskToEdit}
         initialTaskType={initialTaskType}
+        taskToConvert={taskToConvert}
+        onConvertToTask={handleConvertToTask}
       />
       <StatsDialog 
         tasks={tasks} 
@@ -546,5 +564,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
