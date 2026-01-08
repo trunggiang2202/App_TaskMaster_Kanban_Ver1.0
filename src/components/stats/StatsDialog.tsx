@@ -9,16 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { isBefore, isAfter, startOfDay, getDay, eachDayOfInterval, isWithinInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { isBefore, isAfter, startOfDay, getDay, eachDayOfInterval, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { Button } from '../ui/button';
 
 interface TaskInfo {
@@ -35,7 +29,7 @@ interface TaskStats {
   total: number;
 }
 
-type StatsFilter = 'all' | 'today';
+type StatsFilter = 'all' | 'today' | 'week';
 
 interface StatsDialogProps {
   isOpen: boolean;
@@ -47,7 +41,7 @@ interface StatsDialogProps {
 export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: StatsDialogProps) {
   const [filter, setFilter] = React.useState<StatsFilter>('all');
 
-  const stats = React.useMemo<TaskStats>(() => {
+ const stats = React.useMemo<TaskStats>(() => {
     const now = new Date();
     const today = startOfDay(now);
     
@@ -59,34 +53,63 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
         overdue: new Map<string, { title: string; subtasks: Subtask[] }>(),
     };
 
-    const collectedSubtasks: { subtask: Subtask, task: Task }[] = [];
+    const collectedSubtasks = new Map<string, { subtask: Subtask, task: Task }>();
 
-    tasks.forEach(task => {
-        task.subtasks.forEach(subtask => {
-            let isRelevant = false;
-            if (filter === 'all') {
-                isRelevant = true;
-            } else if (filter === 'today') {
-                const dayOfWeek = getDay(today);
-                if (task.taskType === 'recurring') {
-                    if (task.recurringDays?.includes(dayOfWeek)) {
-                        isRelevant = true;
-                    }
-                } else { // deadline
-                    if (subtask.startDate && subtask.endDate) {
-                        if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
+    if (filter === 'all' || filter === 'today') {
+        tasks.forEach(task => {
+            task.subtasks.forEach(subtask => {
+                let isRelevant = false;
+                if (filter === 'all') {
+                    isRelevant = true;
+                } else if (filter === 'today') {
+                    const dayOfWeek = getDay(today);
+                    if (task.taskType === 'recurring') {
+                        if (task.recurringDays?.includes(dayOfWeek)) {
                             isRelevant = true;
+                        }
+                    } else { // deadline
+                        if (subtask.startDate && subtask.endDate) {
+                            if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
+                                isRelevant = true;
+                            }
                         }
                     }
                 }
-            }
-            if (isRelevant) {
-                collectedSubtasks.push({ subtask, task });
-            }
+                if (isRelevant) {
+                    collectedSubtasks.set(subtask.id, { subtask, task });
+                }
+            });
         });
-    });
-    
-    initialStats.total = collectedSubtasks.length;
+    } else if (filter === 'week') {
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+        weekDays.forEach(day => {
+            const sDay = startOfDay(day);
+            const dayOfWeek = getDay(sDay);
+
+            tasks.forEach(task => {
+                if (task.taskType === 'recurring') {
+                    if (task.recurringDays?.includes(dayOfWeek)) {
+                        task.subtasks.forEach(subtask => collectedSubtasks.set(subtask.id, { subtask, task }));
+                    }
+                } else { // deadline
+                    task.subtasks.forEach(subtask => {
+                        if (subtask.startDate && subtask.endDate) {
+                            const subtaskStart = startOfDay(subtask.startDate);
+                            const subtaskEnd = startOfDay(subtask.endDate);
+                            if (isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd })) {
+                                collectedSubtasks.set(subtask.id, { subtask, task });
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    initialStats.total = collectedSubtasks.size;
 
     collectedSubtasks.forEach(({ subtask, task }) => {
         const statusMap = subtask.completed ? taskSubtaskMap.done :
@@ -151,7 +174,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
         </DialogHeader>
         <Separator className="bg-slate-300" />
         
-        <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full">
+         <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-primary/10">
             <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tất cả</TabsTrigger>
             <TabsTrigger value="today" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Hôm nay</TabsTrigger>
@@ -168,45 +191,47 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
             </div>
 
             <Separator className="bg-slate-300" />
-            <Accordion type="multiple" className="w-full">
+            <div className="w-full space-y-2">
               {displayedStats.map((item) => (
-                <div className="border-b border-slate-300" key={item.status}>
-                  <AccordionItem value={item.status} className="border-b-0">
-                    <AccordionTrigger className="hover:no-underline px-2 hover:bg-primary/10 rounded-md">
-                        <div className="flex items-center justify-between w-full">
+                 item.tasks.length > 0 && (
+                    <div className="border-b border-slate-300" key={item.status}>
+                        <div className="flex items-center justify-between w-full px-2 py-3">
                             <div className="flex items-center gap-3">
                                 {item.icon}
                                 <span className="font-medium text-foreground">{item.status} ({item.tasks.reduce((acc, task) => acc + task.subtaskCount, 0)})</span>
                             </div>
                         </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-2 pt-2">
-                      {item.tasks.length > 0 ? (
-                        <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
-                          {item.tasks.map((task) => (
-                            <Button
-                              key={task.id} 
-                              variant="outline"
-                              className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-primary/10 rounded-md border"
-                              onClick={() => handleTaskClick(task.id)}
-                            >
-                              <div>
-                                <p className="font-medium text-foreground truncate">{task.title}</p>
-                                <p className="text-xs text-muted-foreground">{task.subtaskCount} công việc</p>
-                              </div>
-                            </Button>
-                          ))}
+                        <div className="px-2 pb-3">
+                            <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
+                            {item.tasks.map((task) => (
+                                <Button
+                                key={task.id} 
+                                variant="outline"
+                                className="w-full h-auto text-left justify-start p-2 bg-background hover:bg-primary/10 rounded-md border"
+                                onClick={() => handleTaskClick(task.id)}
+                                >
+                                <div>
+                                    <p className="font-medium text-foreground truncate">{task.title}</p>
+                                    <p className="text-xs text-muted-foreground">{task.subtaskCount} công việc</p>
+                                </div>
+                                </Button>
+                            ))}
+                            </div>
                         </div>
-                      ) : (
-                        <div className="text-sm text-center text-muted-foreground py-4">
-                          Không có công việc nào.
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                </div>
+                    </div>
+                )
               ))}
-            </Accordion>
+                {stats.total > 0 && displayedStats.every(item => item.tasks.length === 0) && (
+                     <div className="text-sm text-center text-muted-foreground py-4">
+                        Không có công việc nào trong bộ lọc này.
+                     </div>
+                )}
+                {stats.total === 0 && (
+                    <div className="text-sm text-center text-muted-foreground py-4">
+                        Không có công việc nào.
+                    </div>
+                )}
+            </div>
         </div>
       </DialogContent>
     </Dialog>
