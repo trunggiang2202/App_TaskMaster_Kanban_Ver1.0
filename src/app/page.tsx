@@ -321,38 +321,38 @@ function TaskKanban() {
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
     const weekInterval = { start: weekStart, end: weekEnd };
 
-    const subtasksInWeek = new Set<string>();
-    const completedSubtasksInWeek = new Set<string>();
+    let total = 0;
+    let completed = 0;
 
     tasks.forEach(task => {
         if (task.taskType === 'idea') return;
 
-        task.subtasks.forEach(subtask => {
-            let isInWeek = false;
-            if (task.taskType === 'recurring') {
-                const weekDays = eachDayOfInterval(weekInterval);
-                if (weekDays.some(day => task.recurringDays?.includes(getDay(day)))) {
-                    isInWeek = true;
-                }
-            } else { // deadline
+        if (task.taskType === 'recurring') {
+            const weekDays = eachDayOfInterval(weekInterval);
+            // Only count if the recurring task has a day within the current week
+            if (weekDays.some(day => task.recurringDays?.includes(getDay(day)))) {
+                // Only count subtasks that are NOT completed
+                const uncompletedSubtasks = task.subtasks.filter(st => !st.completed);
+                total += uncompletedSubtasks.length;
+                // 'completed' for recurring tasks in week view is always 0, as we only show pending ones.
+            }
+        } else { // 'deadline' task
+            task.subtasks.forEach(subtask => {
                 if (subtask.startDate && subtask.endDate) {
                     const subtaskInterval = { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) };
+                    // Check if the subtask's date range overlaps with the current week
                     if (areIntervalsOverlapping(weekInterval, subtaskInterval)) {
-                        isInWeek = true;
+                        total++;
+                        if (subtask.completed) {
+                            completed++;
+                        }
                     }
                 }
-            }
-
-            if (isInWeek) {
-                subtasksInWeek.add(subtask.id);
-                if (subtask.completed) {
-                    completedSubtasksInWeek.add(subtask.id);
-                }
-            }
-        });
+            });
+        }
     });
 
-    return { completed: completedSubtasksInWeek.size, total: subtasksInWeek.size };
+    return { completed, total };
 }, [tasks, currentDate]);
 
 
