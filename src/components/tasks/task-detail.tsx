@@ -162,13 +162,13 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                     </span>
                 </div>
                 {!subtask.completed && hasDeadline && !isOverdue && taskType === 'deadline' && (
-                    <TooltipProvider>
+                    <TooltipProvider delayDuration={0}>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-6 w-6 shrink-0"
+                                    className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <Eye className="h-4 w-4" />
                                 </Button>
@@ -385,7 +385,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                             <Card 
                                 key={st.id} 
                                 className={cn(
-                                    "bg-background shadow-sm border transition-colors",
+                                    "bg-background shadow-sm border transition-colors group",
                                     getSubtaskStyling(st, column.title)
                                 )}
                             >
