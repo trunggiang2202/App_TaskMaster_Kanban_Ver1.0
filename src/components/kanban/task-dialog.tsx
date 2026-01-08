@@ -245,8 +245,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
 
   useEffect(() => {
     if (isOpen) {
-      replace([]); // IMPORTANT: Safely clear the field array
       form.clearErrors(); // Clear previous validation errors
+      replace([]); // IMPORTANT: Safely clear the field array
       setActiveTab('task');
 
       let defaultValues: TaskFormData;
@@ -972,15 +972,15 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     <Separator />
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
-                        <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
+                        <div className="space-y-2 rounded-md border p-3 bg-muted/30">
                         {ideas.map((idea) => (
-                            <div key={idea.id} className="flex items-center justify-between p-2 bg-primary/5 border rounded-md transition-colors">
+                            <div key={idea.id} className="flex items-center justify-between p-2 bg-primary/5 rounded-md transition-colors">
                                 <p className="font-medium text-foreground flex-1 truncate pr-2">{idea.title}</p>
                                 <div className="flex items-center">
                                   <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10" onClick={() => onConvertToTask(idea.title, idea.id)}>
                                       <ArrowRightCircle className="h-4 w-4 text-primary"/>
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeIdea(idea.id)}>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10" onClick={() => removeIdea(idea.id)}>
                                       <Trash2 className="h-4 w-4 text-destructive"/>
                                   </Button>
                                 </div>
