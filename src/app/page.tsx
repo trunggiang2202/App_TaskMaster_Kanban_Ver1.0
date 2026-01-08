@@ -8,7 +8,7 @@ import { TaskDialog } from '@/components/kanban/task-dialog';
 import { Plus, TrendingUp, Pencil, Clock, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical, Zap } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
+import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, areIntervalsOverlapping } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
@@ -164,14 +164,11 @@ function TaskKanban() {
   }, []);
   
   const handleConvertToTask = useCallback((title: string, id: string) => {
-    // Set the task to convert and change the type.
-    // The dialog will close because its `key` will change in the parent.
-    // A new dialog will open with the correct data.
     setTaskToConvert({ title, id });
     setInitialTaskType('deadline');
     setTaskToEdit(undefined);
-    setIsTaskDialogOpen(false); // Close the current dialog
-    setIsTaskDialogOpen(true); // Open the new one
+    setIsTaskDialogOpen(false); 
+    setIsTaskDialogOpen(true); 
   }, []);
 
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
@@ -320,40 +317,43 @@ function TaskKanban() {
   }, [tasks]);
   
   const weekViewCounts = useMemo(() => {
-    let total = 0;
-    let completed = 0;
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+    const weekInterval = { start: weekStart, end: weekEnd };
 
-    weekDays.forEach(day => {
-        const sDay = startOfDay(day);
-        const dayOfWeek = getDay(sDay);
+    const subtasksInWeek = new Set<string>();
+    const completedSubtasksInWeek = new Set<string>();
 
-        tasks.forEach(task => {
-            if (task.taskType === 'idea') return;
+    tasks.forEach(task => {
+        if (task.taskType === 'idea') return;
+
+        task.subtasks.forEach(subtask => {
+            let isInWeek = false;
             if (task.taskType === 'recurring') {
-                if (task.recurringDays?.includes(dayOfWeek)) {
-                    total += task.subtasks.length;
-                    completed += task.subtasks.filter(st => st.completed).length;
+                const weekDays = eachDayOfInterval(weekInterval);
+                if (weekDays.some(day => task.recurringDays?.includes(getDay(day)))) {
+                    isInWeek = true;
                 }
             } else { // deadline
-                const subtasksForDay = task.subtasks.filter(st => {
-                    if (st.startDate && st.endDate) {
-                        const subtaskStart = startOfDay(st.startDate);
-                        const subtaskEnd = startOfDay(st.endDate);
-                        return isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd });
+                if (subtask.startDate && subtask.endDate) {
+                    const subtaskInterval = { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) };
+                    if (areIntervalsOverlapping(weekInterval, subtaskInterval)) {
+                        isInWeek = true;
                     }
-                    return false;
-                });
-                total += subtasksForDay.length;
-                completed += subtasksForDay.filter(st => st.completed).length;
+                }
+            }
+
+            if (isInWeek) {
+                subtasksInWeek.add(subtask.id);
+                if (subtask.completed) {
+                    completedSubtasksInWeek.add(subtask.id);
+                }
             }
         });
     });
 
-    return { completed, total };
-  }, [tasks, currentDate]);
+    return { completed: completedSubtasksInWeek.size, total: subtasksInWeek.size };
+}, [tasks, currentDate]);
 
 
   const welcomeDialogTaskCount = useMemo(() => totalTodaysSubtasks - completedTodaysSubtasks, [totalTodaysSubtasks, completedTodaysSubtasks]);
@@ -565,3 +565,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
