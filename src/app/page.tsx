@@ -75,8 +75,8 @@ const SortSelect = ({ value, onValueChange, disabled }: { value: AllTasksSortTyp
     </SelectTrigger>
     <SelectContent>
       <SelectItem value="newest">Mới nhất</SelectItem>
-      <SelectItem value="longest">Dài → ngắn</SelectItem>
-      <SelectItem value="shortest">Ngắn → dài</SelectItem>
+      <SelectItem value="longest">Dài → Ngắn</SelectItem>
+      <SelectItem value="shortest">Ngắn → Dài</SelectItem>
     </SelectContent>
   </Select>
 );
@@ -435,7 +435,7 @@ function TaskKanban() {
             <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
                 <Repeat className="h-4 w-4" />
             </IconButton>
-             <IconButton tooltipText="Nhiệm vụ ý tưởng" onClick={() => handleOpenNewTaskDialog('idea')}>
+             <IconButton tooltipText="Ý tưởng" onClick={() => handleOpenNewTaskDialog('idea')}>
                 <Zap className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
