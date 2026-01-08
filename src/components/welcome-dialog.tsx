@@ -35,7 +35,7 @@ export function WelcomeDialog({ isOpen, onOpenChange, todayTaskCount, dailyQuote
         
         <div className="space-y-4 py-4">
           <div className="p-4 rounded-lg border bg-muted/30 text-center">
-            <p className="text-sm text-muted-foreground mb-1">Công việc cho hôm nay</p>
+            <p className="text-sm text-muted-foreground mb-1">Công việc còn lại cho hôm nay</p>
             <div className="flex items-center justify-center gap-2">
                 <Zap className="h-5 w-5 text-primary"/>
                 <p className="text-2xl font-bold text-foreground">
@@ -61,3 +61,5 @@ export function WelcomeDialog({ isOpen, onOpenChange, todayTaskCount, dailyQuote
     </Dialog>
   );
 }
+
+    

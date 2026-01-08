@@ -253,30 +253,36 @@ function TaskKanban() {
 
   const selectedTask = useMemo(() => tasks.find(task => task.id === selectedTaskId), [tasks, selectedTaskId]);
 
-  const todaysSubtaskCount = useMemo(() => tasks.reduce((count, task) => {
-    if (task.status === 'Done') {
-      return count;
-    }
-
-    if (task.taskType === 'recurring') {
-      if (task.recurringDays?.includes(getDay(new Date()))) {
-        return count + task.subtasks.filter(st => !st.completed).length;
-      }
-      return count;
-    }
-
+  const { completedTodaysSubtasks, totalTodaysSubtasks } = useMemo(() => {
+    let total = 0;
+    let completed = 0;
     const today = startOfDay(new Date());
-    const inProgressSubtasks = task.subtasks.filter(st => {
-        if (!st.completed && st.startDate && st.endDate) {
+    const dayOfWeek = getDay(today);
+
+    tasks.forEach(task => {
+      if (task.taskType === 'recurring') {
+        if (task.recurringDays?.includes(dayOfWeek)) {
+          total += task.subtasks.length;
+          completed += task.subtasks.filter(st => st.completed).length;
+        }
+      } else { // deadline
+        const todaySubtasks = task.subtasks.filter(st => {
+          if (st.startDate && st.endDate) {
             const subtaskStart = startOfDay(st.startDate);
             const subtaskEnd = startOfDay(st.endDate);
             return !isAfter(today, subtaskEnd) && !isBefore(today, subtaskStart);
-        }
-        return false;
+          }
+          return false;
+        });
+        total += todaySubtasks.length;
+        completed += todaySubtasks.filter(st => st.completed).length;
+      }
     });
-    return count + inProgressSubtasks.length;
-  }, 0), [tasks]);
 
+    return { completedTodaysSubtasks: completed, totalTodaysSubtasks: total };
+  }, [tasks]);
+
+  const welcomeDialogTaskCount = useMemo(() => totalTodaysSubtasks - completedTodaysSubtasks, [totalTodaysSubtasks, completedTodaysSubtasks]);
 
   const handlePrevWeek = useCallback(() => setCurrentDate(prev => subWeeks(prev, 1)), []);
   const handleNextWeek = useCallback(() => setCurrentDate(prev => addWeeks(prev, 1)), []);
@@ -376,7 +382,7 @@ function TaskKanban() {
                   Tất cả ({allTasksCount})
                 </TabsTrigger>
                 <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
-                  Hôm nay ({todaysSubtaskCount})
+                  Hôm nay ({completedTodaysSubtasks}/{totalTodaysSubtasks})
                 </TabsTrigger>
                 <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
                   Xem tuần
@@ -456,7 +462,7 @@ function TaskKanban() {
        <WelcomeDialog
         isOpen={showWelcomeDialog}
         onOpenChange={setShowWelcomeDialog}
-        todayTaskCount={todaysSubtaskCount}
+        todayTaskCount={welcomeDialogTaskCount}
         dailyQuote={getDailyQuote()}
       />
     </SidebarProvider>
@@ -470,3 +476,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
