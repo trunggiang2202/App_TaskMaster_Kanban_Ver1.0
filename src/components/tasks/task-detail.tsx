@@ -128,7 +128,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
         return <Circle className="h-5 w-5 text-primary" />;
     };
     
-    const isToDoClickable = !isInProgress && !isOverdue && !subtask.completed;
+    const isToDoClickable = taskType === 'deadline' && !isInProgress && !isOverdue && !subtask.completed;
 
     const iconElement = (
       <div 
@@ -240,10 +240,10 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     const isRecurringToday = task.taskType === 'recurring' && task.recurringDays?.includes(todayDay);
 
     task.subtasks.forEach(st => {
-      const isAutoInProgress = st.startDate && isAfter(currentTime, st.startDate);
+      const isAutoInProgress = task.taskType === 'deadline' && st.startDate && isAfter(currentTime, st.startDate);
       if (st.completed) {
         categories['Xong'].push(st);
-      } else if (st.isManuallyStarted || (task.taskType === 'deadline' && isAutoInProgress) || (task.taskType === 'recurring' && isRecurringToday)) {
+      } else if (st.isManuallyStarted || isAutoInProgress || isRecurringToday) {
         categories['Đang làm'].push(st);
       }
       else {
@@ -425,6 +425,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+
 
 
 
