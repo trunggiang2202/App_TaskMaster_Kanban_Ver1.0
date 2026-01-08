@@ -407,14 +407,14 @@ function TaskKanban() {
           <Separator className="my-2" />
           <div className="px-2">
             <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterType)} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-sidebar-accent/60">
-                <TabsTrigger value="all" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="all">
                   Tất cả ({allTasksCount})
                 </TabsTrigger>
-                <TabsTrigger value="today" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
+                <TabsTrigger value="today">
                   Hôm nay ({completedTodaysSubtasks}/{totalTodaysSubtasks})
                 </TabsTrigger>
-                <TabsTrigger value="week" className="text-sidebar-foreground/80 data-[state=active]:bg-sidebar-primary data-[state=active]:text-sidebar-primary-foreground focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-visible:shadow-none">
+                <TabsTrigger value="week">
                    Xem tuần ({weekViewCounts.completed}/{weekViewCounts.total})
                 </TabsTrigger>
               </TabsList>
