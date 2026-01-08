@@ -67,21 +67,23 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
 
     const isSubtaskInFilter = (subtask: Subtask, task: Task): boolean => {
       if (filter === 'all') return true;
+      const today = startOfDay(now);
+
       if (filter === 'today') {
           if (task.taskType === 'recurring') {
-              return !!task.recurringDays?.includes(getDay(now));
+              return !!task.recurringDays?.includes(getDay(today));
           }
-          return !!subtask.startDate && isToday(subtask.startDate);
+          return !!subtask.startDate && !!subtask.endDate && isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) });
       }
+      
       if (filterInterval) {
           if (task.taskType === 'recurring' && task.recurringDays) {
               const daysInInterval = eachDayOfInterval(filterInterval);
               return daysInInterval.some(day => task.recurringDays?.includes(getDay(day)));
           }
           if (task.taskType === 'deadline' && subtask.startDate && subtask.endDate) {
-              const subtaskInterval = { start: subtask.startDate, end: subtask.endDate };
-              // Check for overlap
-              return isAfter(subtaskInterval.end, filterInterval.start) && isBefore(subtaskInterval.start, filterInterval.end);
+              // Check for overlap: (StartA <= EndB) and (EndA >= StartB)
+              return isAfter(subtask.endDate, filterInterval.start) && isBefore(subtask.startDate, filterInterval.end);
           }
       }
       return false;
@@ -109,7 +111,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
         });
         initialStats.total += totalSubtasksInFilterForThisTask;
 
-        // Handle tasks with no subtasks
+        // Handle tasks with no subtasks but matching filter criteria
         if (task.subtasks.length === 0 && isSubtaskInFilter({} as Subtask, task)) {
           initialStats.total++;
           const taskInfo = { title: task.title, count: 1 };
@@ -117,7 +119,13 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
                               (task.taskType === 'deadline' && task.endDate && isAfter(now, task.endDate)) ? taskSets.overdue :
                               (task.taskType === 'deadline' && task.startDate && isBefore(now, task.startDate)) ? taskSets.upcoming :
                               taskSets.inProgress;
-          statusMap.set(task.id, taskInfo);
+          
+          const existing = statusMap.get(task.id);
+          if (existing) {
+              existing.count++;
+          } else {
+              statusMap.set(task.id, taskInfo);
+          }
         }
     });
     
