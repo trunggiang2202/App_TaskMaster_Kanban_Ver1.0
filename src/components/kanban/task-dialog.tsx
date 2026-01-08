@@ -381,6 +381,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     title: st.title ?? '',
                     description: st.description,
                     completed: originalSubtask?.completed || false,
+                    isManuallyStarted: originalSubtask?.isManuallyStarted || false,
                     startDate: parseDateTime(st.startDate, st.startTime) as Date,
                     endDate: parseDateTime(st.endDate, st.endTime) as Date,
                     attachments: st.attachments,
@@ -397,6 +398,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     title: st.title ?? '',
                     description: st.description,
                     completed: originalSubtask?.completed || false,
+                    isManuallyStarted: originalSubtask?.isManuallyStarted || false,
                     attachments: st.attachments,
                 };
             }) : [];
@@ -943,6 +945,23 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Mô tả thêm..." 
+                            {...field} 
+                            className="bg-primary/5"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </form>
                 
                 {ideas.length > 0 && (
@@ -952,9 +971,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
                         <div className="space-y-2 rounded-md border p-3 bg-muted/30 max-h-48 overflow-y-auto custom-scrollbar">
                         {ideas.map((idea) => (
-                            <div key={idea.id} className="flex items-center justify-between p-2 bg-primary/5 rounded-md border">
+                            <div key={idea.id} className="flex items-center justify-between p-2 bg-background rounded-md border transition-colors hover:bg-muted">
                                 <p className="font-medium text-foreground">{idea.title}</p>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full" onClick={() => removeIdea(idea.id)}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeIdea(idea.id)}>
                                     <Trash2 className="h-4 w-4 text-destructive"/>
                                 </Button>
                             </div>

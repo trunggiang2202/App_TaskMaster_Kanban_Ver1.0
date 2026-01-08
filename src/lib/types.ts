@@ -12,6 +12,7 @@ export interface Subtask {
   title: string;
   description?: string;
   completed: boolean;
+  isManuallyStarted?: boolean; // Added to track manually started tasks
   startDate?: Date;
   endDate?: Date;
   attachments?: Attachment[];
@@ -30,5 +31,3 @@ export interface Task {
   recurringDays?: number[]; // 0 (Sun) to 6 (Sat)
   lastCompletedAt?: Date;
 }
-
-    

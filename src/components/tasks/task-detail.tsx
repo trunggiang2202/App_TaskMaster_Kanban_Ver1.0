@@ -27,14 +27,15 @@ interface SubtaskItemProps {
     subtask: Subtask;
     taskType: Task['taskType'];
     recurringDays?: number[];
-    onToggle: (subtaskId: string) => void;
+    onToggle: (subtaskId: string, forceStart?: boolean) => void;
     onTitleClick: () => void;
     isClickable: boolean;
     isInProgress: boolean;
     isOverdue: boolean;
+    isManuallyStarted: boolean;
 }
 
-const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringDays, onToggle, onTitleClick, isClickable, isInProgress, isOverdue }) => {
+const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringDays, onToggle, onTitleClick, isClickable, isInProgress, isOverdue, isManuallyStarted }) => {
     const canComplete = taskType === 'recurring' ? (recurringDays?.includes(getDay(new Date()))) : (isClickable && !!subtask.startDate && !!subtask.endDate);
     const [timeProgress, setTimeProgress] = React.useState(100);
     const [timeLeft, setTimeLeft] = React.useState('');
@@ -101,10 +102,10 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
     }, [subtask.startDate, subtask.endDate, subtask.completed, isInProgress, taskType]);
 
 
-    const handleToggle = (e: React.MouseEvent) => {
-        if (canComplete) {
+    const handleToggle = (e: React.MouseEvent, forceStart: boolean) => {
+        if (forceStart || canComplete) {
             e.stopPropagation();
-            onToggle(subtask.id);
+            onToggle(subtask.id, forceStart);
         }
     };
 
@@ -120,16 +121,18 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
         if (isOverdue) {
             return <AlertTriangle className="h-5 w-5 text-destructive" />;
         }
-        if (isInProgress) {
-            return <LoaderCircle className="h-5 w-5 text-amber-500 animate-spin" />;
+        if (isInProgress || isManuallyStarted) {
+            return <LoaderCircle className={cn("h-5 w-5 animate-spin", isManuallyStarted ? "text-primary" : "text-amber-500")} />;
         }
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     };
+    
+    const isToDoClickable = !isInProgress && !isOverdue && !subtask.completed;
 
     const iconElement = (
       <div 
-        className={`h-5 w-5 mt-0.5 shrink-0 transition-transform hover:scale-125 ${canComplete ? 'cursor-pointer' : 'cursor-not-allowed'}`} 
-        onClick={handleToggle}
+        className={`h-5 w-5 mt-0.5 shrink-0 transition-transform hover:scale-125 ${isToDoClickable || canComplete ? 'cursor-pointer' : 'cursor-not-allowed'}`} 
+        onClick={(e) => handleToggle(e, isToDoClickable)}
       >
         {renderIcon()}
       </div>
@@ -142,7 +145,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
         <div key={subtask.id} className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
                  <TooltipProvider>
-                    {!canComplete && !subtask.completed ? (
+                    {!(isToDoClickable || canComplete) && !subtask.completed ? (
                         <Tooltip>
                             <TooltipTrigger asChild>{iconElement}</TooltipTrigger>
                             <TooltipContent>
@@ -236,11 +239,10 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     const isRecurringToday = task.taskType === 'recurring' && task.recurringDays?.includes(todayDay);
 
     task.subtasks.forEach(st => {
+      const isAutoInProgress = st.startDate && isAfter(currentTime, st.startDate);
       if (st.completed) {
         categories['Xong'].push(st);
-      } else if (task.taskType === 'deadline' && st.startDate && isAfter(currentTime, st.startDate)) {
-        categories['Đang làm'].push(st);
-      } else if (task.taskType === 'recurring' && isRecurringToday) {
+      } else if (st.isManuallyStarted || (task.taskType === 'deadline' && isAutoInProgress) || (task.taskType === 'recurring' && isRecurringToday)) {
         categories['Đang làm'].push(st);
       }
       else {
@@ -260,19 +262,22 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     }
     
     if (columnTitle === 'Đang làm') {
+        if (subtask.isManuallyStarted) {
+            return 'border-l-4 border-primary';
+        }
         if (task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now)) {
           return 'border-l-4 border-destructive'; // Overdue for deadline tasks
         }
         return 'border-l-4 border-amber-500'; // In Progress for both types
     }
     if (columnTitle === 'Chưa bắt đầu') {
-        return 'border-l-4 border-primary';
+        return 'border-l-4 border-muted';
     }
     return 'border-l-4 border-muted';
   };
 
   const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
-    { title: 'Chưa bắt đầu', subtasks: categorizedSubtasks['Chưa bắt đầu'], isClickable: false, titleColor: 'text-primary', bgColor: 'bg-primary/5' },
+    { title: 'Chưa bắt đầu', subtasks: categorizedSubtasks['Chưa bắt đầu'], isClickable: true, titleColor: 'text-primary', bgColor: 'bg-primary/5' },
     { title: 'Đang làm', subtasks: categorizedSubtasks['Đang làm'], isClickable: true, titleColor: 'text-amber-500', bgColor: 'bg-primary/5' },
     { title: 'Xong', subtasks: categorizedSubtasks['Xong'], isClickable: true, titleColor: 'text-chart-2', bgColor: 'bg-primary/5' },
   ];
@@ -362,8 +367,8 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                     <div className={`rounded-lg p-2 space-y-2 min-h-24 ${column.bgColor}`}>
                       {column.subtasks.length > 0 ? (
                         column.subtasks.map(st => {
-                          const isOverdue = column.title === 'Đang làm' && task.taskType === 'deadline' && !st.completed && !!st.endDate && isBefore(st.endDate, now);
                           const isInProgress = column.title === 'Đang làm' || (task.taskType === 'recurring' && task.recurringDays?.includes(getDay(now)) || false);
+                          const isOverdue = column.title === 'Đang làm' && task.taskType === 'deadline' && !st.completed && !!st.endDate && isBefore(st.endDate, now);
                           return (
                             <Card 
                                 key={st.id} 
@@ -377,11 +382,12 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                                     subtask={st}
                                     taskType={task.taskType}
                                     recurringDays={task.recurringDays}
-                                    onToggle={(subtaskId) => toggleSubtask(task.id, subtaskId)}
+                                    onToggle={(subtaskId, forceStart) => toggleSubtask(task.id, subtaskId, forceStart)}
                                     onTitleClick={() => handleSubtaskClick(st)}
-                                    isClickable={column.isClickable || (task.taskType === 'recurring' && isInProgress)}
+                                    isClickable={column.isClickable}
                                     isInProgress={isInProgress}
                                     isOverdue={isOverdue}
+                                    isManuallyStarted={st.isManuallyStarted || false}
                                 />
                               </CardContent>
                             </Card>
@@ -418,3 +424,4 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
+

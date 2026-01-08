@@ -12,7 +12,7 @@ interface TaskContextType {
   addTask: (task: Task) => void;
   updateTask: (task: Task) => void;
   deleteTask: (taskId: string) => void;
-  toggleSubtask: (taskId: string, subtaskId: string) => void;
+  toggleSubtask: (taskId: string, subtaskId: string, forceStart?: boolean) => void;
 }
 
 export const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -134,17 +134,23 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, [selectedTaskId]);
 
-  const toggleSubtask = useCallback((taskId: string, subtaskId: string) => {
+  const toggleSubtask = useCallback((taskId: string, subtaskId: string, forceStart?: boolean) => {
     setTasks(prevTasks =>
       prevTasks.map(task => {
         if (task.id === taskId) {
           let updatedTask = { ...task };
           
-          const updatedSubtasks = task.subtasks.map(subtask =>
-            subtask.id === subtaskId
-              ? { ...subtask, completed: !subtask.completed }
-              : subtask
-          );
+          const updatedSubtasks = task.subtasks.map(subtask => {
+            if (subtask.id === subtaskId) {
+              if (forceStart) {
+                // Just mark as manually started, don't complete it
+                return { ...subtask, isManuallyStarted: true };
+              }
+              // Toggle completion status
+              return { ...subtask, completed: !subtask.completed, isManuallyStarted: false }; // Reset manual start on completion/un-completion
+            }
+            return subtask;
+          });
 
           const allSubtasksDone = updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed);
 
