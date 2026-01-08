@@ -1,5 +1,5 @@
 export type Status = 'To Do' | 'In Progress' | 'Done';
-export type TaskType = 'deadline' | 'recurring';
+export type TaskType = 'deadline' | 'recurring' | 'idea';
 
 export interface Attachment {
   name: string;

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { isBefore, isAfter, startOfDay, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { isBefore, isAfter, startOfDay, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isThisWeek, isThisMonth, endOfMonth, startOfMonth } from 'date-fns';
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo, ChevronDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -61,10 +61,10 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
         overdue: new Map<string, { title: string; subtasks: Subtask[] }>(),
     };
     
-    const collectedSubtasks = new Set<string>();
-    const subtaskDetails: { [id: string]: { subtask: Subtask, task: Task } } = {};
+    let relevantSubtasks = new Set<Subtask>();
 
     tasks.forEach(task => {
+        if (task.taskType === 'idea') return;
         task.subtasks.forEach(subtask => {
             let isRelevant = false;
             if (filter === 'all') {
@@ -85,27 +85,27 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
             }
 
             if (isRelevant) {
-                collectedSubtasks.add(subtask.id);
-                subtaskDetails[subtask.id] = { subtask, task };
+                 const uniqueSubtask = { ...subtask, parentTaskId: task.id, parentTaskTitle: task.title, parentTaskType: task.taskType, recurringDays: task.recurringDays };
+                 relevantSubtasks.add(uniqueSubtask);
             }
         });
     });
 
+    initialStats.total = relevantSubtasks.size;
 
-    initialStats.total = collectedSubtasks.size;
-
-    collectedSubtasks.forEach(subtaskId => {
-        const { subtask, task } = subtaskDetails[subtaskId];
-        const statusMap = subtask.completed ? taskSubtaskMap.done :
-                      (task.taskType === 'deadline' && subtask.endDate && isAfter(now, subtask.endDate)) ? taskSubtaskMap.overdue :
-                      (task.taskType === 'deadline' && subtask.startDate && isBefore(now, subtask.startDate)) ? taskSubtaskMap.upcoming :
+    relevantSubtasks.forEach((subtask: any) => {
+        const { parentTaskId, parentTaskTitle, parentTaskType, recurringDays, ...restOfSubtask } = subtask;
+        const statusMap = restOfSubtask.completed ? taskSubtaskMap.done :
+                      (parentTaskType === 'deadline' && restOfSubtask.endDate && isAfter(now, restOfSubtask.endDate)) ? taskSubtaskMap.overdue :
+                      (parentTaskType === 'deadline' && restOfSubtask.startDate && isBefore(now, restOfSubtask.startDate)) ? taskSubtaskMap.upcoming :
                       taskSubtaskMap.inProgress;
         
-        if (!statusMap.has(task.id)) {
-            statusMap.set(task.id, { title: task.title, subtasks: [] });
+        if (!statusMap.has(parentTaskId)) {
+            statusMap.set(parentTaskId, { title: parentTaskTitle, subtasks: [] });
         }
-        statusMap.get(task.id)!.subtasks.push(subtask);
+        statusMap.get(parentTaskId)!.subtasks.push(restOfSubtask);
     });
+    
 
     initialStats.inProgress = Array.from(taskSubtaskMap.inProgress, ([id, data]) => ({ id, title: data.title, subtaskCount: data.subtasks.length }));
     initialStats.upcoming = Array.from(taskSubtaskMap.upcoming, ([id, data]) => ({ id, title: data.title, subtaskCount: data.subtasks.length }));
@@ -190,7 +190,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
                                 {item.icon}
                                 <span className="font-medium text-foreground">{item.status} ({item.tasks.reduce((acc, task) => acc + task.subtaskCount, 0)})</span>
                             </div>
-                            <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", openSections[item.status] && hasTasks && "rotate-180")} />
+                            {hasTasks && <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", openSections[item.status] && "rotate-180")} />}
                         </button>
                         
                         {hasTasks && openSections[item.status] && (

@@ -5,8 +5,8 @@ import * as React from 'react';
 import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, Calendar, Repeat } from 'lucide-react';
-import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay } from 'date-fns';
+import { Clock, CheckCircle2, Calendar, Repeat, Zap } from 'lucide-react';
+import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 
@@ -28,7 +28,7 @@ function TaskProgress({ task }: { task: Task }) {
   const [timeLeft, setTimeLeft] = React.useState('');
   
   React.useEffect(() => {
-    if (task.taskType === 'recurring') {
+    if (task.taskType === 'recurring' || task.taskType === 'idea') {
       return;
     }
 
@@ -102,7 +102,7 @@ function TaskProgress({ task }: { task: Task }) {
     }
   }, [task.startDate, task.endDate, task.status, task.taskType]);
   
-  if (task.status === 'Done') {
+  if (task.status === 'Done' && task.taskType !== 'idea') {
     return (
       <div className="flex items-center gap-2 text-emerald-500 text-xs">
           <CheckCircle2 size={12} />
@@ -123,6 +123,15 @@ function TaskProgress({ task }: { task: Task }) {
             </span>
           </div>
        </div>
+    )
+  }
+
+  if (task.taskType === 'idea') {
+    return (
+        <div className="flex items-center gap-2 text-xs text-sidebar-foreground/70">
+            <Zap size={12} className="text-amber-500" />
+            <span>Ý tưởng - {formatDistanceToNowStrict(new Date(task.createdAt), { addSuffix: true, locale: vi })}</span>
+        </div>
     )
   }
 
@@ -196,7 +205,7 @@ interface RecentTasksProps {
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
   activeFilter: 'all' | 'today' | 'week';
-  allTasksFilter?: 'all' | 'deadline' | 'recurring';
+  allTasksFilter?: 'all' | 'deadline' | 'recurring' | 'idea';
 }
 
 
@@ -214,6 +223,9 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
             }
             if (allTasksFilter === 'recurring') {
                 return "Không có nhiệm vụ 'Lặp lại' nào";
+            }
+            if (allTasksFilter === 'idea') {
+                return "Không có 'Nhiệm vụ ý tưởng' nào";
             }
             return 'Không có nhiệm vụ nào';
         default:
@@ -239,7 +251,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
               <div className="flex justify-between items-start">
                 <p className="text-sm text-sidebar-foreground flex-grow truncate pr-1">
                   {task.title}
-                  {totalSubtasks > 0 && (
+                  {task.taskType !== 'idea' && totalSubtasks > 0 && (
                     <span className="text-sidebar-foreground/70 ml-2">
                       ({completedSubtasks}/{totalSubtasks})
                     </span>

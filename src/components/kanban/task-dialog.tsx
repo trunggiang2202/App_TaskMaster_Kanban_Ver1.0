@@ -161,12 +161,14 @@ const taskSchema = z.object({
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"], 
 }).refine((data) => {
-    if (data.subtasks && data.subtasks.length > 0) {
-      // Only enforce this validation if there are subtasks *with titles*.
+    if (data.taskType !== 'idea' && data.subtasks && data.subtasks.length > 0) {
+      // For non-idea tasks, enforce subtask title if subtasks exist
       const hasTitledSubtask = data.subtasks.some(st => st.title && st.title.trim() !== '');
       if (hasTitledSubtask) {
         return true;
       }
+    } else if (data.taskType === 'idea') {
+        return true; // No subtask validation for idea tasks
     }
     return true;
 }, {
@@ -209,6 +211,11 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   const taskType = form.watch('taskType');
 
   useEffect(() => {
+    form.setValue('taskType', initialTaskType);
+  }, [initialTaskType, form]);
+
+
+  useEffect(() => {
     if (isOpen) {
       replace([]); // IMPORTANT: Safely clear the field array
       form.clearErrors();
@@ -249,7 +256,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
           endDate: formatDate(tomorrow),
           endTime: '23:59',
           recurringDays: [],
-          subtasks: [],
+          subtasks: initialTaskType === 'idea' ? [] : undefined,
         });
       }
     }
@@ -283,11 +290,13 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
 
   const handleSubmit = useCallback((data: TaskFormData) => {
-    // Final validation before submitting
-    const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
-    if ((data.subtasks || []).length > 0 && !hasTitledSubtask) {
-      form.setError("subtasks", { type: "manual", message: "Nhiệm vụ phải có ít nhất một công việc." });
-      return;
+    // Final validation for non-idea tasks
+    if (data.taskType !== 'idea') {
+      const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
+      if ((data.subtasks || []).length > 0 && !hasTitledSubtask) {
+        form.setError("subtasks", { type: "manual", message: "Nhiệm vụ phải có ít nhất một công việc." });
+        return;
+      }
     }
 
     const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any } = {
@@ -317,7 +326,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     attachments: st.attachments,
                 };
             }) : [];
-    } else { // recurring
+    } else if (data.taskType === 'recurring') {
         task.recurringDays = data.recurringDays;
         task.subtasks = data.subtasks ? data.subtasks
             .filter(st => st.title && st.title.trim() !== '')
@@ -331,6 +340,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     attachments: st.attachments,
                 };
             }) : [];
+    } else if (data.taskType === 'idea') {
+        task.subtasks = []; // Idea tasks don't have subtasks initially
     }
     
     const finalTask: Task = {
@@ -381,11 +392,12 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
   const subtasksFromForm = form.watch('subtasks');
   
   const uncompletedSubtasksCount = useMemo(() => {
+    if (taskType === 'idea') return 0;
     return (subtasksFromForm || []).filter((st) => {
       const originalSubtask = taskToEdit?.subtasks.find(original => original.id === st.id);
       return originalSubtask ? !originalSubtask.completed : (st.title && st.title.trim() !== '');
     }).length;
-  }, [subtasksFromForm, taskToEdit]);
+  }, [subtasksFromForm, taskToEdit, taskType]);
 
 
   const getSubtaskBorderColor = (index: number) => {
@@ -438,6 +450,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       return !form.formState.isValid;
     }
     if (taskType === 'recurring') {
+       return !form.formState.isValid;
+    }
+    if (taskType === 'idea') {
        return !form.formState.isValid;
     }
     return false;
@@ -782,7 +797,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                   {renderSubtasks()}
                 </TabsContent>
               </Tabs>
-            ) : ( // Recurring Task View
+            ) : taskType === 'recurring' ? ( // Recurring Task View
               <div className="py-4 space-y-4">
                     <FormField
                       control={form.control}
@@ -843,6 +858,35 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
                   {renderSubtasks()}
               </div>
+            ) : ( // Idea Task View
+              <div className="py-4 space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tên ý tưởng</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nhập ý tưởng của bạn..." {...field} autoFocus className="bg-primary/5"/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mô tả (Tùy chọn)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Thêm chi tiết cho ý tưởng..." {...field} className="bg-primary/5"/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+              </div>
             )}
           </div>
           
@@ -857,9 +901,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                   <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
                   <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
               </>
-            ) : ( // Recurring task footer
+            ) : ( // Recurring & Idea task footer
                <>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>              <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>              <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : taskType === 'idea' ? 'Lưu ý tưởng' : 'Tạo nhiệm vụ'}</Button>
               </>
             )}
           </DialogFooter>

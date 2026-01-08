@@ -4,10 +4,10 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, TrendingUp, Pencil, Clock, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical } from 'lucide-react';
+import { Plus, TrendingUp, Pencil, Clock, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical, Zap } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
-import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
@@ -26,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 
 type FilterType = 'all' | 'today' | 'week';
-type AllTasksFilterType = 'all' | 'deadline' | 'recurring';
+type AllTasksFilterType = 'all' | 'deadline' | 'recurring' | 'idea';
 type AllTasksSortType = 'newest' | 'longest' | 'shortest';
 
 const IconButton = ({ children, tooltipText, onClick, className }: { children: React.ReactNode, tooltipText: string, onClick?: () => void, className?: string }) => (
@@ -60,6 +60,7 @@ const FilterSelect = ({ value, onValueChange }: { value: AllTasksFilterType, onV
       <SelectItem value="all">Tất cả</SelectItem>
       <SelectItem value="deadline">Nhiệm vụ có Deadline</SelectItem>
       <SelectItem value="recurring">Nhiệm vụ lặp lại</SelectItem>
+      <SelectItem value="idea">Nhiệm vụ ý tưởng</SelectItem>
     </SelectContent>
   </Select>
 );
@@ -74,8 +75,8 @@ const SortSelect = ({ value, onValueChange, disabled }: { value: AllTasksSortTyp
     </SelectTrigger>
     <SelectContent>
       <SelectItem value="newest">Mới nhất</SelectItem>
-      <SelectItem value="longest">Dài -&gt; ngắn</SelectItem>
-      <SelectItem value="shortest">Ngắn -&gt; dài</SelectItem>
+      <SelectItem value="longest">Dài → ngắn</SelectItem>
+      <SelectItem value="shortest">Ngắn → dài</SelectItem>
     </SelectContent>
   </Select>
 );
@@ -101,7 +102,7 @@ function TaskKanban() {
 
   useEffect(() => {
     // Reset sort when filter changes to something that doesn't support duration sorting
-    if (allTasksFilter === 'recurring') {
+    if (allTasksFilter === 'recurring' || allTasksFilter === 'idea') {
       setAllTasksSort('newest');
     }
   }, [allTasksFilter]);
@@ -161,6 +162,9 @@ function TaskKanban() {
     if (task.taskType === 'recurring') {
       return task.recurringDays?.includes(getDay(today));
     }
+    if (task.taskType === 'idea') {
+        return isSameDay(task.createdAt, today);
+    }
     return task.subtasks.some(st => 
       st.startDate && 
       st.endDate &&
@@ -183,6 +187,9 @@ function TaskKanban() {
     return tasks.filter(task => {
       if (task.taskType === 'recurring') {
         return task.recurringDays?.includes(dayOfWeek);
+      }
+      if (task.taskType === 'idea') {
+        return isSameDay(task.createdAt, day);
       }
       return task.subtasks.some(st => {
         if (!st.startDate || !st.endDate) return false;
@@ -274,6 +281,7 @@ function TaskKanban() {
     const dayOfWeek = getDay(today);
 
     tasks.forEach(task => {
+        if (task.taskType === 'idea') return;
       if (task.taskType === 'recurring') {
         if (task.recurringDays?.includes(dayOfWeek)) {
           total += task.subtasks.length;
@@ -308,6 +316,7 @@ function TaskKanban() {
         const dayOfWeek = getDay(sDay);
 
         tasks.forEach(task => {
+            if (task.taskType === 'idea') return;
             if (task.taskType === 'recurring') {
                 if (task.recurringDays?.includes(dayOfWeek)) {
                     total += task.subtasks.length;
@@ -373,6 +382,7 @@ function TaskKanban() {
     let total = 0;
     let completed = 0;
     tasks.forEach(task => {
+      if (task.taskType === 'idea') return;
       total += task.subtasks.length;
       completed += task.subtasks.filter(st => st.completed).length;
     });
@@ -418,12 +428,15 @@ function TaskKanban() {
           </div>
         </SidebarHeader>
         <SidebarContent>
-        <SidebarMenu className="px-2 grid grid-cols-4 gap-2">
+        <SidebarMenu className="px-2 grid grid-cols-5 gap-2">
             <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
                 <Clock className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
                 <Repeat className="h-4 w-4" />
+            </IconButton>
+             <IconButton tooltipText="Nhiệm vụ ý tưởng" onClick={() => handleOpenNewTaskDialog('idea')}>
+                <Zap className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
                 <TrendingUp className="h-4 w-4" />
@@ -454,7 +467,7 @@ function TaskKanban() {
                 <SortSelect 
                   value={allTasksSort} 
                   onValueChange={(v) => setAllTasksSort(v as AllTasksSortType)}
-                  disabled={allTasksFilter === 'recurring'}
+                  disabled={allTasksFilter === 'recurring' || allTasksFilter === 'idea'}
                 />
             </div>
           )}

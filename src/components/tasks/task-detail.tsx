@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { isAfter, isBefore, getDay } from 'date-fns';
-import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, ChevronDown, Repeat } from 'lucide-react';
+import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, ChevronDown, Repeat, Zap } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -331,10 +331,16 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                       Lặp lại vào {recurringDaysText} hàng tuần
                   </div>
                 )}
+                 {task.taskType === 'idea' && (
+                  <div className="flex items-center gap-2 mt-4 text-sm font-medium text-amber-600">
+                      <Zap className="h-4 w-4" />
+                      Đây là một nhiệm vụ ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
+                  </div>
+                )}
             </div>
         </div>
 
-        {totalSubtasks > 0 && (
+        {task.taskType !== 'idea' && totalSubtasks > 0 && (
           <div className="p-4 rounded-md border bg-muted/20 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold">Công việc ({completedSubtasks}/{totalSubtasks})</h2>
@@ -412,4 +418,3 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     
 
     
-
