@@ -62,7 +62,7 @@ const subtaskSchema = z.object({
 });
 
 const taskSchema = z.object({
-  title: z.string().min(3, 'Nhiệm vụ phải có ít nhất 3 ký tự.'),
+  title: z.string().min(1, 'Nhiệm vụ phải có tên.'),
   description: z.string().optional(),
   taskType: z.custom<TaskType>(),
   recurringDays: z.array(z.number()).optional(),
@@ -336,6 +336,17 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
   const handleSubmit = useCallback((data: TaskFormData) => {
     if (taskType === 'idea') {
+      const ideaTasks = ideas.map(idea => ({
+        id: idea.id,
+        title: idea.title,
+        taskType: 'idea' as TaskType,
+        status: 'To Do' as 'To Do',
+        createdAt: new Date(),
+        subtasks: []
+      }));
+      ideaTasks.forEach(task => addTask(task));
+      setIdeas([]);
+      onOpenChange(false);
       return;
     }
     
@@ -404,7 +415,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       addTask(finalTask);
     }
     onOpenChange(false);
-  }, [taskToEdit, addTask, updateTask, onOpenChange, form, taskType]);
+  }, [taskToEdit, addTask, updateTask, onOpenChange, form, taskType, ideas]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
       const file = e.target.files?.[0];
@@ -974,7 +985,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         {ideas.length > 0 ? 'Đóng' : 'Hủy'}
                     </Button>
-                    <Button type="submit" disabled={!form.formState.isValid} onClick={handleIdeaSubmit}>Lưu ý tưởng</Button>
+                    <Button type="button" disabled={!form.getValues('title')} onClick={handleIdeaSubmit}>Lưu ý tưởng</Button>
                 </>
             ) : ( // Recurring task footer
                <>
@@ -991,3 +1002,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
 
     
 
+
+
+    
