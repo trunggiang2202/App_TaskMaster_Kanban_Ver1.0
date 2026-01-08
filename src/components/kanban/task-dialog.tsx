@@ -945,23 +945,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Mô tả thêm..." 
-                            {...field} 
-                            className="bg-primary/5"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </form>
                 
                 {ideas.length > 0 && (
@@ -1022,5 +1005,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     
 
 
+
+    
 
     
