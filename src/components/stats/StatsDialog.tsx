@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -34,7 +35,7 @@ interface TaskStats {
   total: number;
 }
 
-type StatsFilter = 'all' | 'today' | 'week' | 'month';
+type StatsFilter = 'all' | 'today';
 
 interface StatsDialogProps {
   isOpen: boolean;
@@ -58,67 +59,32 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
         overdue: new Map<string, { title: string; subtasks: Subtask[] }>(),
     };
 
-    let interval: Interval | null = null;
-    if (filter === 'week') {
-        interval = { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
-    } else if (filter === 'month') {
-        interval = { start: startOfMonth(now), end: endOfMonth(now) };
-    }
-
     const collectedSubtasks: { subtask: Subtask, task: Task }[] = [];
 
-    if (filter === 'all' || filter === 'today') {
-        tasks.forEach(task => {
-            task.subtasks.forEach(subtask => {
-                let isRelevant = false;
-                if (filter === 'all') {
-                    isRelevant = true;
-                } else if (filter === 'today') {
-                    const dayOfWeek = getDay(today);
-                    if (task.taskType === 'recurring') {
-                        if (task.recurringDays?.includes(dayOfWeek)) {
+    tasks.forEach(task => {
+        task.subtasks.forEach(subtask => {
+            let isRelevant = false;
+            if (filter === 'all') {
+                isRelevant = true;
+            } else if (filter === 'today') {
+                const dayOfWeek = getDay(today);
+                if (task.taskType === 'recurring') {
+                    if (task.recurringDays?.includes(dayOfWeek)) {
+                        isRelevant = true;
+                    }
+                } else { // deadline
+                    if (subtask.startDate && subtask.endDate) {
+                        if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
                             isRelevant = true;
                         }
-                    } else { // deadline
-                        if (subtask.startDate && subtask.endDate) {
-                            if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
-                                isRelevant = true;
-                            }
-                        }
                     }
                 }
-                if (isRelevant) {
-                    collectedSubtasks.push({ subtask, task });
-                }
-            });
+            }
+            if (isRelevant) {
+                collectedSubtasks.push({ subtask, task });
+            }
         });
-    } else if (interval) { // Week or Month
-        const daysInInterval = eachDayOfInterval(interval);
-        daysInInterval.forEach(day => {
-            const sDay = startOfDay(day);
-            const dayOfWeek = getDay(sDay);
-
-            tasks.forEach(task => {
-                task.subtasks.forEach(subtask => {
-                    let isRelevantToday = false;
-                    if (task.taskType === 'recurring') {
-                        if (task.recurringDays?.includes(dayOfWeek)) {
-                            isRelevantToday = true;
-                        }
-                    } else { // deadline
-                        if (subtask.startDate && subtask.endDate) {
-                            if (isWithinInterval(sDay, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
-                                isRelevantToday = true;
-                            }
-                        }
-                    }
-                    if (isRelevantToday) {
-                        collectedSubtasks.push({ subtask, task });
-                    }
-                });
-            });
-        });
-    }
+    });
     
     initialStats.total = collectedSubtasks.length;
 
@@ -131,11 +97,7 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
         if (!statusMap.has(task.id)) {
             statusMap.set(task.id, { title: task.title, subtasks: [] });
         }
-        // Avoid adding duplicate subtasks if they span multiple days in the filter range
-        const existingSubtasks = statusMap.get(task.id)!.subtasks;
-        if (!existingSubtasks.some(st => st.id === subtask.id)) {
-           existingSubtasks.push(subtask);
-        }
+        statusMap.get(task.id)!.subtasks.push(subtask);
     });
 
     initialStats.inProgress = Array.from(taskSubtaskMap.inProgress, ([id, data]) => ({ id, title: data.title, subtaskCount: data.subtasks.length }));
@@ -190,11 +152,9 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect }: Stats
         <Separator className="bg-slate-300" />
         
         <Tabs value={filter} onValueChange={(value) => setFilter(value as StatsFilter)} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-primary/10">
+          <TabsList className="grid w-full grid-cols-2 bg-primary/10">
             <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tất cả</TabsTrigger>
             <TabsTrigger value="today" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Hôm nay</TabsTrigger>
-            <TabsTrigger value="week" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tuần này</TabsTrigger>
-            <TabsTrigger value="month" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tháng này</TabsTrigger>
           </TabsList>
         </Tabs>
 
