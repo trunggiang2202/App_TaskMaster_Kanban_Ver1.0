@@ -171,8 +171,8 @@ function TaskKanban() {
   const todaysTasks = useMemo(() => tasks.filter(isTaskForToday), [tasks, isTaskForToday]);
 
   const weeklyFilteredTasks = useMemo(() => {
-    const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+    const day = startOfDay(selectedDay);
+    const dayOfWeek = getDay(day);
 
     const sortTasks = (a: Task, b: Task) => {
         if (a.taskType === 'recurring' && b.taskType !== 'recurring') return -1;
@@ -182,23 +182,19 @@ function TaskKanban() {
 
     return tasks.filter(task => {
       if (task.taskType === 'recurring') {
-        // For a week view, we always include recurring tasks as one of their days might be in the week.
-        return true;
+        return task.recurringDays?.includes(dayOfWeek);
       }
-      // For deadline tasks, check if any subtask falls within the week
       return task.subtasks.some(st => {
         if (!st.startDate || !st.endDate) return false;
         const subtaskInterval = { start: startOfDay(st.startDate), end: startOfDay(st.endDate) };
-        return isWithinInterval(subtaskInterval.start, { start: weekStart, end: weekEnd }) ||
-               isWithinInterval(subtaskInterval.end, { start: weekStart, end: weekEnd }) ||
-               (isBefore(subtaskInterval.start, weekStart) && isAfter(subtaskInterval.end, weekEnd));
+        return isWithinInterval(day, subtaskInterval);
       });
     }).sort((a, b) => {
         if (a.status === 'Done' && b.status !== 'Done') return 1;
         if (a.status !== 'Done' && b.status === 'Done') return -1;
         return sortTasks(a, b);
     });
-  }, [tasks, currentDate]);
+  }, [tasks, selectedDay]);
 
   const filteredTasksForSidebar = useMemo(() => {
     const sortTasks = (a: Task, b: Task) => {
@@ -538,3 +534,5 @@ export default function Home() {
     </TaskProvider>
   )
 }
+
+    
