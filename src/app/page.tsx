@@ -173,16 +173,17 @@ function TaskKanban() {
 
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
     const today = startOfDay(new Date());
-    if (task.taskType === 'recurring') {
-        const dayOfWeek = getDay(today);
-        return task.recurringDays?.includes(dayOfWeek) || task.subtasks.some(st => st.isManuallyStarted);
-    }
     if (task.taskType === 'idea') {
         return isSameDay(task.createdAt, today);
     }
+    if (task.taskType === 'recurring') {
+        const dayOfWeek = getDay(today);
+        return task.recurringDays?.includes(dayOfWeek);
+    }
+    // For deadline tasks, check if any subtask is active today
     return task.subtasks.some(st => 
         st.isManuallyStarted ||
-        (st.startDate && st.endDate && isWithinInterval(today, { start: startOfDay(st.startDate), end: startOfDay(st.endDate) }))
+        (st.startDate && isAfter(today, startOfDay(st.startDate)))
     );
 }, []);
   
@@ -294,27 +295,34 @@ function TaskKanban() {
     const today = startOfDay(new Date());
     const dayOfWeek = getDay(today);
 
-    const isSubtaskForToday = (subtask: Subtask, task: Task): boolean => {
-      if (task.taskType === 'recurring') {
-        return task.recurringDays?.includes(dayOfWeek) || !!subtask.isManuallyStarted;
-      }
-      // deadline task
-      return !!subtask.isManuallyStarted || (!!subtask.startDate && !!subtask.endDate && isWithinInterval(today, {
-        start: startOfDay(subtask.startDate),
-        end: startOfDay(subtask.endDate)
-      }));
-    };
+    todaysTasks.forEach(task => {
+        if (task.taskType === 'idea') return;
+        
+        task.subtasks.forEach(st => {
+            let isActiveToday = false;
+            if (task.taskType === 'recurring') {
+                // For recurring tasks, all its subtasks are considered active on the recurring day
+                isActiveToday = true;
+            } else { // 'deadline' task
+                // For deadline tasks, subtask is active if manually started or today is within its date range
+                isActiveToday = !!st.isManuallyStarted || 
+                                (!!st.startDate && !!st.endDate && isWithinInterval(today, {
+                                    start: startOfDay(st.startDate),
+                                    end: startOfDay(st.endDate)
+                                }));
+            }
 
-    tasks.forEach(task => {
-      if (task.taskType === 'idea') return;
-
-      const subtasksForToday = task.subtasks.filter(st => isSubtaskForToday(st, task));
-      total += subtasksForToday.length;
-      completed += subtasksForToday.filter(st => st.completed).length;
+            if (isActiveToday) {
+                total++;
+                if (st.completed) {
+                    completed++;
+                }
+            }
+        });
     });
 
     return { completedTodaysSubtasks: completed, totalTodaysSubtasks: total };
-  }, [tasks]);
+  }, [todaysTasks]);
   
   const weekViewCounts = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -567,3 +575,4 @@ export default function Home() {
 }
 
     
+
