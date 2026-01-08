@@ -177,7 +177,10 @@ function TaskProgress({ task }: { task: Task }) {
           {task.status !== 'Done' && !isOverdue && (
               <div className={`flex items-center gap-2 text-sidebar-foreground/80`}>
                 <Clock size={12} /> 
-                <span>{isUpcoming ? 'Tổng thời gian: ' : 'Thời gian còn lại: '}{timeLeft}</span>
+                <span>
+                  {isUpcoming ? 'Tổng thời gian: ' : 'Thời gian còn lại: '}{timeLeft}
+                  {timeProgress < 100 && ` (${Math.round(timeProgress)}%)`}
+                </span>
               </div>
           )}
         </div>
