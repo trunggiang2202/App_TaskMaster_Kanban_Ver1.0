@@ -168,9 +168,9 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity transition-transform hover:scale-125"
+                                    className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity transition-transform hover:scale-125 hover:bg-transparent"
                                 >
-                                    <Eye className="h-4 w-4" />
+                                    <Eye className="h-4 w-4 text-foreground" />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -426,6 +426,8 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
 
     
 
