@@ -73,7 +73,7 @@ const DateSearchBar = ({ onDateSelect, onClose }: { onDateSelect: (date: Date) =
             </div>
             {error && <p className="text-sm text-destructive text-center -mt-2">{error}</p>}
             <div className="grid grid-cols-2 gap-2">
-                <Button onClick={onClose} variant="ghost" size="sm" className="bg-sidebar-accent hover:bg-sidebar-accent/80">Hủy</Button>
+                <Button onClick={onClose} variant="ghost" className="bg-sidebar-accent hover:bg-sidebar-accent/80">Hủy</Button>
                 <Button onClick={handleSearch} size="sm">
                     <Search className="mr-2 h-4 w-4" />
                     Tìm
@@ -92,9 +92,10 @@ interface WeekViewProps {
   onNextWeek: () => void;
   onGoToToday: () => void;
   onDateSearch: (date: Date) => void;
+  isDaySelectionEnabled?: boolean;
 }
 
-export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevWeek, onNextWeek, onGoToToday, onDateSearch }: WeekViewProps) {
+export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevWeek, onNextWeek, onGoToToday, onDateSearch, isDaySelectionEnabled = true }: WeekViewProps) {
   const today = new Date();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Bắt đầu từ thứ 2
   const [showSearch, setShowSearch] = React.useState(false);
@@ -167,15 +168,17 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
           const dayComponent = (
             <button
                 key={day.toISOString()}
-                onClick={() => onSelectDay(day)}
+                onClick={() => isDaySelectionEnabled && onSelectDay(day)}
+                disabled={!isDaySelectionEnabled}
                 className={cn(
                   "flex flex-col items-center justify-center p-1 rounded-md transition-none h-14 w-full",
-                  isSameDay(day, selectedDay)
+                  isDaySelectionEnabled && isSameDay(day, selectedDay)
                     ? "bg-sidebar-primary/90 text-sidebar-primary-foreground"
-                    : "hover:bg-sidebar-accent/80",
+                    : isDaySelectionEnabled ? "hover:bg-sidebar-accent/80" : "cursor-default",
                   isSameDay(day, today) && !isSameDay(day, selectedDay)
                     ? "bg-sidebar-accent/50"
-                    : ""
+                    : "",
+                   !isDaySelectionEnabled && "opacity-60"
                 )}
               >
                 <span className="text-xs font-medium uppercase">
