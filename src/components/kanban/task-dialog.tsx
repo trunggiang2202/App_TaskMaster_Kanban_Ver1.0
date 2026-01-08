@@ -42,6 +42,7 @@ import { TaskTypeDialog } from './task-type-dialog';
 import { Separator } from '../ui/separator';
 
 type Idea = { id: string; title: string; description?: string };
+const IDEAS_STORAGE_KEY = 'taskmaster-ideas';
 
 const attachmentSchema = z.object({
   name: z.string(),
@@ -216,6 +217,29 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     form.setValue('taskType', initialTaskType);
   }, [initialTaskType, form]);
 
+  useEffect(() => {
+    if (taskType === 'idea' && isOpen) {
+      try {
+        const storedIdeas = localStorage.getItem(IDEAS_STORAGE_KEY);
+        if (storedIdeas) {
+          setIdeas(JSON.parse(storedIdeas));
+        }
+      } catch (error) {
+        console.error("Failed to load ideas from localStorage:", error);
+      }
+    }
+  }, [taskType, isOpen]);
+
+  useEffect(() => {
+    if (taskType === 'idea') {
+      try {
+        localStorage.setItem(IDEAS_STORAGE_KEY, JSON.stringify(ideas));
+      } catch (error) {
+        console.error("Failed to save ideas to localStorage:", error);
+      }
+    }
+  }, [ideas, taskType]);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -223,7 +247,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
       form.clearErrors();
       setActiveTab('task');
       if (taskType === 'idea') {
-        setIdeas([]);
+        // Ideas are loaded from localStorage, no need to reset
       }
       if (taskToEdit) {
         form.reset({
@@ -265,7 +289,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
         });
       }
     }
-  }, [taskToEdit, isOpen, initialTaskType, replace, form]);
+  }, [taskToEdit, isOpen, initialTaskType, replace, form, taskType]);
 
   const addEmptySubtask = () => {
     const newSubtask: Partial<Subtask> = { 
@@ -986,3 +1010,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     </Dialog>
   );
 }
+
+    
