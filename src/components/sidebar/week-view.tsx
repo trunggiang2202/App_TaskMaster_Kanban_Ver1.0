@@ -131,8 +131,6 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
   const isCurrentWeek = isSameWeek(currentDate, today, { weekStartsOn: 1 });
 
   const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-  const fullDayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-
 
   const handleDateSearchSubmit = (date: Date) => {
     onDateSearch(date);
@@ -199,7 +197,7 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
                   <Tooltip>
                       <TooltipTrigger asChild>{dayComponent}</TooltipTrigger>
                       <TooltipContent>
-                          <p>{fullDayNames[getDay(day)]} có {taskCount} công việc</p>
+                          <p>Có {taskCount} công việc</p>
                       </TooltipContent>
                   </Tooltip>
               </TooltipProvider>
