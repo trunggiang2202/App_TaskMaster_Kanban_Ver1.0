@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { isAfter, isBefore, getDay } from 'date-fns';
-import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, ChevronDown, Repeat, Zap } from 'lucide-react';
+import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, Eye, Repeat, Zap } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -40,7 +40,6 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
     const canComplete = taskType === 'recurring' ? (recurringDays?.includes(getDay(new Date()))) : (isClickable && !!subtask.startDate && !!subtask.endDate);
     const [timeProgress, setTimeProgress] = React.useState(100);
     const [timeLeft, setTimeLeft] = React.useState('');
-    const [isExpanded, setIsExpanded] = React.useState(false);
 
 
     React.useEffect(() => {
@@ -162,37 +161,39 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                         {subtask.title}
                     </span>
                 </div>
-                 {!subtask.completed && hasDeadline && !isOverdue && taskType === 'deadline' && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 shrink-0"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                    >
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")} />
-                    </Button>
+                {!subtask.completed && hasDeadline && !isOverdue && taskType === 'deadline' && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 shrink-0"
+                                >
+                                    <Eye className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <div className="flex flex-col gap-2 p-1 min-w-[150px]">
+                                    <div className="flex items-center justify-between text-xs pt-1">
+                                        <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
+                                            <Clock className="h-3 w-3" />
+                                            {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft} ({Math.round(timeProgress)}%)
+                                        </span>
+                                    </div>
+                                    <Progress 
+                                        value={timeProgress} 
+                                        className="h-1.5" 
+                                        indicatorClassName={cn(
+                                            isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-primary"
+                                        )}
+                                    />
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 )}
             </div>
-            {isExpanded && !subtask.completed && hasDeadline && !isOverdue && taskType === 'deadline' && (
-                <div className="flex flex-col gap-2">
-                    <div className="my-1 h-px bg-slate-300 dark:bg-slate-700" />
-                    <div className="flex flex-col gap-2">
-                         <div className="flex items-center justify-between text-xs pt-1">
-                            <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
-                                <Clock className="h-3 w-3" />
-                                {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft} ({Math.round(timeProgress)}%)
-                            </span>
-                        </div>
-                        <Progress 
-                            value={timeProgress} 
-                            className="h-1.5" 
-                            indicatorClassName={cn(
-                                isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-primary"
-                            )}
-                        />
-                    </div>
-                </div>
-            )}
         </div>
     )
 };
@@ -425,20 +426,3 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
-
-    
-
-    
-
-
-
-    
-
-    
-
-
-
-
-
-
-    
