@@ -755,7 +755,17 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
                 <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
                   <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nhiệm vụ</TabsTrigger>
-                  <TabsTrigger value="subtasks" disabled={isTaskTabInvalid} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Công việc</TabsTrigger>
+                  <TabsTrigger 
+                    value="subtasks" 
+                    disabled={isTaskTabInvalid}
+                    className={cn(
+                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                        "disabled:bg-background/80 disabled:text-muted-foreground/60",
+                        !isTaskTabInvalid && "bg-emerald-600 text-white"
+                    )}
+                  >
+                    Công việc
+                  </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="task" className="mt-0 py-4 space-y-4">
@@ -954,7 +964,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
                         <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
                         <div className="space-y-2 rounded-md border p-3 bg-primary/5 max-h-48 overflow-y-auto custom-scrollbar">
                         {ideas.map((idea) => (
-                            <div key={idea.id} className="flex items-center justify-between p-2 bg-background rounded-md border transition-colors hover:bg-muted">
+                            <div key={idea.id} className="flex items-center justify-between p-2 bg-transparent rounded-md transition-colors hover:bg-muted/30">
                                 <p className="font-medium text-foreground">{idea.title}</p>
                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeIdea(idea.id)}>
                                     <Trash2 className="h-4 w-4 text-destructive"/>
@@ -1009,3 +1019,4 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType }
     
 
     
+
