@@ -761,7 +761,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     value="subtasks" 
                     disabled={isTaskTabInvalid}
                     className={cn(
-                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground disabled:text-muted-foreground/80",
+                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground disabled:text-muted-foreground",
                          !isTaskTabInvalid && "data-[state=inactive]:bg-emerald-500 data-[state=inactive]:text-white"
                     )}
                   >
@@ -990,7 +990,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
               activeTab === 'task' ? (
                 <>
                   <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
-                  <Button type="button" onClick={triggerValidationAndSwitchTab} className={cn(!isTaskTabInvalid && "bg-emerald-500 hover:bg-emerald-600 text-white")} disabled={isTaskTabInvalid}>Tiếp tục <ArrowRightCircle className="ml-2 h-4 w-4" /></Button>
+                  <Button type="button" onClick={triggerValidationAndSwitchTab} className={cn(!isTaskTabInvalid && "bg-primary hover:bg-primary/90 text-primary-foreground")} disabled={isTaskTabInvalid}>Tiếp tục <ArrowRightCircle className="ml-2 h-4 w-4" /></Button>
                 </>
               ) : (
                 <>
