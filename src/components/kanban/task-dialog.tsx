@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle } from 'lucide-react';
+import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle, Save, PlusCircle, ArrowLeft } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
 import { isAfter, addDays, startOfDay, getDay } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -163,14 +163,11 @@ const taskSchema = z.object({
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"], 
 }).refine((data) => {
-    if (data.taskType !== 'idea' && data.subtasks && data.subtasks.length > 0) {
-      // For non-idea tasks, enforce subtask title if subtasks exist
-      const hasTitledSubtask = data.subtasks.some(st => st.title && st.title.trim() !== '');
-      if (hasTitledSubtask) {
-        return true;
-      }
-    } else if (data.taskType === 'idea') {
-        return true; // No subtask validation for idea tasks
+    if (data.taskType === 'recurring') {
+      return data.subtasks && data.subtasks.some(st => st.title && st.title.trim() !== '');
+    }
+    if (data.taskType === 'deadline' && data.subtasks && data.subtasks.length > 0) {
+      return data.subtasks.some(st => st.title && st.title.trim() !== '');
     }
     return true;
 }, {
@@ -507,26 +504,21 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   };
   
   const isTaskTabInvalid = useMemo(() => {
-    const state = form.getFieldState('title');
-    const startDateState = form.getFieldState('startDate');
-    const startTimeState = form.getFieldState('startTime');
-    const endDateState = form.getFieldState('endDate');
-    const endTimeState = form.getFieldState('endTime');
-    const recurringDaysState = form.getFieldState('recurringDays');
-
-    if (taskToEdit) return false;
-
+    const { title, startDate, startTime, endDate, endTime, recurringDays } = form.getValues();
+    if (!title) return true;
+    
     if (taskType === 'deadline') {
-      return !form.formState.isValid;
+        if (!startDate || !startTime || !endDate || !endTime) return true;
+        const start = parseDateTime(startDate, startTime);
+        const end = parseDateTime(endDate, endTime);
+        if (!start || !end || end <= start) return true;
     }
     if (taskType === 'recurring') {
-       return !form.formState.isValid;
+        if (!recurringDays || recurringDays.length === 0) return true;
     }
-    if (taskType === 'idea') {
-       return !form.formState.isValid;
-    }
+    
     return false;
-  }, [form.formState, taskType, taskToEdit]);
+  }, [form.watch()]);
 
 
   const renderSubtasks = () => (
@@ -769,9 +761,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     value="subtasks" 
                     disabled={isTaskTabInvalid}
                     className={cn(
-                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
-                        "disabled:bg-background/80 disabled:text-muted-foreground/60",
-                        !isTaskTabInvalid && "bg-emerald-600 text-white"
+                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground disabled:text-muted-foreground/80",
+                         !isTaskTabInvalid && "data-[state=inactive]:bg-emerald-500 data-[state=inactive]:text-white"
                     )}
                   >
                     Công việc
@@ -998,26 +989,34 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
             {taskType === 'deadline' ? (
               activeTab === 'task' ? (
                 <>
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
-                  <Button type="button" disabled={isTaskTabInvalid} onClick={triggerValidationAndSwitchTab}>Tiếp tục</Button>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
+                  <Button type="button" onClick={triggerValidationAndSwitchTab} className={cn(!isTaskTabInvalid && "bg-emerald-500 hover:bg-emerald-600 text-white")} disabled={isTaskTabInvalid}>Tiếp tục <ArrowRightCircle className="ml-2 h-4 w-4" /></Button>
                 </>
               ) : (
                 <>
-                    <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}>Quay lại</Button>
-                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                    <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}><ArrowLeft className="mr-2 h-4 w-4" />Quay lại</Button>
+                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>
+                        {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo nhiệm vụ</>}
+                    </Button>
                 </>
               )
             ) : taskType === 'idea' ? (
                  <>
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <X className="mr-2 h-4 w-4" />
                         {ideas.length > 0 ? 'Đóng' : 'Hủy'}
                     </Button>
-                    <Button type="button" disabled={!form.getValues('title')} onClick={handleIdeaSubmit}>Lưu ý tưởng</Button>
+                    <Button type="button" disabled={!form.getValues('title')} onClick={handleIdeaSubmit}>
+                        <Save className="mr-2 h-4 w-4" />
+                        Lưu ý tưởng
+                    </Button>
                 </>
             ) : ( // Recurring task footer
                <>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
-                <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>{taskToEdit ? 'Lưu thay đổi' : 'Tạo nhiệm vụ'}</Button>
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
+                <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>
+                    {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo nhiệm vụ</>}
+                </Button>
               </>
             )}
           </DialogFooter>
