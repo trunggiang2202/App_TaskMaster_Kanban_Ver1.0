@@ -164,10 +164,10 @@ const taskSchema = z.object({
     path: ["endDate"], 
 }).refine((data) => {
     if (data.taskType === 'recurring' || data.taskType === 'deadline') {
-        if (data.subtasks && data.subtasks.length > 0) {
-            return data.subtasks.some(st => st.title && st.title.trim() !== '');
+        const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
+        if ((data.subtasks || []).length === 0 || !hasTitledSubtask) {
+            return false;
         }
-        return false;
     }
     return true;
 }, {
@@ -514,20 +514,24 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   
   const isTaskTabInvalid = useMemo(() => {
     const { title, startDate, startTime, endDate, endTime, recurringDays } = form.getValues();
-    if (!title) return true;
+    const errors = form.formState.errors;
+
+    if (errors.title || errors.description) return true;
     
     if (taskType === 'deadline') {
+        if (errors.startDate || errors.startTime || errors.endDate || errors.endTime || errors.root) return true;
         if (!startDate || !startTime || !endDate || !endTime) return true;
         const start = parseDateTime(startDate, startTime);
         const end = parseDateTime(endDate, endTime);
         if (!start || !end || end <= start) return true;
     }
     if (taskType === 'recurring') {
+        if (errors.recurringDays) return true;
         if (!recurringDays || recurringDays.length === 0) return true;
     }
     
     return false;
-  }, [form.watch()]);
+  }, [form.watch(), form.formState.errors, taskType]);
 
 
   const renderSubtasks = () => (
@@ -766,13 +770,10 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
                 <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
                   <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Nhiệm vụ</TabsTrigger>
-                  <TabsTrigger 
-                    value="subtasks" 
+                  <TabsTrigger
+                    value="subtasks"
                     disabled={isTaskTabInvalid}
-                    className={cn(
-                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground",
-                         !isTaskTabInvalid && "data-[state=inactive]:bg-emerald-500 data-[state=inactive]:text-white"
-                    )}
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
                   >
                     Công việc
                   </TabsTrigger>
