@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
@@ -174,7 +172,7 @@ function TaskKanban() {
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
     const today = startOfDay(new Date());
     if (task.taskType === 'idea') {
-        return isSameDay(task.createdAt, today);
+        return false; // Ideas don't belong to 'today' unless explicitly filtered
     }
     if (task.taskType === 'recurring') {
         const dayOfWeek = getDay(today);
@@ -183,11 +181,9 @@ function TaskKanban() {
     // For deadline tasks, check if any subtask is active today
     return task.subtasks.some(st => 
         st.isManuallyStarted ||
-        (st.startDate && isAfter(today, startOfDay(st.startDate)))
+        (st.startDate && st.endDate && isWithinInterval(today, {start: startOfDay(st.startDate), end: startOfDay(st.endDate)}))
     );
-}, []);
-  
-  const todaysTasks = useMemo(() => tasks.filter(isTaskForToday), [tasks, isTaskForToday]);
+  }, []);
 
   const weeklyFilteredTasks = useMemo(() => {
     const day = startOfDay(selectedDay);
@@ -227,6 +223,7 @@ function TaskKanban() {
 
     switch(activeFilter) {
       case 'today':
+         const todaysTasks = tasks.filter(isTaskForToday);
          return [...todaysTasks].sort((a,b) => {
             if (a.status === 'Done' && b.status !== 'Done') return 1;
             if (a.status !== 'Done' && b.status === 'Done') return -1;
@@ -285,7 +282,7 @@ function TaskKanban() {
             return typeFilteredTasks.sort(baseSort);
         }
     }
-  }, [activeFilter, allTasksFilter, allTasksSort, tasks, todaysTasks, weeklyFilteredTasks]);
+  }, [activeFilter, allTasksFilter, allTasksSort, tasks, weeklyFilteredTasks, isTaskForToday]);
 
   const selectedTask = useMemo(() => tasks.find(task => task.id === selectedTaskId), [tasks, selectedTaskId]);
 
@@ -295,16 +292,15 @@ function TaskKanban() {
     const today = startOfDay(new Date());
     const dayOfWeek = getDay(today);
 
-    todaysTasks.forEach(task => {
+    tasks.forEach(task => {
         if (task.taskType === 'idea') return;
-        
+        if (!isTaskForToday(task)) return; // Ensure task is relevant for today
+
         task.subtasks.forEach(st => {
             let isActiveToday = false;
             if (task.taskType === 'recurring') {
-                // For recurring tasks, all its subtasks are considered active on the recurring day
-                isActiveToday = true;
+                isActiveToday = task.recurringDays?.includes(dayOfWeek) ?? false;
             } else { // 'deadline' task
-                // For deadline tasks, subtask is active if manually started or today is within its date range
                 isActiveToday = !!st.isManuallyStarted || 
                                 (!!st.startDate && !!st.endDate && isWithinInterval(today, {
                                     start: startOfDay(st.startDate),
@@ -322,7 +318,7 @@ function TaskKanban() {
     });
 
     return { completedTodaysSubtasks: completed, totalTodaysSubtasks: total };
-  }, [todaysTasks]);
+  }, [tasks, isTaskForToday]);
   
   const weekViewCounts = useMemo(() => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -573,6 +569,3 @@ export default function Home() {
     </TaskProvider>
   )
 }
-
-    
-
