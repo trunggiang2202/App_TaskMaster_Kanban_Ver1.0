@@ -163,11 +163,11 @@ const taskSchema = z.object({
     message: "Thời gian kết thúc phải sau thời gian bắt đầu.",
     path: ["endDate"], 
 }).refine((data) => {
-    if (data.taskType === 'recurring') {
-      return data.subtasks && data.subtasks.some(st => st.title && st.title.trim() !== '');
-    }
-    if (data.taskType === 'deadline' && data.subtasks && data.subtasks.length > 0) {
-      return data.subtasks.some(st => st.title && st.title.trim() !== '');
+    if (data.taskType === 'recurring' || data.taskType === 'deadline') {
+        if (data.subtasks && data.subtasks.length > 0) {
+            return data.subtasks.some(st => st.title && st.title.trim() !== '');
+        }
+        return false;
     }
     return true;
 }, {
@@ -287,6 +287,15 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
         };
       }
       form.reset(defaultValues);
+      
+      if (initialTaskType !== 'idea') {
+          setTimeout(() => {
+              if (fields.length === 0 && !taskToEdit) {
+                  addEmptySubtask();
+              }
+          }, 0);
+      }
+
     }
   }, [taskToEdit, isOpen, initialTaskType, taskToConvert, replace, form]);
 
@@ -761,7 +770,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     value="subtasks" 
                     disabled={isTaskTabInvalid}
                     className={cn(
-                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground disabled:text-muted-foreground",
+                        "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground disabled:text-white/70",
                          !isTaskTabInvalid && "data-[state=inactive]:bg-emerald-500 data-[state=inactive]:text-white"
                     )}
                   >
@@ -1025,3 +1034,5 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     </Dialog>
   );
 }
+
+    
