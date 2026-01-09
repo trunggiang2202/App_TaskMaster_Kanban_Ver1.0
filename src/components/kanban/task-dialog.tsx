@@ -764,7 +764,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
           <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
             {taskType === 'deadline' ? (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-                <TabsList className="grid w-full grid-cols-2 bg-muted p-1">
+                <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
                   <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Nhiệm vụ</TabsTrigger>
                   <TabsTrigger 
                     value="subtasks" 
