@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { TaskTypeDialog } from '@/components/kanban/task-type-dialog';
 import type { TaskType, Task, Subtask } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TaskTimelineDialog } from '@/components/tasks/task-timeline-dialog';
 
 type FilterType = 'all' | 'today' | 'week';
 type AllTasksFilterType = 'all' | 'deadline' | 'recurring' | 'idea';
@@ -98,6 +99,8 @@ function TaskKanban() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [initialTaskType, setInitialTaskType] = useState<TaskType>('deadline');
   const [taskToConvert, setTaskToConvert] = useState<{ title: string, id: string } | null>(null);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+  const [taskForTimeline, setTaskForTimeline] = useState<Task | null>(null);
 
 
   useEffect(() => {
@@ -166,6 +169,11 @@ function TaskKanban() {
     setTaskToEdit(undefined);
     setIsTaskDialogOpen(false); 
     setIsTaskDialogOpen(true); 
+  }, []);
+
+  const handleOpenTimeline = useCallback((task: Task) => {
+    setTaskForTimeline(task);
+    setIsTimelineOpen(true);
   }, []);
 
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
@@ -505,6 +513,7 @@ function TaskKanban() {
             tasks={filteredTasksForSidebar} 
             selectedTaskId={selectedTaskId}
             onSelectTask={setSelectedTaskId}
+            onOpenTimeline={handleOpenTimeline}
             activeFilter={activeFilter}
             allTasksFilter={allTasksFilter}
           />
@@ -557,6 +566,13 @@ function TaskKanban() {
         todayTaskCount={welcomeDialogTaskCount}
         dailyQuote={getDailyQuote()}
       />
+      {taskForTimeline && (
+        <TaskTimelineDialog 
+            isOpen={isTimelineOpen}
+            onOpenChange={setIsTimelineOpen}
+            task={taskForTimeline}
+        />
+      )}
     </SidebarProvider>
   );
 }
