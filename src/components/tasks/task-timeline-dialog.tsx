@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -120,7 +121,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick 
         <Separator />
 
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="grid grid-cols-3 gap-4 px-1 pb-2 border-b">
+          <div className="grid grid-cols-3 gap-4 px-1 pb-2 border-b-2">
               <div className="col-span-1 font-semibold text-sm text-muted-foreground">Ngày/tháng</div>
               <div className="col-span-2 font-semibold text-sm text-muted-foreground pl-4">Công việc</div>
           </div>
@@ -129,7 +130,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick 
             <div className="pr-2 pt-1">
               {timelineData.length > 0 ? (
                 timelineData.map(({ date, subtasks }, index) => (
-                  <div key={index} className="grid grid-cols-3 items-start border-b">
+                  <div key={index} className="grid grid-cols-3 items-start border-b-2">
                     <div className="col-span-1 text-left sticky top-0 bg-background py-3">
                       <p className="font-semibold text-sm text-foreground">{format(date, 'dd/MM/yyyy')}</p>
                       <p className="text-xs text-muted-foreground">{format(date, 'eeee', { locale: vi })}</p>
