@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
@@ -243,8 +244,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   useEffect(() => {
     if (isOpen) {
       form.clearErrors(); // Clear previous validation errors
-      replace([]); // IMPORTANT: Safely clear the field array
       setActiveTab('task');
+      replace([]); // IMPORTANT: Safely clear the field array
 
       let defaultValues: TaskFormData;
 
@@ -297,7 +298,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
 
     }
-  }, [taskToEdit, isOpen, initialTaskType, taskToConvert]);
+  }, [taskToEdit, isOpen, initialTaskType, taskToConvert, append]);
 
   const addEmptySubtask = (shouldFocus = true) => {
     const newSubtask: Partial<Subtask> = { 
