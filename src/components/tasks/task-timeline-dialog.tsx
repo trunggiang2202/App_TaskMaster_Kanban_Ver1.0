@@ -175,7 +175,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                     {/* Background Grid Lines */}
                     <div className="absolute inset-0 grid h-full -z-10" style={{ gridTemplateColumns }}>
                         {subtasks.map((_, index) => (
-                           <div key={index} className="border-r border-dashed border-border/50"></div>
+                           <div key={index} className="border-r border-dashed border-border"></div>
                         ))}
                     </div>
                      <div className="absolute inset-y-0 -left-px w-px bg-border"></div>
@@ -214,7 +214,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                         <div 
                                             key={`${subtask.id}-${dayIndex}`} 
                                             className={cn(
-                                                "border-b border-dashed border-border/50 transition-opacity duration-300",
+                                                "border-b border-dashed border-border transition-opacity duration-300",
                                                 focusedDay && !isSameDay(focusedDay, day) && "opacity-20"
                                             )}
                                         >
