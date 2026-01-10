@@ -283,7 +283,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         return 'border border-amber-500/30 border-l-4 border-l-amber-500'; // In Progress for both types
     }
     if (columnTitle === 'Chưa bắt đầu') {
-        return 'border border-muted-foreground/30 border-l-4 border-l-muted';
+        return 'border border-primary border-l-4 border-l-primary';
     }
     return 'border border-muted-foreground/30 border-l-4 border-l-muted';
   };
@@ -426,6 +426,8 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
 
     
 
