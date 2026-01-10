@@ -9,8 +9,6 @@ import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOf
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
-import { Button } from '../ui/button';
-import { EyeOff } from 'lucide-react';
 
 interface TaskTimelineDialogProps {
   isOpen: boolean;
@@ -81,6 +79,14 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
   const handleDayClick = (day: Date) => {
     setFocusedDay(prev => prev && isSameDay(prev, day) ? null : day);
   };
+  
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    // If the click is not on a day label or inside it, reset focus
+    if (!target.closest('[data-day-index]')) {
+      setFocusedDay(null);
+    }
+  };
 
 
   if (!task) {
@@ -96,24 +102,21 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
         <DialogHeader>
           <div className="flex justify-between items-center">
             <DialogTitle>Timeline: {task.title}</DialogTitle>
-            {focusedDay && (
-              <Button variant="ghost" size="sm" onClick={() => setFocusedDay(null)}>
-                <EyeOff className="mr-2 h-4 w-4" />
-                Bỏ focus
-              </Button>
-            )}
           </div>
         </DialogHeader>
         <Separator />
-        <div className="flex-1 overflow-auto custom-scrollbar pr-2">
+        <div 
+          className="flex-1 overflow-auto custom-scrollbar pr-2"
+          onClick={handleBackgroundClick}
+        >
             <div className="relative flex">
                 <div 
                     className="flex flex-col sticky left-0 bg-background z-10 cursor-pointer"
                     onClick={(e) => {
                         const target = e.target as HTMLElement;
-                        const dayIndex = target.closest('[data-day-index]')?.getAttribute('data-day-index');
-                        if (dayIndex) {
-                            handleDayClick(days[parseInt(dayIndex, 10)]);
+                        const dayIndexStr = target.closest('[data-day-index]')?.getAttribute('data-day-index');
+                        if (dayIndexStr) {
+                            handleDayClick(days[parseInt(dayIndexStr, 10)]);
                         }
                     }}
                 >
