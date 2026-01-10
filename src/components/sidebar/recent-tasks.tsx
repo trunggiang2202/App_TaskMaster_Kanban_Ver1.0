@@ -4,12 +4,11 @@ import * as React from 'react';
 import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, Calendar, Repeat, Zap, Eye } from 'lucide-react';
+import { Clock, CheckCircle2, Calendar, Repeat, Zap } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 const calculateInitialTimeProgress = (task: Task) => {
     if (task.taskType === 'recurring' || !task.startDate || !task.endDate) return 100;
@@ -205,13 +204,12 @@ interface RecentTasksProps {
   tasks: Task[];
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
-  onOpenTimeline: (task: Task) => void;
   activeFilter: 'all' | 'today' | 'week';
   allTasksFilter?: 'all' | 'deadline' | 'recurring' | 'idea';
 }
 
 
-export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, onOpenTimeline, activeFilter, allTasksFilter }: RecentTasksProps) {
+export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, activeFilter, allTasksFilter }: RecentTasksProps) {
   
   const getEmptyMessage = () => {
     switch (activeFilter) {
@@ -241,7 +239,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
         {recentTasks.map(task => {
           const totalSubtasks = task.subtasks.length;
           const completedSubtasks = task.subtasks.filter(st => st.completed).length;
-          const canShowTimeline = task.taskType === 'deadline' && task.subtasks.length > 0;
+          
           return (
             <div 
               key={task.id}
@@ -251,26 +249,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                   selectedTaskId === task.id ? 'ring-2 ring-sidebar-primary bg-sidebar-accent/80' : ''
               )}
             >
-              {canShowTimeline && (
-                 <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-sidebar-primary/20"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onOpenTimeline(task);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom"><p>Xem lộ trình</p></TooltipContent>
-                    </Tooltip>
-                 </TooltipProvider>
-              )}
+              
               <div className="flex justify-between items-start">
                 <p className="text-sm text-sidebar-foreground flex-grow truncate pr-8">
                   {task.title}
