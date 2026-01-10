@@ -35,14 +35,14 @@ const getTimelineCellStyle = (status: string, subtask: Subtask, now: Date) => {
     switch (status) {
         case 'Xong':
             const wasOverdue = subtask.endDate && isBefore(subtask.endDate, now);
-            return wasOverdue ? 'border border-destructive/50 border-l-4 border-l-destructive bg-background' : 'border border-chart-2/50 border-l-4 border-l-chart-2 bg-background';
+            return wasOverdue ? 'border border-destructive border-l-4 border-l-destructive bg-background' : 'border border-chart-2 border-l-4 border-l-chart-2 bg-background';
         case 'Đang làm':
-            return 'border border-amber-500/50 border-l-4 border-l-amber-500 bg-background';
+            return 'border border-amber-500 border-l-4 border-l-amber-500 bg-background';
         case 'Quá hạn':
-            return 'border border-destructive/50 border-l-4 border-l-destructive bg-background';
+            return 'border border-destructive border-l-4 border-l-destructive bg-background';
         case 'Chưa bắt đầu':
         default:
-            return 'border border-primary/50 border-l-4 border-l-primary bg-background';
+            return 'border border-primary border-l-4 border-l-primary bg-background';
     }
 }
 
