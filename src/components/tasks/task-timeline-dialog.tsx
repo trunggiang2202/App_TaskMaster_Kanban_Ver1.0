@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, eachDayOfInterval, isSameDay, startOfDay, isBefore, isAfter } from 'date-fns';
@@ -114,6 +115,11 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
       <DialogContent className="max-w-lg h-[70vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Lộ trình: {task?.title}</DialogTitle>
+           {timelineData.length > 0 && (
+            <DialogDescription>
+              Tổng số ngày: {timelineData.length}
+            </DialogDescription>
+          )}
         </DialogHeader>
         <Separator />
 
