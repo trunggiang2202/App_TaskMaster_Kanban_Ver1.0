@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle, Save, PlusCircle, ArrowLeft } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
-import { isAfter, addDays, startOfDay, getDay } from 'date-fns';
+import { isAfter, addDays, startOfDay, getDay, isWithinInterval } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -486,7 +486,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
 
   const getSubtaskBorderColor = (index: number) => {
     const subtask = form.watch(`subtasks.${index}`);
-    if (!subtask) return 'border-muted'; // Defensive check
+    if (!subtask) return 'border-muted';
     const now = new Date();
 
     const originalSubtask = taskToEdit?.subtasks.find(original => original.id === subtask.id);
@@ -496,24 +496,19 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     
     if (taskType === 'recurring') {
         const recurringDays = form.watch('recurringDays');
-        if (recurringDays?.includes(getDay(now))) {
-            return 'border-accent'; 
-        }
-        return 'border-primary';
+        return recurringDays?.includes(getDay(now)) ? 'border-amber-500' : 'border-primary';
     }
 
     const startDate = parseDateTime(subtask.startDate, subtask.startTime);
     const endDate = parseDateTime(subtask.endDate, subtask.endTime);
-
     if (!startDate || !endDate) return 'border-muted';
-
-    if (isAfter(now, startDate)) { 
-        if (isAfter(now, endDate)) { 
-            return 'border-destructive';
-        }
-        return 'border-accent';
+    
+    if (isWithinInterval(now, { start: startDate, end: endDate })) {
+        return 'border-amber-500';
     }
-
+    if (isAfter(now, endDate)) { 
+        return 'border-destructive';
+    }
     if (isAfter(startDate, now)) {
         return 'border-primary';
     }
