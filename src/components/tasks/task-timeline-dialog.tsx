@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -12,7 +13,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, eachDayOfInterval, isWithinInterval, startOfDay, isBefore, isAfter } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
@@ -41,25 +41,25 @@ const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Tas
     };
     
     const statusStyles: Record<SubtaskTimelineStatus, string> = {
-        upcoming: 'bg-primary/90 text-primary-foreground border-transparent',
-        'in-progress': 'bg-amber-500 text-white border-transparent',
-        done: 'bg-chart-2 text-white border-transparent',
-        overdue: 'bg-destructive text-destructive-foreground border-transparent',
+        upcoming: 'bg-primary/90 hover:bg-primary/70 text-primary-foreground border-transparent',
+        'in-progress': 'bg-amber-500 hover:bg-amber-400 text-white border-transparent',
+        done: 'bg-chart-2 hover:bg-chart-2/80 text-white border-transparent',
+        overdue: 'bg-destructive hover:bg-destructive/80 text-destructive-foreground border-transparent',
     };
     
     const status = getStatusForSubtask(subtask);
     const truncatedTitle = subtask.title.length > 5 ? `${subtask.title.substring(0, 5)}...` : subtask.title;
     
     const badge = (
-        <button onClick={() => onClick(task)} className="bg-transparent border-none p-0 h-auto cursor-pointer">
-            <Badge
-                className={cn(
-                    "font-normal text-xs",
-                    statusStyles[status]
-                )}
-            >
-                {truncatedTitle}
-            </Badge>
+        <button
+            onClick={() => onClick(task)}
+            className={cn(
+                "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "font-normal text-xs cursor-pointer",
+                statusStyles[status]
+            )}
+        >
+            {truncatedTitle}
         </button>
     );
 
