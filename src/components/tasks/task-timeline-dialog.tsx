@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -7,10 +8,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { format, eachDayOfInterval, isWithinInterval, startOfDay } from 'date-fns';
+import { format, eachDayOfInterval, isWithinInterval, startOfDay, isBefore, isAfter } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,9 @@ interface TaskTimelineDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   task: Task | null;
 }
+
+type SubtaskTimelineStatus = 'upcoming' | 'in-progress' | 'done' | 'overdue';
+
 
 export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineDialogProps) {
   const timelineData = React.useMemo(() => {
@@ -53,6 +56,31 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     });
   }, [task]);
 
+  const getStatusForSubtask = (subtask: Subtask): SubtaskTimelineStatus => {
+    const now = new Date();
+    if (subtask.completed) {
+      return 'done';
+    }
+    if (subtask.endDate && isBefore(now, subtask.endDate)) {
+       if (subtask.startDate && isAfter(now, subtask.startDate)) {
+            return 'in-progress';
+       }
+       return 'upcoming';
+    }
+    if (subtask.endDate && isAfter(now, subtask.endDate)) {
+      return 'overdue';
+    }
+    return 'upcoming';
+  };
+  
+  const statusStyles: Record<SubtaskTimelineStatus, string> = {
+    upcoming: 'bg-primary/90 text-primary-foreground border-transparent',
+    'in-progress': 'bg-amber-500 text-white border-transparent',
+    done: 'bg-chart-2/90 text-white border-transparent',
+    overdue: 'bg-destructive text-destructive-foreground border-transparent',
+  };
+
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg h-[70vh] flex flex-col">
@@ -71,18 +99,21 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                   </div>
                   <div className="col-span-2 flex flex-wrap gap-2 items-center border-l pl-4 py-2 min-h-[50px]">
                     {subtasks.length > 0 ? (
-                      subtasks.map(st => (
-                        <Badge 
-                          key={st.id}
-                          variant={st.completed ? 'secondary' : 'default'}
-                          className={cn(
-                            "font-normal",
-                             st.completed && "line-through"
-                           )}
-                        >
-                          {st.title}
-                        </Badge>
-                      ))
+                      subtasks.map(st => {
+                        const status = getStatusForSubtask(st);
+                        return (
+                          <Badge 
+                            key={st.id}
+                            className={cn(
+                              "font-normal",
+                              statusStyles[status],
+                              st.completed && "line-through"
+                            )}
+                          >
+                            {st.title}
+                          </Badge>
+                        )
+                      })
                     ) : (
                       <p className="text-xs text-muted-foreground italic">Không có công việc nào</p>
                     )}
