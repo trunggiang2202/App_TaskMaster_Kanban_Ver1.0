@@ -1,14 +1,15 @@
-
 'use client';
 
 import * as React from 'react';
 import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, Calendar, Repeat, Zap } from 'lucide-react';
+import { Clock, CheckCircle2, Calendar, Repeat, Zap, Eye } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 const calculateInitialTimeProgress = (task: Task) => {
     if (task.taskType === 'recurring' || !task.startDate || !task.endDate) return 100;
@@ -204,12 +205,13 @@ interface RecentTasksProps {
   tasks: Task[];
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
+  onOpenTimeline: (task: Task) => void;
   activeFilter: 'all' | 'today' | 'week';
   allTasksFilter?: 'all' | 'deadline' | 'recurring' | 'idea';
 }
 
 
-export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, activeFilter, allTasksFilter }: RecentTasksProps) {
+export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, onOpenTimeline, activeFilter, allTasksFilter }: RecentTasksProps) {
   
   const getEmptyMessage = () => {
     switch (activeFilter) {
@@ -233,12 +235,18 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
     }
   };
 
+  const handleTimelineClick = (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    onOpenTimeline(task);
+  };
+
   return (
     <SidebarGroup>
       <div className="space-y-3 px-2 pt-2">
         {recentTasks.map(task => {
           const totalSubtasks = task.subtasks.length;
           const completedSubtasks = task.subtasks.filter(st => st.completed).length;
+          const canShowTimeline = task.taskType === 'deadline' && task.subtasks.length > 0;
           return (
             <div 
               key={task.id}
@@ -257,6 +265,25 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                     </span>
                   )}
                 </p>
+                {canShowTimeline && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2"
+                          onClick={(e) => handleTimelineClick(e, task)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p>Xem timeline</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
               
               <TaskProgress 
