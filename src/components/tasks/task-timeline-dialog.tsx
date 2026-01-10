@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Task, Subtask } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay, isWithinInterval, isSameDay, areIntervalsOverlapping } from 'date-fns';
+import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay, isWithinInterval, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
@@ -25,11 +25,11 @@ const getStatus = (subtask: Subtask, now: Date) => {
   const sNow = startOfDay(now);
 
   if (subtaskStart && subtaskEnd) {
-    if (isWithinInterval(sNow, { start: subtaskStart, end: subtaskEnd })) {
-      return 'Đang làm';
-    }
     if (isAfter(sNow, subtaskEnd)) {
       return 'Quá hạn';
+    }
+    if (isWithinInterval(sNow, { start: subtaskStart, end: subtaskEnd })) {
+      return 'Đang làm';
     }
     if (isBefore(sNow, subtaskStart)) {
       return 'Chưa bắt đầu';
@@ -92,37 +92,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     const interval = { start: task.startDate, end: task.endDate };
     const days = eachDayOfInterval(interval);
     
-    const channels: { subtasks: Subtask[], interval: Interval }[] = [];
-
-    const sortedSubtasks = task.subtasks
-      .filter(st => st.startDate && st.endDate)
-      .sort((a, b) => a.startDate!.getTime() - b.startDate!.getTime());
-
-    sortedSubtasks.forEach(subtask => {
-        const subtaskInterval = { start: startOfDay(subtask.startDate!), end: startOfDay(subtask.endDate!) };
-        let placed = false;
-        for (const channel of channels) {
-            const overlaps = channel.subtasks.some(existingSubtask => 
-                areIntervalsOverlapping(
-                    subtaskInterval,
-                    { start: startOfDay(existingSubtask.startDate!), end: startOfDay(existingSubtask.endDate!) },
-                    { inclusive: true }
-                )
-            );
-            if (!overlaps) {
-                (subtask as any).colIndex = channels.indexOf(channel);
-                channel.subtasks.push(subtask);
-                placed = true;
-                break;
-            }
-        }
-        if (!placed) {
-            (subtask as any).colIndex = channels.length;
-            channels.push({ subtasks: [subtask], interval: subtaskInterval });
-        }
-    });
-
-    const processedSubtasks = channels.flatMap(channel => channel.subtasks.map(subtask => {
+    const subtasks = task.subtasks.map(subtask => {
         const status = getStatus(subtask, now);
         const style = getTimelineCellStyle(status, subtask, now);
         return {
@@ -130,9 +100,9 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
           status,
           style,
         };
-      }));
+      });
 
-    return { days, subtasks: processedSubtasks, columns: channels.length || 1 };
+    return { days, subtasks, columns: task.subtasks.length || 1 };
   }, [task, now]);
 
   const handleDayClick = (day: Date) => {
@@ -152,7 +122,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
   }
 
   const { days, subtasks, columns } = timelineData;
-  const gridTemplateColumns = `repeat(${columns}, minmax(120px, 1fr))`;
+  const gridTemplateColumns = `repeat(${columns}, minmax(100px, 1fr))`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -191,7 +161,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                      {hasTasks && (
                                         <span className={cn(
                                             "font-medium text-[11px]",
-                                            isCompleted ? "text-chart-2" : "text-muted-foreground"
+                                            isCompleted ? "text-chart-2" : "text-amber-600"
                                         )}>
                                             ({progress.completed}/{progress.total})
                                         </span>
@@ -204,24 +174,26 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
 
 
                 {/* Timeline Grid */}
-                <div className="relative flex-1" style={{ minWidth: `${columns * 120}px`}}>
+                <div className="relative flex-1" style={{ minWidth: `${columns * 100}px`}}>
                     {/* Background Grid Lines */}
                     <div className="absolute inset-0 grid h-full -z-10" style={{ gridTemplateColumns }}>
                         {Array.from({ length: columns }).map((_, index) => (
-                           <div key={index} className="border-r border-dashed border-muted-foreground/30"></div>
+                           <div key={index} className="border-r border-border/50"></div>
                         ))}
                     </div>
                      <div className="absolute inset-y-0 -left-px w-px bg-border"></div>
                      <div className="relative">
                         {/* Day rows background */}
                         {days.map((_, dayIndex) => (
-                          <div key={dayIndex} className="h-10 border-b border-dashed border-muted-foreground/30"></div>
+                          <div key={dayIndex} className="h-10 border-b border-border/50"></div>
                         ))}
 
                         {/* Subtask labels */}
-                        {subtasks.map((subtask) => {
-                            const subtaskStart = subtask.startDate!;
-                            const subtaskEnd = subtask.endDate!;
+                        {subtasks.map((subtask, index) => {
+                            if (!subtask.startDate || !subtask.endDate) return null;
+
+                            const subtaskStart = subtask.startDate;
+                            const subtaskEnd = subtask.endDate;
                             const startDayIndex = differenceInDays(startOfDay(subtaskStart), startOfDay(days[0]));
                             const durationDays = differenceInDays(startOfDay(subtaskEnd), startOfDay(subtaskStart)) + 1;
 
@@ -229,7 +201,6 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
 
                             const top = startDayIndex * 2.5; // 2.5rem is h-10
                             const height = durationDays * 2.5;
-                            const colIndex = (subtask as any).colIndex || 0;
 
                             return (
                                 <div
@@ -238,7 +209,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                     style={{
                                         top: `${top}rem`,
                                         height: `${height}rem`,
-                                        gridColumn: `${colIndex + 1} / span 1`,
+                                        gridColumn: `${index + 1} / span 1`,
                                     }}
                                 >
                                     <TooltipProvider delayDuration={0}>
@@ -251,8 +222,8 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                             <TooltipContent side="right">
                                                 <div className="text-xs">
                                                     <p className="font-bold">{subtask.title}</p>
-                                                    <p>Bắt đầu: {format(subtask.startDate!, 'p, dd/MM/yy', { locale: vi })}</p>
-                                                    <p>Kết thúc: {format(subtask.endDate!, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                    <p>Bắt đầu: {format(subtask.startDate, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                    <p>Kết thúc: {format(subtask.endDate, 'p, dd/MM/yy', { locale: vi })}</p>
                                                     <p>Trạng thái: {subtask.status}</p>
                                                 </div>
                                             </TooltipContent>
