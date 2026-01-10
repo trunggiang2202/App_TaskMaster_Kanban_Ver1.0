@@ -61,22 +61,19 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     if (subtask.completed) {
       return 'done';
     }
-    if (subtask.endDate && isBefore(now, subtask.endDate)) {
-       if (subtask.startDate && isAfter(now, subtask.startDate)) {
-            return 'in-progress';
-       }
+    if (subtask.startDate && isBefore(now, subtask.startDate)) {
        return 'upcoming';
     }
     if (subtask.endDate && isAfter(now, subtask.endDate)) {
       return 'overdue';
     }
-    return 'upcoming';
+    return 'in-progress';
   };
   
   const statusStyles: Record<SubtaskTimelineStatus, string> = {
     upcoming: 'bg-primary/90 text-primary-foreground border-transparent',
     'in-progress': 'bg-amber-500 text-white border-transparent',
-    done: 'bg-chart-2/90 text-white border-transparent',
+    done: 'bg-chart-2 text-white border-transparent',
     overdue: 'bg-destructive text-destructive-foreground border-transparent',
   };
 
@@ -101,6 +98,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                     {subtasks.length > 0 ? (
                       subtasks.map(st => {
                         const status = getStatusForSubtask(st);
+                        const truncatedTitle = st.title.length > 5 ? `${st.title.substring(0, 5)}...` : st.title;
                         return (
                           <Badge 
                             key={st.id}
@@ -110,7 +108,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                               st.completed && "line-through"
                             )}
                           >
-                            {st.title}
+                            {truncatedTitle}
                           </Badge>
                         )
                       })
