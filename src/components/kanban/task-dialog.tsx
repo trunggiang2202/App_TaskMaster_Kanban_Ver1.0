@@ -458,10 +458,20 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   const triggerValidationAndSwitchTab = async () => {
     const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description", "recurringDays"]);
     if (result) {
-        if (fields.length === 0) {
+        const wasEmpty = fields.length === 0;
+        if (wasEmpty) {
             addEmptySubtask();
         }
         setActiveTab('subtasks');
+        if (wasEmpty) {
+          // Use timeout to ensure the new field is rendered before focusing
+          setTimeout(() => {
+            const firstInput = subtaskTitleRefs.current[0];
+            if (firstInput) {
+              firstInput.focus();
+            }
+          }, 0);
+        }
     }
   };
 
