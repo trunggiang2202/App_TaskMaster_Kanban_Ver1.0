@@ -151,7 +151,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                      {hasTasks && (
                                         <span className={cn(
                                             "font-medium text-[11px]",
-                                            progress.completed === progress.total ? "text-chart-2" : "text-amber-600"
+                                            progress.completed === progress.total ? "text-chart-2" : "text-muted-foreground"
                                         )}>
                                             ({progress.completed}/{progress.total})
                                         </span>
