@@ -58,9 +58,6 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
       <DialogContent className="max-w-lg h-[70vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Lộ trình: {task?.title}</DialogTitle>
-          <DialogDescription>
-            Danh sách công việc hàng ngày cho nhiệm vụ này.
-          </DialogDescription>
         </DialogHeader>
         <Separator />
         <ScrollArea className="flex-1 -mx-6 px-6">
@@ -68,7 +65,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
             {timelineData.length > 0 ? (
               timelineData.map(({ date, subtasks }, index) => (
                 <div key={index} className="grid grid-cols-3 gap-4 items-start">
-                  <div className="col-span-1 text-right sticky top-0 bg-background py-2">
+                  <div className="col-span-1 text-left sticky top-0 bg-background py-2">
                     <p className="font-semibold text-sm text-foreground">{format(date, 'dd/MM/yyyy')}</p>
                     <p className="text-xs text-muted-foreground">{format(date, 'eeee', { locale: vi })}</p>
                   </div>
