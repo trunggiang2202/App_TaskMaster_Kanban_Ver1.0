@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -16,18 +15,17 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 
 interface TaskTimelineDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   task: Task | null;
-  onSubtaskClick: (task: Task, subtaskId: string) => void;
+  onSubtaskClick: (task: Task) => void;
 }
 
 type SubtaskTimelineStatus = 'upcoming' | 'in-progress' | 'done' | 'overdue';
 
-const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Task, subtaskId: string) => void; }> = ({ subtask, task, onClick }) => {
+const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Task) => void; }> = ({ subtask, task, onClick }) => {
     const getStatusForSubtask = (subtask: Subtask): SubtaskTimelineStatus => {
         const now = new Date();
         if (subtask.completed) {
@@ -53,17 +51,16 @@ const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Tas
     const truncatedTitle = subtask.title.length > 5 ? `${subtask.title.substring(0, 5)}...` : subtask.title;
     
     const badge = (
-       <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onClick(task, subtask.id)}
-            className={cn(
-                "h-auto font-normal px-2.5 py-0.5 text-xs",
-                statusStyles[status]
-            )}
+        <button onClick={() => onClick(task)} className="bg-transparent border-none p-0 h-auto cursor-pointer">
+            <Badge
+                className={cn(
+                    "font-normal text-xs",
+                    statusStyles[status]
+                )}
             >
-            {truncatedTitle}
-        </Button>
+                {truncatedTitle}
+            </Badge>
+        </button>
     );
 
     if (subtask.title.length > 5) {
