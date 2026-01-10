@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { format, eachDayOfInterval, isWithinInterval, startOfDay, isBefore, isAfter } from 'date-fns';
+import { format, eachDayOfInterval, isSameDay, startOfDay, isBefore, isAfter } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -96,12 +96,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick 
 
     return days.map(day => {
       const activeSubtasks = task.subtasks.filter(st =>
-        st.startDate &&
-        st.endDate &&
-        isWithinInterval(day, {
-          start: startOfDay(st.startDate),
-          end: startOfDay(st.endDate),
-        })
+        st.startDate && isSameDay(day, startOfDay(st.startDate))
       );
       return {
         date: day,
