@@ -159,7 +159,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <div className="h-10 p-0.5">
-                                                        <div className={cn("h-full w-full rounded flex items-center justify-center px-1 cursor-pointer", subtask.color)}>
+                                                        <div className={cn("h-full w-full rounded flex items-center px-1 cursor-pointer", subtask.color)}>
                                                             <p className="text-xs font-medium text-primary-foreground truncate">{subtask.title}</p>
                                                         </div>
                                                     </div>
