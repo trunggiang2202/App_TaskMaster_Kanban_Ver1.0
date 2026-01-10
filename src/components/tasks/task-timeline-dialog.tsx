@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { Task, Subtask } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay } from 'date-fns';
+import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay, isWithinInterval } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
@@ -23,8 +23,23 @@ const getStatus = (subtask: Subtask, now: Date) => {
   if (subtaskStart && isBefore(now, subtaskStart)) {
     return 'Chưa bắt đầu';
   }
+  const subtaskEnd = subtask.endDate ? startOfDay(subtask.endDate) : null;
+  if (subtaskEnd && isAfter(now, subtaskEnd)) {
+      return 'Quá hạn';
+  }
   return 'Làm';
 };
+
+const getProgressColor = (status: string) => {
+    switch (status) {
+        case 'Xong': return 'bg-chart-2';
+        case 'Làm': return 'bg-amber-500';
+        case 'Quá hạn': return 'bg-destructive';
+        case 'Chưa bắt đầu':
+        default: return 'bg-primary/50';
+    }
+}
+
 
 export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineDialogProps) {
   const now = React.useMemo(() => new Date(), []);
@@ -35,44 +50,22 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     }
 
     const interval = { start: task.startDate, end: task.endDate };
-    const days = eachDayOfInterval(interval).reverse(); // Reverse days to have start date at bottom
+    const days = eachDayOfInterval(interval).reverse();
     const totalDays = differenceInDays(task.endDate, task.startDate) + 1;
 
-    const positionedSubtasks = task.subtasks.map((subtask) => {
-      if (!subtask.startDate || !subtask.endDate) return null;
+    const processedSubtasks = task.subtasks
+      .filter(st => st.startDate && st.endDate)
+      .map(subtask => {
+        const status = getStatus(subtask, now);
+        const color = getProgressColor(status);
+        return {
+          ...subtask,
+          status,
+          color,
+        };
+      });
 
-      const offset = differenceInDays(task.endDate!, subtask.endDate!);
-      const duration = differenceInDays(subtask.endDate, subtask.startDate) + 1;
-      
-      const status = getStatus(subtask, now);
-      let left = 0;
-      if (status === 'Làm') {
-        const elapsed = differenceInDays(now, subtask.startDate);
-        left = (elapsed / (duration -1)) * 100;
-      } else if (status === 'Xong') {
-        left = 100;
-      }
-      
-      const getProgressColor = () => {
-          if (status === 'Xong') return 'bg-chart-2';
-          if (status === 'Làm') {
-              if (isAfter(now, subtask.endDate!)) return 'bg-destructive';
-              return 'bg-amber-500';
-          }
-          return 'bg-primary/50';
-      }
-
-      return {
-        ...subtask,
-        offset,
-        duration,
-        progress: left,
-        color: getProgressColor(),
-        status: status,
-      };
-    }).filter(Boolean);
-
-    return { days, subtasks: positionedSubtasks as (Subtask & { offset: number; duration: number, progress: number, color: string, status: string })[], totalDays };
+    return { days, subtasks: processedSubtasks, totalDays };
   }, [task, now]);
 
   if (!task) {
@@ -102,40 +95,52 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
 
                 {/* Timeline Grid */}
                 <div className="relative flex-1" style={{ minWidth: `${subtasks.length * 110}px`}}>
+                    {/* Background Grid Lines */}
                     <div className="absolute inset-0 grid h-full -z-10" style={{ gridTemplateColumns }}>
                         {subtasks.map((_, index) => (
                            <div key={index} className="border-r border-dashed border-border/50"></div>
                         ))}
                     </div>
-                     <div className="relative h-full" style={{ gridTemplateColumns }}>
-                        {subtasks.map((subtask, index) => (
-                            <TooltipProvider key={subtask.id} delayDuration={0}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div
-                                            className={cn("absolute rounded-md flex items-center justify-center px-2 cursor-pointer", subtask.color)}
-                                            style={{
-                                                top: `${subtask.offset * 40}px`,
-                                                height: `${subtask.duration * 40}px`,
-                                                left: `calc(${index * (100 / subtasks.length)}% + 4px)`,
-                                                width: `calc(${100 / subtasks.length}% - 8px)`,
-                                            }}
-                                        >
-                                            <p className="text-xs font-medium text-primary-foreground truncate">{subtask.title}</p>
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="right">
-                                        <div className="text-xs">
-                                            <p className="font-bold">{subtask.title}</p>
-                                            <p>Bắt đầu: {format(subtask.startDate!, 'p, dd/MM/yy', { locale: vi })}</p>
-                                            <p>Kết thúc: {format(subtask.endDate!, 'p, dd/MM/yy', { locale: vi })}</p>
-                                            <p>Trạng thái: {subtask.status}</p>
-                                            <p>Tiến độ: {subtask.progress.toFixed(0)}%</p>
-                                        </div>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        ))}
+                     <div className="absolute inset-0 grid h-full" style={{ gridTemplateColumns }}>
+                        {Array.from({ length: subtasks.length * days.length }).map((_, index) => {
+                            const dayIndex = Math.floor(index / subtasks.length);
+                            const day = days[dayIndex];
+                            
+                            // Find the subtask for the current column
+                            const subtaskIndex = index % subtasks.length;
+                            const subtask = subtasks[subtaskIndex];
+
+                            if (!subtask) return null;
+
+                            const subtaskInterval = { start: startOfDay(subtask.startDate!), end: startOfDay(subtask.endDate!) };
+                            const isDayInSubtask = isWithinInterval(day, subtaskInterval);
+
+                            if (!isDayInSubtask) {
+                                return <div key={index} className="h-10"></div>; // Empty cell
+                            }
+
+                            return (
+                                <TooltipProvider key={index} delayDuration={0}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="h-10 p-0.5">
+                                                <div className={cn("h-full w-full rounded flex items-center justify-center px-1 cursor-pointer", subtask.color)}>
+                                                    <p className="text-xs font-medium text-primary-foreground truncate">{subtask.title}</p>
+                                                </div>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right">
+                                            <div className="text-xs">
+                                                <p className="font-bold">{subtask.title}</p>
+                                                <p>Bắt đầu: {format(subtask.startDate!, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                <p>Kết thúc: {format(subtask.endDate!, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                <p>Trạng thái: {subtask.status}</p>
+                                            </div>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
