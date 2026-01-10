@@ -15,17 +15,75 @@ import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 interface TaskTimelineDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   task: Task | null;
+  onSubtaskClick: (task: Task, subtaskId: string) => void;
 }
 
 type SubtaskTimelineStatus = 'upcoming' | 'in-progress' | 'done' | 'overdue';
 
+const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Task, subtaskId: string) => void; }> = ({ subtask, task, onClick }) => {
+    const getStatusForSubtask = (subtask: Subtask): SubtaskTimelineStatus => {
+        const now = new Date();
+        if (subtask.completed) {
+          return 'done';
+        }
+        if (subtask.startDate && isBefore(now, subtask.startDate)) {
+           return 'upcoming';
+        }
+        if (subtask.endDate && isAfter(now, subtask.endDate)) {
+          return 'overdue';
+        }
+        return 'in-progress';
+    };
+    
+    const statusStyles: Record<SubtaskTimelineStatus, string> = {
+        upcoming: 'bg-primary/90 text-primary-foreground border-transparent',
+        'in-progress': 'bg-amber-500 text-white border-transparent',
+        done: 'bg-chart-2 text-white border-transparent',
+        overdue: 'bg-destructive text-destructive-foreground border-transparent',
+    };
+    
+    const status = getStatusForSubtask(subtask);
+    const truncatedTitle = subtask.title.length > 5 ? `${subtask.title.substring(0, 5)}...` : subtask.title;
+    
+    const badge = (
+       <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onClick(task, subtask.id)}
+            className={cn(
+                "h-auto font-normal px-2.5 py-0.5 text-xs",
+                statusStyles[status]
+            )}
+            >
+            {truncatedTitle}
+        </Button>
+    );
 
-export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineDialogProps) {
+    if (subtask.title.length > 5) {
+        return (
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>{badge}</TooltipTrigger>
+                    <TooltipContent>
+                        <p>{subtask.title}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+
+    return badge;
+};
+
+
+export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick }: TaskTimelineDialogProps) {
   const timelineData = React.useMemo(() => {
     if (!task || task.taskType !== 'deadline' || !task.startDate || !task.endDate) {
       return [];
@@ -55,28 +113,8 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
       };
     });
   }, [task]);
-
-  const getStatusForSubtask = (subtask: Subtask): SubtaskTimelineStatus => {
-    const now = new Date();
-    if (subtask.completed) {
-      return 'done';
-    }
-    if (subtask.startDate && isBefore(now, subtask.startDate)) {
-       return 'upcoming';
-    }
-    if (subtask.endDate && isAfter(now, subtask.endDate)) {
-      return 'overdue';
-    }
-    return 'in-progress';
-  };
   
-  const statusStyles: Record<SubtaskTimelineStatus, string> = {
-    upcoming: 'bg-primary/90 text-primary-foreground border-transparent',
-    'in-progress': 'bg-amber-500 text-white border-transparent',
-    done: 'bg-chart-2 text-white border-transparent',
-    overdue: 'bg-destructive text-destructive-foreground border-transparent',
-  };
-
+  if (!task) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -96,21 +134,14 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                   </div>
                   <div className="col-span-2 flex flex-wrap gap-2 items-center border-l pl-4 py-2 min-h-[50px]">
                     {subtasks.length > 0 ? (
-                      subtasks.map(st => {
-                        const status = getStatusForSubtask(st);
-                        const truncatedTitle = st.title.length > 5 ? `${st.title.substring(0, 5)}...` : st.title;
-                        return (
-                          <Badge 
+                      subtasks.map(st => (
+                          <SubtaskBadge 
                             key={st.id}
-                            className={cn(
-                              "font-normal",
-                              statusStyles[status]
-                            )}
-                          >
-                            {truncatedTitle}
-                          </Badge>
-                        )
-                      })
+                            subtask={st}
+                            task={task}
+                            onClick={onSubtaskClick}
+                          />
+                      ))
                     ) : (
                       <p className="text-xs text-muted-foreground italic">Không có công việc nào</p>
                     )}
