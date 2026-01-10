@@ -25,15 +25,15 @@ const getStatus = (subtask: Subtask, now: Date) => {
   const sNow = startOfDay(now);
 
   if (subtaskStart && subtaskEnd) {
-      if (isWithinInterval(sNow, { start: subtaskStart, end: subtaskEnd })) {
-          return 'Đang làm';
-      }
-      if (isAfter(sNow, subtaskEnd)) {
-          return 'Quá hạn';
-      }
-      if (isBefore(sNow, subtaskStart)) {
-          return 'Chưa bắt đầu';
-      }
+    if (isWithinInterval(sNow, { start: subtaskStart, end: subtaskEnd })) {
+      return 'Đang làm';
+    }
+    if (isAfter(sNow, subtaskEnd)) {
+      return 'Quá hạn';
+    }
+    if (isBefore(sNow, subtaskStart)) {
+      return 'Chưa bắt đầu';
+    }
   }
   return 'Chưa bắt đầu';
 };
@@ -44,6 +44,9 @@ const getTimelineCellStyle = (status: string, subtask: Subtask, now: Date) => {
             const wasOverdue = subtask.endDate && isBefore(subtask.endDate, now);
             return wasOverdue ? 'border border-destructive border-l-4 border-l-destructive bg-background' : 'border border-chart-2 border-l-4 border-l-chart-2 bg-background';
         case 'Đang làm':
+            if (subtask.isManuallyStarted) {
+                return 'border border-blue-600 border-l-4 border-l-blue-600 bg-background';
+            }
             return 'border border-amber-500 border-l-4 border-l-amber-500 bg-background';
         case 'Quá hạn':
             return 'border border-destructive border-l-4 border-l-destructive bg-background';
@@ -175,7 +178,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                     {/* Background Grid Lines */}
                     <div className="absolute inset-0 grid h-full -z-10" style={{ gridTemplateColumns }}>
                         {subtasks.map((_, index) => (
-                           <div key={index} className="border-r border-dashed border-border"></div>
+                           <div key={index} className="border-r border-dashed border-muted-foreground/30"></div>
                         ))}
                     </div>
                      <div className="absolute inset-y-0 -left-px w-px bg-border"></div>
@@ -214,7 +217,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                         <div 
                                             key={`${subtask.id}-${dayIndex}`} 
                                             className={cn(
-                                                "border-b border-dashed border-border transition-opacity duration-300",
+                                                "border-b border-dashed border-muted-foreground/30 transition-opacity duration-300",
                                                 focusedDay && !isSameDay(focusedDay, day) && "opacity-20"
                                             )}
                                         >
