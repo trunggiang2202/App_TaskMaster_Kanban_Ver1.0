@@ -28,16 +28,21 @@ const getStatus = (subtask: Subtask, now: Date) => {
   if (subtaskEnd && isAfter(now, subtaskEnd)) {
       return 'Quá hạn';
   }
-  return 'Làm';
+  return 'Đang làm';
 };
 
-const getProgressColor = (status: string) => {
+const getTimelineCellStyle = (status: string, subtask: Subtask, now: Date) => {
     switch (status) {
-        case 'Xong': return 'bg-chart-2';
-        case 'Làm': return 'bg-amber-500';
-        case 'Quá hạn': return 'bg-destructive';
+        case 'Xong':
+            const wasOverdue = subtask.endDate && isBefore(subtask.endDate, now);
+            return wasOverdue ? 'border border-destructive/30 border-l-4 border-l-destructive bg-background' : 'border border-chart-2/30 border-l-4 border-l-chart-2 bg-background';
+        case 'Đang làm':
+            return 'border border-amber-500/30 border-l-4 border-l-amber-500 bg-background';
+        case 'Quá hạn':
+            return 'border border-destructive/30 border-l-4 border-l-destructive bg-background';
         case 'Chưa bắt đầu':
-        default: return 'bg-primary/50';
+        default:
+            return 'border border-primary/30 border-l-4 border-l-primary bg-background';
     }
 }
 
@@ -65,11 +70,11 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
       .filter(st => st.startDate && st.endDate)
       .map(subtask => {
         const status = getStatus(subtask, now);
-        const color = getProgressColor(status);
+        const style = getTimelineCellStyle(status, subtask, now);
         return {
           ...subtask,
           status,
-          color,
+          style,
         };
       });
 
@@ -159,8 +164,8 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <div className="h-10 p-0.5">
-                                                        <div className={cn("h-full w-full rounded flex items-center px-1 cursor-pointer", subtask.color)}>
-                                                            <p className="text-xs font-medium text-primary-foreground truncate">{subtask.title}</p>
+                                                        <div className={cn("h-full w-full rounded flex items-center px-2 cursor-pointer", subtask.style)}>
+                                                            <p className="text-xs font-medium text-foreground truncate">{subtask.title}</p>
                                                         </div>
                                                     </div>
                                                 </TooltipTrigger>
