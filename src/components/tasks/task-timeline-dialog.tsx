@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -106,17 +107,25 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
         <Separator />
         <div className="flex-1 overflow-auto custom-scrollbar pr-2">
             <div className="relative flex">
-                {/* Y-Axis Labels (Dates) */}
-                <div className="flex flex-col pr-4 border-r border-border sticky left-0 bg-background z-10">
+                <div 
+                    className="flex flex-col sticky left-0 bg-background z-10 cursor-pointer"
+                    onClick={(e) => {
+                        const target = e.target as HTMLElement;
+                        const dayIndex = target.closest('[data-day-index]')?.getAttribute('data-day-index');
+                        if (dayIndex) {
+                            handleDayClick(days[parseInt(dayIndex, 10)]);
+                        }
+                    }}
+                >
                     {days.map((day, index) => (
                         <div 
                           key={index} 
+                          data-day-index={index}
                           className={cn(
-                            "h-10 flex-shrink-0 flex items-center justify-end text-xs text-muted-foreground cursor-pointer rounded-l-md transition-opacity duration-300",
+                            "h-10 flex-shrink-0 flex items-center justify-end text-xs text-muted-foreground rounded-l-md transition-opacity duration-300",
                             focusedDay && !isSameDay(focusedDay, day) && "opacity-20",
                             focusedDay && isSameDay(focusedDay, day) && "bg-primary/10"
                           )}
-                          onClick={() => handleDayClick(day)}
                         >
                             <span className={cn("px-2", isSameDay(day, new Date()) && "font-bold text-primary")}>
                                 {format(day, 'dd/MM')}
@@ -124,6 +133,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                         </div>
                     ))}
                 </div>
+
 
                 {/* Timeline Grid */}
                 <div className="relative flex-1" style={{ minWidth: `${subtasks.length * 110}px`}}>
@@ -180,15 +190,6 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                             </div>
                         ))}
                     </div>
-                </div>
-            </div>
-
-             <div className="relative flex mt-2 sticky left-0">
-                <div className="w-[76px] flex-shrink-0 pr-4"></div>
-                <div className="flex-1 grid text-center text-xs font-semibold text-muted-foreground" style={{ gridTemplateColumns }}>
-                    {subtasks.map(st => (
-                      <div key={st.id} className="truncate px-1">{st.title}</div>
-                    ))}
                 </div>
             </div>
         </div>
