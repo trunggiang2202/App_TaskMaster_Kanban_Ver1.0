@@ -486,6 +486,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
 
   const getSubtaskBorderColor = (index: number) => {
     const subtask = form.watch(`subtasks.${index}`);
+    if (!subtask) return 'border-muted'; // Defensive check
     const now = new Date();
 
     const originalSubtask = taskToEdit?.subtasks.find(original => original.id === subtask.id);
