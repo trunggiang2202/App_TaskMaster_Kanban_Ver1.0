@@ -270,22 +270,22 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const getSubtaskStyling = (subtask: Subtask, columnTitle?: SubtaskStatus) => {
     if (subtask.completed) {
         const wasOverdue = task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now);
-        return wasOverdue ? 'border-l-4 border-destructive' : 'border-l-4 border-chart-2';
+        return wasOverdue ? 'border border-destructive/30 border-l-4 border-l-destructive' : 'border border-chart-2/30 border-l-4 border-l-chart-2';
     }
     
     if (columnTitle === 'Đang làm') {
         if (subtask.isManuallyStarted) {
-            return 'border-l-4 border-blue-600';
+            return 'border border-blue-600/30 border-l-4 border-l-blue-600';
         }
         if (task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now)) {
-          return 'border-l-4 border-destructive'; // Overdue for deadline tasks
+          return 'border border-destructive/30 border-l-4 border-l-destructive'; // Overdue for deadline tasks
         }
-        return 'border-l-4 border-amber-500'; // In Progress for both types
+        return 'border border-amber-500/30 border-l-4 border-l-amber-500'; // In Progress for both types
     }
     if (columnTitle === 'Chưa bắt đầu') {
-        return 'border-l-4 border-muted';
+        return 'border border-muted-foreground/30 border-l-4 border-l-muted';
     }
-    return 'border-l-4 border-muted';
+    return 'border border-muted-foreground/30 border-l-4 border-l-muted';
   };
 
   const kanbanColumns: { title: SubtaskStatus, subtasks: Subtask[], isClickable: boolean; titleColor: string; bgColor: string; }[] = [
@@ -385,7 +385,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                             <Card 
                                 key={st.id} 
                                 className={cn(
-                                    "bg-background shadow-sm border transition-colors group",
+                                    "bg-background shadow-sm transition-colors group",
                                     getSubtaskStyling(st, column.title)
                                 )}
                             >
