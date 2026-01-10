@@ -289,23 +289,15 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       form.reset(defaultValues);
       
       if (initialTaskType !== 'idea' && !taskToEdit) {
-          addEmptySubtask(false);
+          append({ 
+            title: "", 
+            description: "", 
+            attachments: [] 
+          });
       }
 
     }
-  }, [taskToEdit, isOpen, initialTaskType, taskToConvert, replace, form]);
-
-  useEffect(() => {
-    if (activeTab === 'subtasks' && fields.length === 1 && !taskToEdit) {
-      setTimeout(() => {
-        const firstInput = subtaskTitleRefs.current[0];
-        if (firstInput) {
-          firstInput.focus();
-        }
-      }, 0);
-    }
-  }, [activeTab, fields.length, taskToEdit]);
-
+  }, [taskToEdit, isOpen, initialTaskType, taskToConvert]);
 
   const addEmptySubtask = (shouldFocus = true) => {
     const newSubtask: Partial<Subtask> = { 
@@ -335,6 +327,18 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
         }, 0);
     }
   };
+  
+  useEffect(() => {
+    if (activeTab === 'subtasks' && fields.length === 1 && !taskToEdit) {
+      setTimeout(() => {
+        const firstInput = subtaskTitleRefs.current[0];
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 0);
+    }
+  }, [activeTab, fields.length, taskToEdit]);
+
 
   const handleIdeaSubmit = useCallback(form.handleSubmit((data: TaskFormData) => {
     const newIdea: Idea = {
@@ -1055,5 +1059,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     </Dialog>
   );
 }
+
+    
 
     
