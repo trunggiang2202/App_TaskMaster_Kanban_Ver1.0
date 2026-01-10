@@ -46,6 +46,20 @@ const getTimelineCellStyle = (status: string, subtask: Subtask, now: Date) => {
     }
 }
 
+const getTaskProgressOnDay = (day: Date, subtasks: Subtask[]) => {
+    const sDay = startOfDay(day);
+    const activeSubtasks = subtasks.filter(st => {
+        if (!st.startDate || !st.endDate) return false;
+        const subtaskInterval = { start: startOfDay(st.startDate), end: startOfDay(st.endDate) };
+        return isWithinInterval(sDay, subtaskInterval);
+    });
+    
+    const completed = activeSubtasks.filter(st => st.completed).length;
+    const total = activeSubtasks.length;
+    
+    return { completed, total };
+};
+
 
 export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineDialogProps) {
   const now = React.useMemo(() => new Date(), []);
@@ -116,30 +130,36 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
         >
             <div className="relative flex">
                 <div 
-                    className="flex flex-col sticky left-0 bg-background z-10 cursor-pointer"
-                    onClick={(e) => {
-                        const target = e.target as HTMLElement;
-                        const dayIndexStr = target.closest('[data-day-index]')?.getAttribute('data-day-index');
-                        if (dayIndexStr) {
-                            handleDayClick(days[parseInt(dayIndexStr, 10)]);
-                        }
-                    }}
+                    className="flex flex-col sticky left-0 bg-background z-10"
                 >
-                    {days.map((day, index) => (
-                        <div 
-                          key={index} 
-                          data-day-index={index}
-                          className={cn(
-                            "h-10 flex-shrink-0 flex items-center justify-end text-xs text-muted-foreground rounded-l-md transition-opacity duration-300",
-                            focusedDay && !isSameDay(focusedDay, day) && "opacity-20",
-                            focusedDay && isSameDay(focusedDay, day) && "bg-primary/10"
-                          )}
-                        >
-                            <span className={cn("px-2", isSameDay(day, new Date()) && "font-bold text-primary")}>
-                                {format(day, 'dd/MM')}
-                            </span>
-                        </div>
-                    ))}
+                    {days.map((day, index) => {
+                        const progress = getTaskProgressOnDay(day, subtasks);
+                        const hasTasks = progress.total > 0;
+                        return (
+                           <div 
+                              key={index} 
+                              data-day-index={index}
+                              onClick={() => handleDayClick(day)}
+                              className={cn(
+                                "h-10 flex-shrink-0 flex items-center justify-end text-xs text-muted-foreground rounded-l-md transition-opacity duration-300 cursor-pointer",
+                                focusedDay && !isSameDay(focusedDay, day) && "opacity-20",
+                                focusedDay && isSameDay(focusedDay, day) && "bg-primary/10"
+                              )}
+                            >
+                                <div className={cn("px-2 text-right", isSameDay(day, new Date()) && "font-bold text-primary")}>
+                                     <span>{format(day, 'dd/MM')}</span>
+                                     {hasTasks && (
+                                        <span className={cn(
+                                            "block text-[10px]",
+                                            progress.completed === progress.total ? "text-chart-2" : "text-amber-600"
+                                        )}>
+                                            ({progress.completed}/{progress.total})
+                                        </span>
+                                     )}
+                                </div>
+                            </div>
+                        )
+                    })}
                 </div>
 
 
@@ -164,7 +184,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <div className="h-10 p-0.5">
-                                                        <div className={cn("h-full w-full rounded flex items-center px-2 cursor-pointer", subtask.style)}>
+                                                        <div className={cn("h-full w-full rounded flex items-center px-2", subtask.style)}>
                                                             <p className="text-xs font-medium text-foreground truncate">{subtask.title}</p>
                                                         </div>
                                                     </div>
