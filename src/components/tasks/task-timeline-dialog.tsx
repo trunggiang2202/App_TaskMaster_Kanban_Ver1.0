@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { Task, Subtask } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay, isWithinInterval, isSameDay } from 'date-fns';
+import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay, isWithinInterval, isSameDay, areIntervalsOverlapping } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
@@ -47,6 +47,9 @@ const getTimelineCellStyle = (status: string, subtask: Subtask, now: Date) => {
             if (subtask.isManuallyStarted) {
                 return 'border border-blue-600 border-l-4 border-l-blue-600 bg-background';
             }
+            if (isAfter(now, subtask.endDate!)) {
+              return 'border border-destructive border-l-4 border-l-destructive bg-background';
+            }
             return 'border border-amber-500 border-l-4 border-l-amber-500 bg-background';
         case 'Quá hạn':
             return 'border border-destructive border-l-4 border-l-destructive bg-background';
@@ -83,16 +86,43 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
   
   const timelineData = React.useMemo(() => {
     if (!task || !task.startDate || !task.endDate) {
-      return { days: [], subtasks: [], totalDays: 0 };
+      return { days: [], subtasks: [], columns: 1 };
     }
 
     const interval = { start: task.startDate, end: task.endDate };
     const days = eachDayOfInterval(interval);
-    const totalDays = differenceInDays(task.endDate, task.startDate) + 1;
+    
+    const channels: { subtasks: Subtask[], interval: Interval }[] = [];
 
-    const processedSubtasks = task.subtasks
+    const sortedSubtasks = task.subtasks
       .filter(st => st.startDate && st.endDate)
-      .map(subtask => {
+      .sort((a, b) => a.startDate!.getTime() - b.startDate!.getTime());
+
+    sortedSubtasks.forEach(subtask => {
+        const subtaskInterval = { start: startOfDay(subtask.startDate!), end: startOfDay(subtask.endDate!) };
+        let placed = false;
+        for (const channel of channels) {
+            const overlaps = channel.subtasks.some(existingSubtask => 
+                areIntervalsOverlapping(
+                    subtaskInterval,
+                    { start: startOfDay(existingSubtask.startDate!), end: startOfDay(existingSubtask.endDate!) },
+                    { inclusive: true }
+                )
+            );
+            if (!overlaps) {
+                (subtask as any).colIndex = channels.indexOf(channel);
+                channel.subtasks.push(subtask);
+                placed = true;
+                break;
+            }
+        }
+        if (!placed) {
+            (subtask as any).colIndex = channels.length;
+            channels.push({ subtasks: [subtask], interval: subtaskInterval });
+        }
+    });
+
+    const processedSubtasks = channels.flatMap(channel => channel.subtasks.map(subtask => {
         const status = getStatus(subtask, now);
         const style = getTimelineCellStyle(status, subtask, now);
         return {
@@ -100,9 +130,9 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
           status,
           style,
         };
-      });
+      }));
 
-    return { days, subtasks: processedSubtasks, totalDays };
+    return { days, subtasks: processedSubtasks, columns: channels.length || 1 };
   }, [task, now]);
 
   const handleDayClick = (day: Date) => {
@@ -111,7 +141,6 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
   
   const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
-    // If the click is not on a day label or inside it, reset focus
     if (!target.closest('[data-day-index]')) {
       setFocusedDay(null);
     }
@@ -122,8 +151,8 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     return null;
   }
 
-  const { days, subtasks } = timelineData;
-  const gridTemplateColumns = `repeat(${subtasks.length || 1}, minmax(100px, 1fr))`;
+  const { days, subtasks, columns } = timelineData;
+  const gridTemplateColumns = `repeat(${columns}, minmax(120px, 1fr))`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -145,6 +174,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                     {days.map((day, index) => {
                         const progress = getTaskProgressOnDay(day, subtasks);
                         const hasTasks = progress.total > 0;
+                        const isCompleted = hasTasks && progress.completed === progress.total;
                         return (
                            <div 
                               key={index} 
@@ -161,7 +191,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                      {hasTasks && (
                                         <span className={cn(
                                             "font-medium text-[11px]",
-                                            progress.completed === progress.total ? "text-chart-2" : "text-muted-foreground"
+                                            isCompleted ? "text-chart-2" : "text-muted-foreground"
                                         )}>
                                             ({progress.completed}/{progress.total})
                                         </span>
@@ -174,59 +204,63 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
 
 
                 {/* Timeline Grid */}
-                <div className="relative flex-1" style={{ minWidth: `${subtasks.length * 110}px`}}>
+                <div className="relative flex-1" style={{ minWidth: `${columns * 120}px`}}>
                     {/* Background Grid Lines */}
                     <div className="absolute inset-0 grid h-full -z-10" style={{ gridTemplateColumns }}>
-                        {subtasks.map((_, index) => (
+                        {Array.from({ length: columns }).map((_, index) => (
                            <div key={index} className="border-r border-dashed border-muted-foreground/30"></div>
                         ))}
                     </div>
                      <div className="absolute inset-y-0 -left-px w-px bg-border"></div>
-                     <div className="grid" style={{ gridTemplateColumns }}>
-                        {subtasks.map((subtask, subtaskIndex) => (
-                            <div key={subtask.id} className="relative h-full">
-                                {days.map((day, dayIndex) => {
-                                    const subtaskInterval = { start: startOfDay(subtask.startDate!), end: startOfDay(subtask.endDate!) };
-                                    const isDayInSubtask = isWithinInterval(day, subtaskInterval);
-
-                                    const cellContent = isDayInSubtask ? (
-                                        <TooltipProvider key={`${subtask.id}-${dayIndex}`} delayDuration={0}>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <div className="h-10 p-0.5">
-                                                        <div className={cn("h-full w-full rounded flex items-center px-2", subtask.style)}>
-                                                            <p className="text-xs font-medium text-foreground truncate">{subtask.title}</p>
-                                                        </div>
-                                                    </div>
-                                                </TooltipTrigger>
-                                                <TooltipContent side="right">
-                                                    <div className="text-xs">
-                                                        <p className="font-bold">{subtask.title}</p>
-                                                        <p>Bắt đầu: {format(subtask.startDate!, 'p, dd/MM/yy', { locale: vi })}</p>
-                                                        <p>Kết thúc: {format(subtask.endDate!, 'p, dd/MM/yy', { locale: vi })}</p>
-                                                        <p>Trạng thái: {subtask.status}</p>
-                                                    </div>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    ) : (
-                                       <div className="h-10"></div>
-                                    );
-
-                                    return (
-                                        <div 
-                                            key={`${subtask.id}-${dayIndex}`} 
-                                            className={cn(
-                                                "border-b border-dashed border-muted-foreground/30 transition-opacity duration-300",
-                                                focusedDay && !isSameDay(focusedDay, day) && "opacity-20"
-                                            )}
-                                        >
-                                           {cellContent}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                     <div className="relative">
+                        {/* Day rows background */}
+                        {days.map((_, dayIndex) => (
+                          <div key={dayIndex} className="h-10 border-b border-dashed border-muted-foreground/30"></div>
                         ))}
+
+                        {/* Subtask labels */}
+                        {subtasks.map((subtask) => {
+                            const subtaskStart = subtask.startDate!;
+                            const subtaskEnd = subtask.endDate!;
+                            const startDayIndex = differenceInDays(startOfDay(subtaskStart), startOfDay(days[0]));
+                            const durationDays = differenceInDays(startOfDay(subtaskEnd), startOfDay(subtaskStart)) + 1;
+
+                            if (startDayIndex < 0 || startDayIndex >= days.length) return null;
+
+                            const top = startDayIndex * 2.5; // 2.5rem is h-10
+                            const height = durationDays * 2.5;
+                            const colIndex = (subtask as any).colIndex || 0;
+
+                            return (
+                                <div
+                                    key={subtask.id}
+                                    className="absolute w-full px-1"
+                                    style={{
+                                        top: `${top}rem`,
+                                        height: `${height}rem`,
+                                        gridColumn: `${colIndex + 1} / span 1`,
+                                    }}
+                                >
+                                    <TooltipProvider delayDuration={0}>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className={cn("h-full w-full rounded flex items-center justify-center p-2", subtask.style)}>
+                                                    <p className="text-xs font-medium text-foreground truncate">{subtask.title}</p>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="right">
+                                                <div className="text-xs">
+                                                    <p className="font-bold">{subtask.title}</p>
+                                                    <p>Bắt đầu: {format(subtask.startDate!, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                    <p>Kết thúc: {format(subtask.endDate!, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                    <p>Trạng thái: {subtask.status}</p>
+                                                </div>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
