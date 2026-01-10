@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -119,38 +118,46 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick 
           <DialogTitle>Lộ trình: {task?.title}</DialogTitle>
         </DialogHeader>
         <Separator />
-        <ScrollArea className="flex-1 -mx-6 px-6">
-          <div className="space-y-4 pr-2">
-            {timelineData.length > 0 ? (
-              timelineData.map(({ date, subtasks }, index) => (
-                <div key={index} className="grid grid-cols-3 gap-4 items-start">
-                  <div className="col-span-1 text-left sticky top-0 bg-background py-2">
-                    <p className="font-semibold text-sm text-foreground">{format(date, 'dd/MM/yyyy')}</p>
-                    <p className="text-xs text-muted-foreground">{format(date, 'eeee', { locale: vi })}</p>
-                  </div>
-                  <div className="col-span-2 flex flex-wrap gap-2 items-center border-l-2 pl-4 py-2 min-h-[50px]">
-                    {subtasks.length > 0 ? (
-                      subtasks.map(st => (
-                          <SubtaskBadge 
-                            key={st.id}
-                            subtask={st}
-                            task={task}
-                            onClick={onSubtaskClick}
-                          />
-                      ))
-                    ) : (
-                      <p className="text-xs text-muted-foreground italic">Không có công việc nào</p>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="flex items-center justify-center h-full py-10">
-                <p className="text-sm text-muted-foreground">Nhiệm vụ này không có công việc nào có deadline cụ thể.</p>
-              </div>
-            )}
+
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="grid grid-cols-3 gap-4 px-1 pb-2 border-b">
+              <div className="col-span-1 font-semibold text-sm text-muted-foreground">Ngày/tháng</div>
+              <div className="col-span-2 font-semibold text-sm text-muted-foreground pl-4">Công việc</div>
           </div>
-        </ScrollArea>
+
+          <ScrollArea className="flex-1 -mx-6 px-6">
+            <div className="pr-2 pt-1">
+              {timelineData.length > 0 ? (
+                timelineData.map(({ date, subtasks }, index) => (
+                  <div key={index} className="grid grid-cols-3 items-start border-b">
+                    <div className="col-span-1 text-left sticky top-0 bg-background py-3">
+                      <p className="font-semibold text-sm text-foreground">{format(date, 'dd/MM/yyyy')}</p>
+                      <p className="text-xs text-muted-foreground">{format(date, 'eeee', { locale: vi })}</p>
+                    </div>
+                    <div className="col-span-2 flex flex-wrap gap-2 items-center border-l-2 py-3 px-4 min-h-[58px]">
+                      {subtasks.length > 0 ? (
+                        subtasks.map(st => (
+                            <SubtaskBadge 
+                              key={st.id}
+                              subtask={st}
+                              task={task}
+                              onClick={onSubtaskClick}
+                            />
+                        ))
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">Không có công việc nào</p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center h-full py-10">
+                  <p className="text-sm text-muted-foreground">Nhiệm vụ này không có công việc nào có deadline cụ thể.</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
