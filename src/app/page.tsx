@@ -176,14 +176,6 @@ function TaskKanban() {
     setIsTimelineOpen(true);
   }, []);
 
-  const handleSubtaskClickFromTimeline = useCallback((task: Task) => {
-    setIsTimelineOpen(false);
-    // Use a timeout to ensure the timeline dialog has closed before opening the edit dialog
-    setTimeout(() => {
-        handleOpenEditTaskDialog(task);
-    }, 150);
-  }, [handleOpenEditTaskDialog]);
-
   const isTaskForToday = useCallback((task: import('@/lib/types').Task) => {
     const today = startOfDay(new Date());
     if (task.taskType === 'idea') {
@@ -578,7 +570,6 @@ function TaskKanban() {
         isOpen={isTimelineOpen}
         onOpenChange={setIsTimelineOpen}
         task={taskForTimeline}
-        onSubtaskClick={handleSubtaskClickFromTimeline}
       />
     </SidebarProvider>
   );

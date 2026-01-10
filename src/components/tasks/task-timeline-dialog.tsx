@@ -15,17 +15,17 @@ import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 interface TaskTimelineDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   task: Task | null;
-  onSubtaskClick: (task: Task) => void;
 }
 
 type SubtaskTimelineStatus = 'upcoming' | 'in-progress' | 'done' | 'overdue';
 
-const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Task) => void; }> = ({ subtask, task, onClick }) => {
+const SubtaskBadge: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     const getStatusForSubtask = (subtask: Subtask): SubtaskTimelineStatus => {
         const now = new Date();
         if (subtask.completed) {
@@ -41,32 +41,34 @@ const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Tas
     };
     
     const statusStyles: Record<SubtaskTimelineStatus, string> = {
-        upcoming: 'bg-primary/90 hover:bg-primary/70 text-primary-foreground border-transparent',
-        'in-progress': 'bg-amber-500 hover:bg-amber-400 text-white border-transparent',
-        done: 'bg-chart-2 hover:bg-chart-2/80 text-white border-transparent',
-        overdue: 'bg-destructive hover:bg-destructive/80 text-destructive-foreground border-transparent',
+        upcoming: 'bg-primary/90 text-primary-foreground border-transparent',
+        'in-progress': 'bg-amber-500 text-white border-transparent',
+        done: 'bg-chart-2 text-white border-transparent',
+        overdue: 'bg-destructive text-destructive-foreground border-transparent',
     };
     
     const status = getStatusForSubtask(subtask);
     const truncatedTitle = subtask.title.length > 5 ? `${subtask.title.substring(0, 5)}...` : subtask.title;
     
     const badge = (
-        <button
-            onClick={() => onClick(task)}
+        <Badge
             className={cn(
                 "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 statusStyles[status]
             )}
         >
             {truncatedTitle}
-        </button>
+        </Badge>
     );
 
     if (subtask.title.length > 5) {
         return (
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
-                    <TooltipTrigger asChild>{badge}</TooltipTrigger>
+                    <TooltipTrigger asChild>
+                        {/* We need a div wrapper for TooltipTrigger when child is a custom component */}
+                        <div>{badge}</div>
+                    </TooltipTrigger>
                     <TooltipContent>
                         <p>{subtask.title}</p>
                     </TooltipContent>
@@ -79,7 +81,7 @@ const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Tas
 };
 
 
-export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick }: TaskTimelineDialogProps) {
+export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineDialogProps) {
   const timelineData = React.useMemo(() => {
     if (!task || task.taskType !== 'deadline' || !task.startDate || !task.endDate) {
       return [];
@@ -136,8 +138,6 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick 
                             <SubtaskBadge 
                               key={st.id}
                               subtask={st}
-                              task={task}
-                              onClick={onSubtaskClick}
                             />
                         ))
                       ) : (
