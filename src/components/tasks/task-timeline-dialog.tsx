@@ -55,7 +55,6 @@ const SubtaskBadge: React.FC<{ subtask: Subtask; task: Task; onClick: (task: Tas
             onClick={() => onClick(task)}
             className={cn(
                 "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                "font-normal text-xs cursor-pointer",
                 statusStyles[status]
             )}
         >
@@ -129,7 +128,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task, onSubtaskClick 
                     <p className="font-semibold text-sm text-foreground">{format(date, 'dd/MM/yyyy')}</p>
                     <p className="text-xs text-muted-foreground">{format(date, 'eeee', { locale: vi })}</p>
                   </div>
-                  <div className="col-span-2 flex flex-wrap gap-2 items-center border-l pl-4 py-2 min-h-[50px]">
+                  <div className="col-span-2 flex flex-wrap gap-2 items-center border-l-2 pl-4 py-2 min-h-[50px]">
                     {subtasks.length > 0 ? (
                       subtasks.map(st => (
                           <SubtaskBadge 
