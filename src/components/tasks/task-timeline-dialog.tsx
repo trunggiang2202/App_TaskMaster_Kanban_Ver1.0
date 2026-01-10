@@ -101,46 +101,42 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                            <div key={index} className="border-r border-dashed border-border/50"></div>
                         ))}
                     </div>
-                     <div className="absolute inset-0 grid h-full" style={{ gridTemplateColumns }}>
-                        {Array.from({ length: subtasks.length * days.length }).map((_, index) => {
-                            const dayIndex = Math.floor(index / subtasks.length);
-                            const day = days[dayIndex];
-                            
-                            // Find the subtask for the current column
-                            const subtaskIndex = index % subtasks.length;
-                            const subtask = subtasks[subtaskIndex];
+                     <div className="absolute inset-y-0 -left-px w-px bg-border"></div>
+                     <div className="grid" style={{ gridTemplateColumns }}>
+                        {subtasks.map((subtask, subtaskIndex) => (
+                            <div key={subtask.id} className="relative h-full">
+                                {days.map((day, dayIndex) => {
+                                    const subtaskInterval = { start: startOfDay(subtask.startDate!), end: startOfDay(subtask.endDate!) };
+                                    const isDayInSubtask = isWithinInterval(day, subtaskInterval);
 
-                            if (!subtask) return null;
+                                    if (!isDayInSubtask) {
+                                        return <div key={`${subtask.id}-${dayIndex}`} className="h-10 border-b border-dashed border-border/50"></div>; // Empty cell
+                                    }
 
-                            const subtaskInterval = { start: startOfDay(subtask.startDate!), end: startOfDay(subtask.endDate!) };
-                            const isDayInSubtask = isWithinInterval(day, subtaskInterval);
-
-                            if (!isDayInSubtask) {
-                                return <div key={index} className="h-10"></div>; // Empty cell
-                            }
-
-                            return (
-                                <TooltipProvider key={index} delayDuration={0}>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <div className="h-10 p-0.5">
-                                                <div className={cn("h-full w-full rounded flex items-center justify-center px-1 cursor-pointer", subtask.color)}>
-                                                    <p className="text-xs font-medium text-primary-foreground truncate">{subtask.title}</p>
-                                                </div>
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right">
-                                            <div className="text-xs">
-                                                <p className="font-bold">{subtask.title}</p>
-                                                <p>Bắt đầu: {format(subtask.startDate!, 'p, dd/MM/yy', { locale: vi })}</p>
-                                                <p>Kết thúc: {format(subtask.endDate!, 'p, dd/MM/yy', { locale: vi })}</p>
-                                                <p>Trạng thái: {subtask.status}</p>
-                                            </div>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            );
-                        })}
+                                    return (
+                                        <TooltipProvider key={`${subtask.id}-${dayIndex}`} delayDuration={0}>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div className="h-10 p-0.5 border-b border-dashed border-border/50">
+                                                        <div className={cn("h-full w-full rounded flex items-center justify-center px-1 cursor-pointer", subtask.color)}>
+                                                            <p className="text-xs font-medium text-primary-foreground truncate">{subtask.title}</p>
+                                                        </div>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent side="right">
+                                                    <div className="text-xs">
+                                                        <p className="font-bold">{subtask.title}</p>
+                                                        <p>Bắt đầu: {format(subtask.startDate!, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                        <p>Kết thúc: {format(subtask.endDate!, 'p, dd/MM/yy', { locale: vi })}</p>
+                                                        <p>Trạng thái: {subtask.status}</p>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    );
+                                })}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
