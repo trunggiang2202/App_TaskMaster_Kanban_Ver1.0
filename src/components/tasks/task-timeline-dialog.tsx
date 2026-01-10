@@ -4,10 +4,12 @@ import * as React from 'react';
 import type { Task, Subtask } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay, isWithinInterval } from 'date-fns';
+import { eachDayOfInterval, format, differenceInDays, isBefore, isAfter, startOfDay, isWithinInterval, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
+import { Button } from '../ui/button';
+import { EyeOff } from 'lucide-react';
 
 interface TaskTimelineDialogProps {
   isOpen: boolean;
@@ -43,6 +45,13 @@ const getProgressColor = (status: string) => {
 
 export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineDialogProps) {
   const now = React.useMemo(() => new Date(), []);
+  const [focusedDay, setFocusedDay] = React.useState<Date | null>(null);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setFocusedDay(null);
+    }
+  }, [isOpen]);
   
   const timelineData = React.useMemo(() => {
     if (!task || !task.startDate || !task.endDate) {
@@ -68,6 +77,11 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     return { days, subtasks: processedSubtasks, totalDays };
   }, [task, now]);
 
+  const handleDayClick = (day: Date) => {
+    setFocusedDay(prev => prev && isSameDay(prev, day) ? null : day);
+  };
+
+
   if (!task) {
     return null;
   }
@@ -79,7 +93,15 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Timeline: {task.title}</DialogTitle>
+          <div className="flex justify-between items-center">
+            <DialogTitle>Timeline: {task.title}</DialogTitle>
+            {focusedDay && (
+              <Button variant="ghost" size="sm" onClick={() => setFocusedDay(null)}>
+                <EyeOff className="mr-2 h-4 w-4" />
+                Bỏ focus
+              </Button>
+            )}
+          </div>
         </DialogHeader>
         <Separator />
         <div className="flex-1 overflow-auto custom-scrollbar pr-2">
@@ -87,8 +109,18 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                 {/* Y-Axis Labels (Dates) */}
                 <div className="flex flex-col pr-4 border-r border-border sticky left-0 bg-background z-10">
                     {days.map((day, index) => (
-                        <div key={index} className="h-10 flex-shrink-0 flex items-center justify-end text-xs text-muted-foreground">
-                            {format(day, 'dd/MM')}
+                        <div 
+                          key={index} 
+                          className={cn(
+                            "h-10 flex-shrink-0 flex items-center justify-end text-xs text-muted-foreground cursor-pointer rounded-l-md transition-opacity duration-300",
+                            focusedDay && !isSameDay(focusedDay, day) && "opacity-20",
+                            focusedDay && isSameDay(focusedDay, day) && "bg-primary/10"
+                          )}
+                          onClick={() => handleDayClick(day)}
+                        >
+                            <span className={cn("px-2", isSameDay(day, new Date()) && "font-bold text-primary")}>
+                                {format(day, 'dd/MM')}
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -109,15 +141,11 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                     const subtaskInterval = { start: startOfDay(subtask.startDate!), end: startOfDay(subtask.endDate!) };
                                     const isDayInSubtask = isWithinInterval(day, subtaskInterval);
 
-                                    if (!isDayInSubtask) {
-                                        return <div key={`${subtask.id}-${dayIndex}`} className="h-10 border-b border-dashed border-border/50"></div>; // Empty cell
-                                    }
-
-                                    return (
+                                    const cellContent = isDayInSubtask ? (
                                         <TooltipProvider key={`${subtask.id}-${dayIndex}`} delayDuration={0}>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <div className="h-10 p-0.5 border-b border-dashed border-border/50">
+                                                    <div className="h-10 p-0.5">
                                                         <div className={cn("h-full w-full rounded flex items-center justify-center px-1 cursor-pointer", subtask.color)}>
                                                             <p className="text-xs font-medium text-primary-foreground truncate">{subtask.title}</p>
                                                         </div>
@@ -133,6 +161,20 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                                 </TooltipContent>
                                             </Tooltip>
                                         </TooltipProvider>
+                                    ) : (
+                                       <div className="h-10"></div>
+                                    );
+
+                                    return (
+                                        <div 
+                                            key={`${subtask.id}-${dayIndex}`} 
+                                            className={cn(
+                                                "border-b border-dashed border-border/50 transition-opacity duration-300",
+                                                focusedDay && !isSameDay(focusedDay, day) && "opacity-20"
+                                            )}
+                                        >
+                                           {cellContent}
+                                        </div>
                                     );
                                 })}
                             </div>
