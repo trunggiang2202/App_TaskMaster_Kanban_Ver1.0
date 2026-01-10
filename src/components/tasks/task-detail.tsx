@@ -270,17 +270,17 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const getSubtaskStyling = (subtask: Subtask, columnTitle?: SubtaskStatus) => {
     if (subtask.completed) {
         const wasOverdue = task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now);
-        return wasOverdue ? 'border border-destructive/30 border-l-4 border-l-destructive' : 'border border-chart-2/30 border-l-4 border-l-chart-2';
+        return wasOverdue ? 'border border-destructive border-l-4 border-l-destructive' : 'border border-chart-2 border-l-4 border-l-chart-2';
     }
     
     if (columnTitle === 'Đang làm') {
         if (subtask.isManuallyStarted) {
-            return 'border border-blue-600/30 border-l-4 border-l-blue-600';
+            return 'border border-blue-600 border-l-4 border-l-blue-600';
         }
         if (task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now)) {
-          return 'border border-destructive/30 border-l-4 border-l-destructive'; // Overdue for deadline tasks
+          return 'border border-destructive border-l-4 border-l-destructive'; // Overdue for deadline tasks
         }
-        return 'border border-amber-500/30 border-l-4 border-l-amber-500'; // In Progress for both types
+        return 'border border-amber-500 border-l-4 border-l-amber-500'; // In Progress for both types
     }
     if (columnTitle === 'Chưa bắt đầu') {
         return 'border border-primary border-l-4 border-l-primary';
@@ -426,6 +426,8 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
+
+    
 
     
 
