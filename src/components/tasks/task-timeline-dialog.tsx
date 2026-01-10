@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -25,11 +24,11 @@ const getStatus = (subtask: Subtask, now: Date) => {
   const sNow = startOfDay(now);
 
   if (subtaskStart && subtaskEnd) {
-    if (isAfter(sNow, subtaskEnd)) {
-      return 'Quá hạn';
-    }
     if (isWithinInterval(sNow, { start: subtaskStart, end: subtaskEnd })) {
       return 'Đang làm';
+    }
+    if (isAfter(sNow, subtaskEnd)) {
+      return 'Quá hạn';
     }
     if (isBefore(sNow, subtaskStart)) {
       return 'Chưa bắt đầu';
@@ -86,23 +85,55 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
   
   const timelineData = React.useMemo(() => {
     if (!task || !task.startDate || !task.endDate) {
-      return { days: [], subtasks: [], columns: 1 };
+      return { days: [], subtasksWithCols: [], totalCols: 1 };
     }
 
     const interval = { start: task.startDate, end: task.endDate };
     const days = eachDayOfInterval(interval);
     
-    const subtasks = task.subtasks.map(subtask => {
+    const sortedSubtasks = [...task.subtasks].sort((a,b) => (a.startDate?.getTime() || 0) - (b.startDate?.getTime() || 0));
+
+    const cols: { subtasks: Subtask[], lastEndDate: Date | null }[] = [];
+
+    sortedSubtasks.forEach(subtask => {
+        if (!subtask.startDate || !subtask.endDate) return;
+
+        let placed = false;
+        for (const col of cols) {
+            if (col.lastEndDate === null || !isBefore(subtask.startDate, col.lastEndDate)) {
+                col.subtasks.push(subtask);
+                col.lastEndDate = subtask.endDate;
+                placed = true;
+                break;
+            }
+        }
+
+        if (!placed) {
+            cols.push({ subtasks: [subtask], lastEndDate: subtask.endDate });
+        }
+    });
+    
+    const subtasksWithCols = sortedSubtasks.map(subtask => {
         const status = getStatus(subtask, now);
         const style = getTimelineCellStyle(status, subtask, now);
+        let colIndex = -1;
+
+        for (let i = 0; i < cols.length; i++) {
+            if (cols[i].subtasks.some(s => s.id === subtask.id)) {
+                colIndex = i;
+                break;
+            }
+        }
+        
         return {
           ...subtask,
           status,
           style,
+          colIndex
         };
-      });
+      }).filter(st => st.colIndex !== -1);
 
-    return { days, subtasks, columns: task.subtasks.length || 1 };
+    return { days, subtasksWithCols, totalCols: cols.length || 1 };
   }, [task, now]);
 
   const handleDayClick = (day: Date) => {
@@ -121,8 +152,8 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     return null;
   }
 
-  const { days, subtasks, columns } = timelineData;
-  const gridTemplateColumns = `repeat(${columns}, minmax(100px, 1fr))`;
+  const { days, subtasksWithCols, totalCols } = timelineData;
+  const gridTemplateColumns = `repeat(${totalCols}, minmax(120px, 1fr))`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -142,7 +173,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                     className="flex flex-col sticky left-0 bg-background z-10"
                 >
                     {days.map((day, index) => {
-                        const progress = getTaskProgressOnDay(day, subtasks);
+                        const progress = getTaskProgressOnDay(day, subtasksWithCols);
                         const hasTasks = progress.total > 0;
                         const isCompleted = hasTasks && progress.completed === progress.total;
                         return (
@@ -151,7 +182,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                               data-day-index={index}
                               onClick={() => handleDayClick(day)}
                               className={cn(
-                                "h-10 flex-shrink-0 flex items-center justify-end text-xs rounded-l-md transition-opacity duration-300 cursor-pointer",
+                                "h-10 flex-shrink-0 flex items-start justify-end text-xs rounded-l-md transition-opacity duration-300 cursor-pointer pt-1",
                                 focusedDay && !isSameDay(focusedDay, day) && "opacity-20",
                                 focusedDay && isSameDay(focusedDay, day) && "bg-primary/10"
                               )}
@@ -174,22 +205,22 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
 
 
                 {/* Timeline Grid */}
-                <div className="relative flex-1" style={{ minWidth: `${columns * 100}px`}}>
+                <div className="relative flex-1" style={{ minWidth: `${totalCols * 120}px`}}>
                     {/* Background Grid Lines */}
                     <div className="absolute inset-0 grid h-full -z-10" style={{ gridTemplateColumns }}>
-                        {Array.from({ length: columns }).map((_, index) => (
-                           <div key={index} className="border-r border-border/50"></div>
+                        {Array.from({ length: totalCols }).map((_, index) => (
+                           <div key={index} className="border-r border-muted-foreground/30"></div>
                         ))}
                     </div>
-                     <div className="absolute inset-y-0 -left-px w-px bg-border"></div>
+                     <div className="absolute inset-y-0 -left-px w-px bg-muted-foreground/30"></div>
                      <div className="relative">
                         {/* Day rows background */}
                         {days.map((_, dayIndex) => (
-                          <div key={dayIndex} className="h-10 border-b border-border/50"></div>
+                          <div key={dayIndex} className="h-10 border-b border-muted-foreground/30"></div>
                         ))}
 
                         {/* Subtask labels */}
-                        {subtasks.map((subtask, index) => {
+                        {subtasksWithCols.map((subtask) => {
                             if (!subtask.startDate || !subtask.endDate) return null;
 
                             const subtaskStart = subtask.startDate;
@@ -205,11 +236,11 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                             return (
                                 <div
                                     key={subtask.id}
-                                    className="absolute w-full px-1"
+                                    className="absolute w-full p-1"
                                     style={{
                                         top: `${top}rem`,
                                         height: `${height}rem`,
-                                        gridColumn: `${index + 1} / span 1`,
+                                        gridColumn: `${subtask.colIndex + 1} / span 1`,
                                     }}
                                 >
                                     <TooltipProvider delayDuration={0}>
