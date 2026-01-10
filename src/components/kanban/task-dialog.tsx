@@ -288,18 +288,26 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
       form.reset(defaultValues);
       
-      if (initialTaskType !== 'idea') {
-          setTimeout(() => {
-              if (fields.length === 0 && !taskToEdit) {
-                  addEmptySubtask();
-              }
-          }, 0);
+      if (initialTaskType !== 'idea' && !taskToEdit) {
+          addEmptySubtask(false);
       }
 
     }
   }, [taskToEdit, isOpen, initialTaskType, taskToConvert, replace, form]);
 
-  const addEmptySubtask = () => {
+  useEffect(() => {
+    if (activeTab === 'subtasks' && fields.length === 1 && !taskToEdit) {
+      setTimeout(() => {
+        const firstInput = subtaskTitleRefs.current[0];
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 0);
+    }
+  }, [activeTab, fields.length, taskToEdit]);
+
+
+  const addEmptySubtask = (shouldFocus = true) => {
     const newSubtask: Partial<Subtask> = { 
         title: "", 
         description: "", 
@@ -316,13 +324,16 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
         newSubtask.endTime = '23:59';
     }
     append(newSubtask as Subtask);
-    setTimeout(() => {
-        const lastIndex = fields.length;
-        const lastInput = subtaskTitleRefs.current[lastIndex];
-        if (lastInput) {
-            lastInput.focus();
-        }
-    }, 0);
+
+    if (shouldFocus) {
+        setTimeout(() => {
+            const lastIndex = fields.length;
+            const lastInput = subtaskTitleRefs.current[lastIndex];
+            if (lastInput) {
+                lastInput.focus();
+            }
+        }, 0);
+    }
   };
 
   const handleIdeaSubmit = useCallback(form.handleSubmit((data: TaskFormData) => {
@@ -458,20 +469,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   const triggerValidationAndSwitchTab = async () => {
     const result = await form.trigger(["title", "startDate", "startTime", "endDate", "endTime", "description", "recurringDays"]);
     if (result) {
-        const wasEmpty = fields.length === 0;
-        if (wasEmpty) {
-            addEmptySubtask();
-        }
         setActiveTab('subtasks');
-        if (wasEmpty) {
-          // Use timeout to ensure the new field is rendered before focusing
-          setTimeout(() => {
-            const firstInput = subtaskTitleRefs.current[0];
-            if (firstInput) {
-              firstInput.focus();
-            }
-          }, 0);
-        }
     }
   };
 
@@ -755,7 +753,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
             variant="default"
             size="sm"
             className="mt-2"
-            onClick={addEmptySubtask}
+            onClick={() => addEmptySubtask()}
           >
             <Plus className="mr-2 h-4 w-4" />
             Thêm Công việc
