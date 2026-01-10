@@ -116,10 +116,9 @@ export function WeekView({ tasks, selectedDay, onSelectDay, currentDate, onPrevW
             }
         } else { // deadline
             count = task.subtasks.filter(st => {
-                if (!st.completed && st.startDate && st.endDate) {
+                if (!st.completed && st.startDate) {
                     const subtaskStart = startOfDay(st.startDate);
-                    const subtaskEnd = startOfDay(st.endDate);
-                    return isWithinInterval(sDay, { start: subtaskStart, end: subtaskEnd });
+                    return isSameDay(sDay, subtaskStart);
                 }
                 return false;
             }).length;
