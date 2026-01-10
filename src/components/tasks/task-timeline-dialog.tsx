@@ -104,8 +104,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                             key={st.id}
                             className={cn(
                               "font-normal",
-                              statusStyles[status],
-                              st.completed && "line-through"
+                              statusStyles[status]
                             )}
                           >
                             {truncatedTitle}
