@@ -4,11 +4,12 @@ import * as React from 'react';
 import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, Calendar, Repeat, Zap } from 'lucide-react';
+import { Clock, CheckCircle2, Calendar, Repeat, Zap, GanttChartSquare } from 'lucide-react';
 import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const calculateInitialTimeProgress = (task: Task) => {
     if (task.taskType === 'recurring' || !task.startDate || !task.endDate) return 100;
@@ -206,10 +207,11 @@ interface RecentTasksProps {
   onSelectTask: (taskId: string) => void;
   activeFilter: 'all' | 'today' | 'week';
   allTasksFilter?: 'all' | 'deadline' | 'recurring' | 'idea';
+  onOpenTimeline: (task: Task) => void;
 }
 
 
-export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, activeFilter, allTasksFilter }: RecentTasksProps) {
+export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, activeFilter, allTasksFilter, onOpenTimeline }: RecentTasksProps) {
   
   const getEmptyMessage = () => {
     switch (activeFilter) {
@@ -259,6 +261,25 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                     </span>
                   )}
                 </p>
+                {task.taskType === 'deadline' && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={(e) => { e.stopPropagation(); onOpenTimeline(task); }}
+                          className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-sidebar-accent"
+                        >
+                          <GanttChartSquare className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p>Xem lộ trình</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
               
               <TaskProgress 
