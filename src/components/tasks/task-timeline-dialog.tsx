@@ -21,14 +21,21 @@ const getStatus = (subtask: Subtask, now: Date) => {
     return 'Xong';
   }
   const subtaskStart = subtask.startDate ? startOfDay(subtask.startDate) : null;
-  if (subtaskStart && isBefore(now, subtaskStart)) {
-    return 'Chưa bắt đầu';
-  }
   const subtaskEnd = subtask.endDate ? startOfDay(subtask.endDate) : null;
-  if (subtaskEnd && isAfter(now, subtaskEnd)) {
-      return 'Quá hạn';
+  const sNow = startOfDay(now);
+
+  if (subtaskStart && subtaskEnd) {
+      if (isWithinInterval(sNow, { start: subtaskStart, end: subtaskEnd })) {
+          return 'Đang làm';
+      }
+      if (isAfter(sNow, subtaskEnd)) {
+          return 'Quá hạn';
+      }
+      if (isBefore(sNow, subtaskStart)) {
+          return 'Chưa bắt đầu';
+      }
   }
-  return 'Đang làm';
+  return 'Chưa bắt đầu';
 };
 
 const getTimelineCellStyle = (status: string, subtask: Subtask, now: Date) => {
@@ -141,13 +148,13 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                               data-day-index={index}
                               onClick={() => handleDayClick(day)}
                               className={cn(
-                                "h-10 flex-shrink-0 flex items-center justify-end text-xs text-muted-foreground rounded-l-md transition-opacity duration-300 cursor-pointer",
+                                "h-10 flex-shrink-0 flex items-center justify-end text-xs rounded-l-md transition-opacity duration-300 cursor-pointer",
                                 focusedDay && !isSameDay(focusedDay, day) && "opacity-20",
                                 focusedDay && isSameDay(focusedDay, day) && "bg-primary/10"
                               )}
                             >
                                 <div className={cn("px-2 text-right w-24 flex items-baseline justify-end gap-1.5", isSameDay(day, new Date()) && "font-bold text-primary")}>
-                                     <span className="flex-shrink-0">{format(day, 'dd/MM')}</span>
+                                     <span className="flex-shrink-0 text-muted-foreground">{format(day, 'dd/MM')}</span>
                                      {hasTasks && (
                                         <span className={cn(
                                             "font-medium text-[11px]",
