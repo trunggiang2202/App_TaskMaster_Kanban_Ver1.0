@@ -77,7 +77,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     }
 
     const interval = { start: task.startDate, end: task.endDate };
-    const days = eachDayOfInterval(interval).reverse();
+    const days = eachDayOfInterval(interval);
     const totalDays = differenceInDays(task.endDate, task.startDate) + 1;
 
     const processedSubtasks = task.subtasks
@@ -146,11 +146,11 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                                 focusedDay && isSameDay(focusedDay, day) && "bg-primary/10"
                               )}
                             >
-                                <div className={cn("px-2 text-right", isSameDay(day, new Date()) && "font-bold text-primary")}>
-                                     <span>{format(day, 'dd/MM')}</span>
+                                <div className={cn("px-2 text-right w-24 flex items-baseline justify-end gap-1.5", isSameDay(day, new Date()) && "font-bold text-primary")}>
+                                     <span className="flex-shrink-0">{format(day, 'dd/MM')}</span>
                                      {hasTasks && (
                                         <span className={cn(
-                                            "block text-[10px]",
+                                            "font-medium text-[11px]",
                                             progress.completed === progress.total ? "text-chart-2" : "text-amber-600"
                                         )}>
                                             ({progress.completed}/{progress.total})
