@@ -10,8 +10,6 @@ import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInte
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TaskDetail from '@/components/tasks/task-detail';
 import { ListChecks } from 'lucide-react';
-import { WelcomeDialog } from '@/components/welcome-dialog';
-import { getDailyQuote } from '@/lib/daily-quotes';
 import { WeekView } from '@/components/sidebar/week-view';
 import { TaskProvider, useTasks } from '@/contexts/TaskContext';
 import { StatsDialog } from '@/components/stats/StatsDialog';
@@ -90,7 +88,6 @@ function TaskKanban() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [allTasksFilter, setAllTasksFilter] = useState<AllTasksFilterType>('all');
   const [allTasksSort, setAllTasksSort] = useState<AllTasksSortType>('newest');
-  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [selectedDay, setSelectedDay] = useState(() => new Date());
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [loadingDots, setLoadingDots] = useState('');
@@ -112,11 +109,6 @@ function TaskKanban() {
 
 
   useEffect(() => {
-    const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeDialog');
-    if (!hasSeenWelcome) {
-      setShowWelcomeDialog(true);
-      localStorage.setItem('hasSeenWelcomeDialog', 'true');
-    }
     const savedName = localStorage.getItem('userName');
     setUserName(savedName || 'Louis Giang');
   }, []);
@@ -367,8 +359,6 @@ function TaskKanban() {
 }, [tasks, currentDate]);
 
 
-  const welcomeDialogTaskCount = useMemo(() => totalTodaysSubtasks - completedTodaysSubtasks, [totalTodaysSubtasks, completedTodaysSubtasks]);
-
   const handlePrevWeek = useCallback(() => setCurrentDate(prev => subWeeks(prev, 1)), []);
   const handleNextWeek = useCallback(() => setCurrentDate(prev => addWeeks(prev, 1)), []);
   const handleGoToToday = useCallback(() => {
@@ -559,12 +549,6 @@ function TaskKanban() {
         onOpenChange={setIsStatsDialogOpen}
         onTaskSelect={setSelectedTaskId}
         onFilterChange={setActiveFilter}
-      />
-       <WelcomeDialog
-        isOpen={showWelcomeDialog}
-        onOpenChange={setShowWelcomeDialog}
-        todayTaskCount={welcomeDialogTaskCount}
-        dailyQuote={getDailyQuote()}
       />
        <TaskTimelineDialog 
         isOpen={isTimelineOpen}
