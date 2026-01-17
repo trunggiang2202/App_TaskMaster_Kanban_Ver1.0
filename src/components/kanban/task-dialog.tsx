@@ -267,7 +267,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
 
     }
-  }, [isOpen, taskToEdit, initialTaskType, taskToConvert]);
+  }, [isOpen, taskToEdit, initialTaskType, taskToConvert, form, replace]);
 
   const addEmptySubtask = (shouldFocus = true, date?: Date) => {
     const newSubtask: Partial<Subtask> & { title: string } = { 
@@ -619,7 +619,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                       <h3 className="font-semibold text-foreground">
                         {format(day, 'eeee, dd/MM/yyyy', { locale: vi })}
                       </h3>
-                      <div className="pl-4 border-l-2 border-primary/20 space-y-2">
+                      <div className="pl-4 border-l-2 border-primary space-y-2">
                           {fields.map((field, index) => {
                              const subtaskDate = parseDate(form.getValues(`subtasks.${index}.startDate`));
                              if (!subtaskDate || !isSameDay(subtaskDate, day)) {
