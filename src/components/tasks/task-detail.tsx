@@ -249,25 +249,23 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         
         <div className="my-1 h-px bg-slate-300 dark:bg-slate-700" />
 
-        <div className="space-y-6">
-            <div className="p-4 rounded-md border bg-primary/10">
-                {task.taskType === 'recurring' ? (
-                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                      <Repeat className="h-4 w-4" />
-                      Lặp lại vào {recurringDaysText} hàng tuần
-                  </div>
-                ) : task.taskType === 'idea' ? (
-                  <div className="flex items-center gap-2 text-sm font-medium text-amber-600">
-                      <Zap className="h-4 w-4" />
-                      Đây là một lộ trình ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
-                  </div>
-                ) : (
-                    <p className="text-muted-foreground leading-relaxed">
-                        Không có mô tả cho lộ trình này.
-                    </p>
-                )}
+        {task.taskType !== 'deadline' && (
+            <div className="space-y-6">
+                <div className="p-4 rounded-md border bg-primary/10">
+                    {task.taskType === 'recurring' ? (
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                        <Repeat className="h-4 w-4" />
+                        Lặp lại vào {recurringDaysText} hàng tuần
+                    </div>
+                    ) : (
+                    <div className="flex items-center gap-2 text-sm font-medium text-amber-600">
+                        <Zap className="h-4 w-4" />
+                        Đây là một lộ trình ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
+                    </div>
+                    )}
+                </div>
             </div>
-        </div>
+        )}
 
         {task.taskType !== 'idea' && totalSubtasks > 0 && (
           <div className="p-4 rounded-md border bg-muted/20 space-y-4">
