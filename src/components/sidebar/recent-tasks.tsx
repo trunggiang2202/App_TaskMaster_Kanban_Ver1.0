@@ -11,97 +11,7 @@ import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
-const calculateInitialTimeProgress = (task: Task) => {
-    if (task.taskType === 'recurring' || !task.startDate || !task.endDate) return 100;
-    const now = new Date().getTime();
-    const start = new Date(task.startDate).getTime();
-    const end = new Date(task.endDate).getTime();
-    
-    if (now >= end) return 0;
-    if (now < start) return 100;
-    
-    const percentage = ((end - now) / (end - start)) * 100;
-    return Math.min(Math.max(percentage, 0), 100);
-};
-
-function TaskProgress({ task }: { task: Task }) {
-  const [timeProgress, setTimeProgress] = React.useState(() => calculateInitialTimeProgress(task));
-  const [timeLeft, setTimeLeft] = React.useState('');
-  
-  React.useEffect(() => {
-    if (task.taskType === 'recurring' || task.taskType === 'idea') {
-      return;
-    }
-
-    const calculateTimeProgress = () => {
-      if (!task.startDate || !task.endDate) return 100;
-      const now = new Date().getTime();
-      const start = new Date(task.startDate).getTime();
-      const end = new Date(task.endDate).getTime();
-      
-      if (now >= end) return 0;
-      if (now < start) return 100;
-      
-      const percentage = ((end - now) / (end - start)) * 100;
-      return Math.min(Math.max(percentage, 0), 100);
-    };
-
-    const calculateTimeLeft = () => {
-      if (task.status === 'Done') {
-        return 'Đã hoàn thành';
-      }
-      if (!task.startDate || !task.endDate) return '';
-
-
-      const now = new Date().getTime();
-      const start = new Date(task.startDate).getTime();
-      const end = new Date(task.endDate).getTime();
-      
-      if (now < start) {
-        const distance = end - start;
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        let result = '';
-        if (days > 0) result += `${days}d `;
-        if (hours > 0 || days > 0) result += `${hours}h `;
-        if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
-        return result.trim();
-      }
-
-      const distance = end - now;
-
-      if (distance < 0) {
-        return 'Đã quá hạn';
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      
-      let result = '';
-      if (days > 0) result += `${days}d `;
-      if (hours > 0) result += `${hours}h `;
-      if (minutes > 0) result += `${minutes}m `;
-      result += `${seconds}s`;
-      
-      if (result.trim() === '') return 'dưới 1 giây';
-      return result.trim();
-    }
-
-    const updateTimes = () => {
-        setTimeProgress(calculateTimeProgress());
-        setTimeLeft(calculateTimeLeft());
-    };
-    
-    updateTimes();
-    
-    if (task.status !== 'Done') {
-      const interval = setInterval(updateTimes, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [task.startDate, task.endDate, task.status, task.taskType]);
+function TaskStatusInfo({ task }: { task: Task }) {
   
   if (task.status === 'Done' && task.taskType !== 'idea') {
     return (
@@ -139,63 +49,30 @@ function TaskProgress({ task }: { task: Task }) {
   const now = new Date();
   const isOverdue = task.status !== 'Done' && task.endDate && isAfter(now, task.endDate);
   const isUpcoming = task.startDate && isBefore(now, task.startDate);
-  const isWarning = !isOverdue && timeProgress < 20;
-
-  const getTimeLeftColor = () => {
-    if (task.status === 'Done') return 'text-emerald-500';
-    if (isOverdue) return 'text-destructive';
-    if (isWarning) return 'text-amber-500';
-    return 'text-sidebar-foreground/80';
-  };
-
-  const getIndicatorColor = (progress: number) => {
-    if (isOverdue) return 'bg-destructive';
-    if (progress > 60) {
-      return 'bg-emerald-500';
-    }
-    if (progress > 30) {
-      return 'bg-amber-500';
-    }
-    return 'bg-destructive';
-  };
-
-  const formattedStartDate = task.startDate ? format(task.startDate, 'p, dd/MM/yyyy', { locale: vi }) : '';
-  const formattedEndDate = task.endDate ? format(task.endDate, 'p, dd/MM/yyyy', { locale: vi }) : '';
   const isStarted = !isUpcoming && !isOverdue && task.status !== 'Done';
   
+  const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
+  const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
+  
   return (
-    <div className="space-y-2">
-       <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
-          <div className={cn("flex items-center gap-2", isStarted && "text-emerald-500")}>
-            <Calendar size={12} />
-            <span>Bắt đầu: {formattedStartDate}</span>
-            {isUpcoming && <span>(Chưa bắt đầu)</span>}
-            {isStarted && <span>(Đã bắt đầu)</span>}
-          </div>
-          {task.status === 'Done' ? (
-            <div className="flex items-center gap-2 text-emerald-500">
-                <CheckCircle2 size={12} />
-                <span>Đã hoàn thành</span>
-            </div>
-          ) : (
-            <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
-                <Calendar size={12} />
-                <span>Kết thúc: {formattedEndDate}</span>
-                {isOverdue && <span>(Đã quá hạn)</span>}
-            </div>
-          )}
-          {task.status !== 'Done' && !isOverdue && (
-              <div className={`flex items-center gap-2 text-sidebar-foreground/80`}>
-                <Clock size={12} /> 
-                <span>
-                  {isUpcoming ? 'Tổng thời gian: ' : 'Thời gian còn lại: '}{timeLeft}
-                  {` (${Math.round(timeProgress)}%)`}
-                </span>
-              </div>
-          )}
+    <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
+        <div className={cn("flex items-center gap-2", isStarted && "text-emerald-500")}>
+        <Calendar size={12} />
+        <span>Bắt đầu: {formattedStartDate}</span>
+        {isUpcoming && <span>(Chưa bắt đầu)</span>}
+        {isStarted && <span>(Đã bắt đầu)</span>}
         </div>
-        {!isOverdue && task.status !== 'Done' && (
-            <Progress value={timeProgress} className={`h-1.5`} indicatorClassName={getIndicatorColor(timeProgress)} />
+        {task.status === 'Done' ? (
+        <div className="flex items-center gap-2 text-emerald-500">
+            <CheckCircle2 size={12} />
+            <span>Đã hoàn thành</span>
+        </div>
+        ) : (
+        <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
+            <Calendar size={12} />
+            <span>Kết thúc: {formattedEndDate}</span>
+            {isOverdue && <span>(Đã quá hạn)</span>}
+        </div>
         )}
     </div>
   );
@@ -282,7 +159,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                 )}
               </div>
               
-              <TaskProgress 
+              <TaskStatusInfo 
                 task={task} 
               />
             </div>

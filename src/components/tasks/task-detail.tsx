@@ -6,7 +6,7 @@ import type { Task, Subtask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { isAfter, isBefore, getDay } from 'date-fns';
+import { isAfter, isBefore, getDay, isSameDay } from 'date-fns';
 import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, Eye, Repeat, Zap } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -38,69 +38,6 @@ interface SubtaskItemProps {
 
 const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringDays, onToggle, onTitleClick, isClickable, isInProgress, isOverdue, isManuallyStarted }) => {
     const canComplete = taskType === 'recurring' ? (recurringDays?.includes(getDay(new Date()))) : (isClickable && !!subtask.startDate && !!subtask.endDate);
-    const [timeProgress, setTimeProgress] = React.useState(100);
-    const [timeLeft, setTimeLeft] = React.useState('');
-
-
-    React.useEffect(() => {
-        if (taskType === 'recurring') {
-            setTimeProgress(subtask.completed ? 100 : 0);
-            return;
-        }
-
-        if (!subtask.startDate || !subtask.endDate) {
-            setTimeProgress(subtask.completed ? 100 : 0);
-            return;
-        }
-
-        const calculateTimes = () => {
-            const now = new Date().getTime();
-            const start = new Date(subtask.startDate!).getTime();
-            const end = new Date(subtask.endDate!).getTime();
-
-            if (subtask.completed) {
-                setTimeProgress(100);
-                setTimeLeft('Đã hoàn thành');
-                return;
-            }
-
-            if (now >= end) {
-                setTimeProgress(0);
-                 setTimeLeft('Đã quá hạn');
-                return;
-            }
-            
-            let remainingDuration;
-            if (now < start) {
-                remainingDuration = end - start;
-                setTimeProgress(100);
-            } else {
-                remainingDuration = end - now;
-                const percentage = ((end - now) / (end - start)) * 100
-                setTimeProgress(Math.min(100, Math.max(0, percentage)));
-            }
-
-            const days = Math.floor(remainingDuration / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((remainingDuration % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((remainingDuration % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((remainingDuration % (1000 * 60)) / 1000);
-
-            let timeLeftString = '';
-            if (days > 0) timeLeftString += `${days}d `;
-            if (hours > 0) timeLeftString += `${hours}h `;
-            if (minutes > 0) timeLeftString += `${minutes}m `;
-            if (isInProgress) timeLeftString += `${seconds}s`;
-
-
-            setTimeLeft(timeLeftString.trim() || '0s');
-        };
-
-        calculateTimes();
-        const interval = setInterval(calculateTimes, 1000); 
-
-        return () => clearInterval(interval);
-    }, [subtask.startDate, subtask.endDate, subtask.completed, isInProgress, taskType]);
-
 
     const handleToggle = (e: React.MouseEvent, forceStart: boolean) => {
         if (forceStart || canComplete) {
@@ -111,7 +48,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
 
     const renderIcon = () => {
         if (subtask.completed) {
-            const wasOverdue = subtask.endDate && isBefore(subtask.endDate, new Date());
+            const wasOverdue = taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, new Date());
              return (
                 <div className={cn("h-5 w-5 flex items-center justify-center rounded-full", wasOverdue ? "bg-destructive" : "bg-chart-2")}>
                     <Check className="h-3 w-3 text-primary-foreground" />
@@ -138,9 +75,6 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
       </div>
     );
     
-    const isWarning = !subtask.completed && isInProgress && !isOverdue && timeProgress < 20;
-    const hasDeadline = !!subtask.startDate && !!subtask.endDate;
-
     return (
         <div key={subtask.id} className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
@@ -149,7 +83,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                         <Tooltip>
                             <TooltipTrigger asChild>{iconElement}</TooltipTrigger>
                             <TooltipContent>
-                                <p>{ taskType === 'recurring' ? 'Không phải hôm nay' : 'Chưa bắt đầu deadline'}</p>
+                                <p>{ taskType === 'recurring' ? 'Không phải hôm nay' : 'Chưa bắt đầu'}</p>
                             </TooltipContent>
                         </Tooltip>
                     ) : (
@@ -161,37 +95,15 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                         {subtask.title}
                     </span>
                 </div>
-                {!subtask.completed && hasDeadline && !isOverdue && taskType === 'deadline' && (
-                    <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity transition-transform hover:scale-125 hover:bg-transparent"
-                                >
-                                    <Eye className="h-4 w-4 text-foreground" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <div className="flex flex-col gap-2 p-1 min-w-[150px]">
-                                    <div className="flex items-center justify-between text-xs pt-1">
-                                        <span className={cn("flex items-center gap-1", isWarning ? 'text-destructive' : 'text-muted-foreground')}>
-                                            <Clock className="h-3 w-3" />
-                                            {isInProgress ? 'Thời gian còn lại' : 'Tổng thời gian'}: {timeLeft} ({Math.round(timeProgress)}%)
-                                        </span>
-                                    </div>
-                                    <Progress 
-                                        value={timeProgress} 
-                                        className="h-1.5" 
-                                        indicatorClassName={cn(
-                                            isWarning ? "bg-destructive" : isInProgress ? "bg-amber-500" : "bg-primary"
-                                        )}
-                                    />
-                                </div>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                {(subtask.attachments?.length ?? 0) > 0 && (
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity"
+                        onClick={onTitleClick}
+                    >
+                        <Eye className="h-4 w-4 text-foreground" />
+                    </Button>
                 )}
             </div>
         </div>
@@ -227,7 +139,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+    }, 1000 * 60); // Update every minute is enough for date-based logic
     return () => clearInterval(timer);
   }, []);
 
@@ -251,7 +163,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     const isRecurringToday = task.taskType === 'recurring' && task.recurringDays?.includes(todayDay);
 
     task.subtasks.forEach(st => {
-      const isAutoInProgress = task.taskType === 'deadline' && st.startDate && isAfter(currentTime, st.startDate);
+      const isAutoInProgress = task.taskType === 'deadline' && st.startDate && isSameDay(currentTime, st.startDate);
       if (st.completed) {
         categories['Xong'].push(st);
       } else if (st.isManuallyStarted || isAutoInProgress || isRecurringToday) {
