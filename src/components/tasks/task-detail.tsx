@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -250,21 +251,20 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
 
         <div className="space-y-6">
             <div className="p-4 rounded-md border bg-primary/10">
-                <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                    {task.description || 'Không có mô tả cho lộ trình này.'}
-                </p>
-                {task.taskType === 'recurring' && (
-                  <div className="flex items-center gap-2 mt-4 text-sm font-medium text-primary">
+                {task.taskType === 'recurring' ? (
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
                       <Repeat className="h-4 w-4" />
                       Lặp lại vào {recurringDaysText} hàng tuần
                   </div>
-                )}
-                 {task.taskType === 'idea' && (
-                  <div className="flex items-center gap-2 mt-4 text-sm font-medium text-amber-600">
+                ) : task.taskType === 'idea' ? (
+                  <div className="flex items-center gap-2 text-sm font-medium text-amber-600">
                       <Zap className="h-4 w-4" />
                       Đây là một lộ trình ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
                   </div>
+                ) : (
+                    <p className="text-muted-foreground leading-relaxed">
+                        Không có mô tả cho lộ trình này.
+                    </p>
                 )}
             </div>
         </div>

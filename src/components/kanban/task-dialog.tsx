@@ -54,14 +54,12 @@ const attachmentSchema = z.object({
 const subtaskSchema = z.object({
   id: z.string().optional(),
   title: z.string().optional(),
-  description: z.string().optional(),
   startDate: z.string().optional(), // This will be the single date for the subtask
   attachments: z.array(attachmentSchema).optional(),
 });
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Lộ trình phải có tên.'),
-  description: z.string().optional(),
   taskType: z.custom<TaskType>(),
   recurringDays: z.array(z.number()).optional(),
   startDate: z.string().optional(),
@@ -171,7 +169,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     mode: 'all',
     defaultValues: {
       title: '',
-      description: '',
       taskType: initialTaskType,
       recurringDays: [],
       subtasks: [],
@@ -225,7 +222,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       if (taskToEdit) {
         defaultValues = {
           title: taskToEdit.title,
-          description: taskToEdit.description || '',
           taskType: taskToEdit.taskType,
           startDate: taskToEdit.startDate ? formatDate(new Date(taskToEdit.startDate)) : '',
           endDate: taskToEdit.endDate ? formatDate(new Date(taskToEdit.endDate)) : '',
@@ -233,7 +229,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
           subtasks: taskToEdit.subtasks.map(st => ({
               id: st.id,
               title: st.title,
-              description: st.description || '',
               startDate: st.startDate ? formatDate(new Date(st.startDate)) : '',
               attachments: st.attachments || [],
           })),
@@ -244,7 +239,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
         
         defaultValues = {
           title: taskToConvert?.title || '',
-          description: '',
           taskType: initialTaskType,
           startDate: formatDate(now),
           endDate: formatDate(tomorrow),
@@ -257,7 +251,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       if (initialTaskType !== 'idea' && !taskToEdit) {
           append({ 
             title: "", 
-            description: "", 
             attachments: [] 
           });
       }
@@ -268,7 +261,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   const addEmptySubtask = (shouldFocus = true) => {
     const newSubtask: Partial<Subtask> = { 
         title: "", 
-        description: "", 
         attachments: [] 
     };
     if (taskType === 'deadline') {
@@ -310,7 +302,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     form.reset({
         ...form.getValues(),
         title: '',
-        description: '',
     });
     form.setFocus('title');
   }), [form, setIdeas]);
@@ -348,7 +339,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
 
     const task: Omit<Task, 'id' | 'createdAt' | 'status'> & { id?: string, createdAt?: Date, status?: any, convertedFrom?: string } = {
         title: data.title,
-        description: data.description,
         taskType: data.taskType,
         subtasks: [],
     };
@@ -372,7 +362,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                 return {
                     id: st.id || crypto.randomUUID(),
                     title: st.title ?? '',
-                    description: st.description,
                     completed: originalSubtask?.completed || false,
                     isManuallyStarted: originalSubtask?.isManuallyStarted || false,
                     startDate: subtaskDate as Date,
@@ -389,7 +378,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                 return {
                     id: st.id || crypto.randomUUID(),
                     title: st.title ?? '',
-                    description: st.description,
                     completed: originalSubtask?.completed || false,
                     isManuallyStarted: originalSubtask?.isManuallyStarted || false,
                     attachments: st.attachments,
@@ -433,7 +421,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   };
 
   const triggerValidationAndSwitchTab = async () => {
-    const result = await form.trigger(["title", "startDate", "endDate", "description", "recurringDays"]);
+    const result = await form.trigger(["title", "startDate", "endDate", "recurringDays"]);
     if (result) {
         setActiveTab('subtasks');
     }
@@ -485,7 +473,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     const { title, startDate, endDate, recurringDays } = form.getValues();
     const errors = form.formState.errors;
 
-    if (errors.title || errors.description) return true;
+    if (errors.title) return true;
     
     if (taskType === 'deadline') {
         if (errors.startDate || errors.endDate || errors.root) return true;
@@ -579,19 +567,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                         </div>
                         <AccordionContent className="px-3 pb-3">
                           <div className="space-y-4 p-4 rounded-md border bg-background">
-                            <FormField
-                              control={form.control}
-                              name={`subtasks.${index}.description`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                                  <FormControl>
-                                    <Textarea placeholder="Thêm chi tiết cho công việc..." {...field} className="bg-primary/5" />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                             <FormField
                                 control={form.control}
                                 name={`subtasks.${index}.attachments`}
@@ -715,19 +690,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Thêm chi tiết về lộ trình..." {...field} className="bg-primary/5"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <FormLabel>Ngày bắt đầu (DD-MM-YYYY)</FormLabel>
@@ -774,19 +736,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                           <FormLabel>Tên lộ trình</FormLabel>
                           <FormControl>
                             <Input placeholder="Tên lộ trình" {...field} autoFocus className="bg-primary/5"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mô tả (Tùy chọn)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Thêm chi tiết về lộ trình..." {...field} className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>

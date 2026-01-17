@@ -10,7 +10,6 @@ export interface Attachment {
 export interface Subtask {
   id: string;
   title: string;
-  description?: string;
   completed: boolean;
   isManuallyStarted?: boolean; // Added to track manually started tasks
   startDate?: Date;
@@ -21,7 +20,6 @@ export interface Subtask {
 export interface Task {
   id: string;
   title: string;
-  description?: string;
   status: Status;
   createdAt: Date;
   subtasks: Subtask[];
