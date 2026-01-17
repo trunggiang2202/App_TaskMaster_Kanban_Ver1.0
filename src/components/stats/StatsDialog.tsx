@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { isBefore, isAfter, startOfDay, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isThisWeek, isThisMonth, endOfMonth, startOfMonth } from 'date-fns';
+import { isBefore, isAfter, startOfDay, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isThisWeek, isThisMonth, endOfMonth, startOfMonth, isSameDay } from 'date-fns';
 import { TrendingUp, Circle, AlertTriangle, CheckCircle2, Clock, ListTodo, ChevronDown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,8 +76,8 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
                         isRelevant = true;
                     }
                 } else { // deadline
-                    if (subtask.startDate && subtask.endDate) {
-                        if (isWithinInterval(today, { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) })) {
+                    if (subtask.startDate) {
+                        if (isSameDay(today, startOfDay(subtask.startDate))) {
                             isRelevant = true;
                         }
                     }
@@ -96,8 +96,8 @@ export function StatsDialog({ isOpen, onOpenChange, tasks, onTaskSelect, onFilte
     relevantSubtasks.forEach((subtask: any) => {
         const { parentTaskId, parentTaskTitle, parentTaskType, recurringDays, ...restOfSubtask } = subtask;
         const statusMap = restOfSubtask.completed ? taskSubtaskMap.done :
-                      (parentTaskType === 'deadline' && restOfSubtask.endDate && isAfter(now, restOfSubtask.endDate)) ? taskSubtaskMap.overdue :
-                      (parentTaskType === 'deadline' && restOfSubtask.startDate && isBefore(now, restOfSubtask.startDate)) ? taskSubtaskMap.upcoming :
+                      (parentTaskType === 'deadline' && restOfSubtask.startDate && isBefore(startOfDay(restOfSubtask.startDate), today)) ? taskSubtaskMap.overdue :
+                      (parentTaskType === 'deadline' && restOfSubtask.startDate && isAfter(startOfDay(restOfSubtask.startDate), today)) ? taskSubtaskMap.upcoming :
                       taskSubtaskMap.inProgress;
         
         if (!statusMap.has(parentTaskId)) {

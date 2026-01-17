@@ -7,7 +7,7 @@ import type { Task, Subtask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { isAfter, isBefore, getDay, isSameDay } from 'date-fns';
+import { isAfter, isBefore, getDay, isSameDay, startOfDay } from 'date-fns';
 import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, Eye, Repeat, Zap } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -38,7 +38,7 @@ interface SubtaskItemProps {
 }
 
 const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringDays, onToggle, onTitleClick, isClickable, isInProgress, isOverdue, isManuallyStarted }) => {
-    const canComplete = taskType === 'recurring' ? (recurringDays?.includes(getDay(new Date()))) : (isClickable && !!subtask.startDate && !!subtask.endDate);
+    const canComplete = taskType === 'recurring' ? (recurringDays?.includes(getDay(new Date()))) : (isClickable && !!subtask.startDate);
 
     const handleToggle = (e: React.MouseEvent, forceStart: boolean) => {
         if (forceStart || canComplete) {
@@ -49,7 +49,7 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
 
     const renderIcon = () => {
         if (subtask.completed) {
-            const wasOverdue = taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, new Date());
+            const wasOverdue = taskType === 'deadline' && subtask.startDate && isBefore(startOfDay(subtask.startDate), startOfDay(new Date()));
              return (
                 <div className={cn("h-5 w-5 flex items-center justify-center rounded-full", wasOverdue ? "bg-destructive" : "bg-chart-2")}>
                     <Check className="h-3 w-3 text-primary-foreground" />
@@ -182,7 +182,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
 
   const getSubtaskStyling = (subtask: Subtask, columnTitle?: SubtaskStatus) => {
     if (subtask.completed) {
-        const wasOverdue = task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now);
+        const wasOverdue = task.taskType === 'deadline' && subtask.startDate && isBefore(startOfDay(subtask.startDate), startOfDay(now));
         return wasOverdue ? 'border border-destructive border-l-4 border-l-destructive' : 'border border-chart-2 border-l-4 border-l-chart-2';
     }
     
@@ -190,7 +190,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
         if (subtask.isManuallyStarted) {
             return 'border border-blue-600 border-l-4 border-l-blue-600';
         }
-        if (task.taskType === 'deadline' && subtask.endDate && isBefore(subtask.endDate, now)) {
+        if (task.taskType === 'deadline' && subtask.startDate && isBefore(startOfDay(subtask.startDate), startOfDay(now))) {
           return 'border border-destructive border-l-4 border-l-destructive'; // Overdue for deadline tasks
         }
         return 'border border-amber-500 border-l-4 border-l-amber-500'; // In Progress for both types
@@ -292,7 +292,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                       {column.subtasks.length > 0 ? (
                         column.subtasks.map(st => {
                           const isInProgress = column.title === 'Đang làm' || (task.taskType === 'recurring' && task.recurringDays?.includes(getDay(now)) || false);
-                          const isOverdue = column.title === 'Đang làm' && task.taskType === 'deadline' && !st.completed && !!st.endDate && isBefore(st.endDate, now);
+                          const isOverdue = column.title === 'Đang làm' && task.taskType === 'deadline' && !st.completed && !!st.startDate && isBefore(startOfDay(st.startDate), startOfDay(now));
                           return (
                             <Card 
                                 key={st.id} 
@@ -338,11 +338,3 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
-
-    
-
-    
-
-    
-
-    

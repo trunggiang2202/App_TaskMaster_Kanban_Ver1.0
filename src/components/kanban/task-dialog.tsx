@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle, Save, PlusCircle, ArrowLeft } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
-import { isAfter, addDays, startOfDay, getDay, isWithinInterval } from 'date-fns';
+import { isAfter, addDays, startOfDay, getDay, isWithinInterval, eachDayOfInterval, format, isSameDay } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -41,6 +41,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { TaskTypeDialog } from './task-type-dialog';
 import { Separator } from '../ui/separator';
+import { vi } from 'date-fns/locale';
 
 type Idea = { id: string; title: string; };
 const IDEAS_STORAGE_KEY = 'taskmaster-ideas';
@@ -54,7 +55,7 @@ const attachmentSchema = z.object({
 const subtaskSchema = z.object({
   id: z.string().optional(),
   title: z.string().optional(),
-  startDate: z.string().optional(), // This will be the single date for the subtask
+  startDate: z.string().optional(),
   attachments: z.array(attachmentSchema).optional(),
 });
 
@@ -161,7 +162,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   const { addTask, updateTask } = useTasks();
   const subtaskAttachmentRefs = useRef<(HTMLInputElement | null)[]>([]);
   const subtaskTitleRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const [activeTab, setActiveTab] = useState('task');
   const [ideas, setIdeas] = useState<Idea[]>([]);
   
   const form = useForm<TaskFormData>({
@@ -181,6 +181,18 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   });
   
   const taskType = form.watch('taskType');
+  const startDate = form.watch('startDate');
+  const endDate = form.watch('endDate');
+
+  const dateInterval = useMemo(() => {
+    const start = parseDate(startDate);
+    const end = parseDate(endDate);
+    if (start && end && isAfter(end, start) || isSameDay(end, start)) {
+      return eachDayOfInterval({ start, end });
+    }
+    return [];
+  }, [startDate, endDate]);
+
 
   useEffect(() => {
     form.setValue('taskType', initialTaskType);
@@ -212,9 +224,8 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
 
   useEffect(() => {
     if (isOpen) {
-      form.clearErrors(); // Clear previous validation errors
-      setActiveTab('task');
-      replace([]); // IMPORTANT: Safely clear the field array
+      form.clearErrors();
+      replace([]);
 
       let defaultValues: TaskFormData;
       const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
@@ -248,7 +259,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
       form.reset(defaultValues);
       
-      if (initialTaskType !== 'idea' && !taskToEdit) {
+      if ((initialTaskType === 'recurring') && !taskToEdit) {
           append({ 
             title: "", 
             attachments: [] 
@@ -256,19 +267,17 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
 
     }
-  }, [taskToEdit, isOpen, initialTaskType, taskToConvert, append, replace, form]);
+  }, [isOpen, taskToEdit, initialTaskType, taskToConvert]);
 
-  const addEmptySubtask = (shouldFocus = true) => {
-    const newSubtask: Partial<Subtask> = { 
+  const addEmptySubtask = (shouldFocus = true, date?: Date) => {
+    const newSubtask: Partial<Subtask> & { title: string } = { 
         title: "", 
         attachments: [] 
     };
-    if (taskType === 'deadline') {
-        const now = new Date();
-        const formatDate = (date: Date) => date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-        newSubtask.startDate = formatDate(now);
+     if (date) {
+        newSubtask.startDate = format(date, 'dd-MM-yyyy');
     }
-    append(newSubtask as any); // Cast to any to bypass strict type checking for the partial subtask
+    append(newSubtask as any); 
 
     if (shouldFocus) {
         setTimeout(() => {
@@ -280,17 +289,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
         }, 0);
     }
   };
-  
-  useEffect(() => {
-    if (activeTab === 'subtasks' && fields.length === 1 && !taskToEdit) {
-      setTimeout(() => {
-        const firstInput = subtaskTitleRefs.current[0];
-        if (firstInput) {
-          firstInput.focus();
-        }
-      }, 0);
-    }
-  }, [activeTab, fields.length, taskToEdit]);
 
 
   const handleIdeaSubmit = useCallback(form.handleSubmit((data: TaskFormData) => {
@@ -328,7 +326,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       return;
     }
     
-    // Final validation for non-idea tasks
     if (data.taskType !== 'idea') {
       const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
       if ((data.subtasks || []).length > 0 && !hasTitledSubtask) {
@@ -365,7 +362,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     completed: originalSubtask?.completed || false,
                     isManuallyStarted: originalSubtask?.isManuallyStarted || false,
                     startDate: subtaskDate as Date,
-                    endDate: subtaskDate as Date, // Set end date same as start date
                     attachments: st.attachments,
                 };
             }) : [];
@@ -420,81 +416,10 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
   };
 
-  const triggerValidationAndSwitchTab = async () => {
-    const result = await form.trigger(["title", "startDate", "endDate", "recurringDays"]);
-    if (result) {
-        setActiveTab('subtasks');
-    }
-  };
-
-  const subtasksFromForm = form.watch('subtasks');
-  
-  const uncompletedSubtasksCount = useMemo(() => {
-    if (taskType === 'idea') return 0;
-    return (subtasksFromForm || []).filter((st) => {
-      const originalSubtask = taskToEdit?.subtasks.find(original => original.id === st.id);
-      return originalSubtask ? !originalSubtask.completed : (st.title && st.title.trim() !== '');
-    }).length;
-  }, [subtasksFromForm, taskToEdit, taskType]);
-
-
-  const getSubtaskBorderColor = (index: number) => {
-    const subtask = form.watch(`subtasks.${index}`);
-    if (!subtask) return 'border-muted';
-    const now = new Date();
-
-    const originalSubtask = taskToEdit?.subtasks.find(original => original.id === subtask.id);
-    const isCompleted = originalSubtask ? originalSubtask.completed : false;
-
-    if (isCompleted) return 'border-chart-2';
-    
-    if (taskType === 'recurring') {
-        const recurringDays = form.watch('recurringDays');
-        return recurringDays?.includes(getDay(now)) ? 'border-amber-500' : 'border-primary';
-    }
-
-    const subtaskDate = parseDate(subtask.startDate);
-    if (!subtaskDate) return 'border-muted';
-    
-    if (isSameDay(now, subtaskDate)) {
-        return 'border-amber-500';
-    }
-    if (isAfter(now, subtaskDate)) { 
-        return 'border-destructive';
-    }
-    if (isAfter(subtaskDate, now)) {
-        return 'border-primary';
-    }
-    
-    return 'border-muted';
-  };
-  
-  const isTaskTabInvalid = useMemo(() => {
-    const { title, startDate, endDate, recurringDays } = form.getValues();
-    const errors = form.formState.errors;
-
-    if (errors.title) return true;
-    
-    if (taskType === 'deadline') {
-        if (errors.startDate || errors.endDate || errors.root) return true;
-        if (!startDate || !endDate) return true;
-        const start = parseDate(startDate);
-        const end = parseDate(endDate);
-        if (!start || !end || end < start) return true;
-    }
-    if (taskType === 'recurring') {
-        if (errors.recurringDays) return true;
-        if (!recurringDays || recurringDays.length === 0) return true;
-    }
-    
-    return false;
-  }, [form.watch(), form.formState.errors, taskType]);
-
-
-  const renderSubtasks = () => (
+  const renderRecurringSubtasks = () => (
     <div className="space-y-2">
       <div className="px-1 pt-4 text-sm font-medium text-muted-foreground">
-        Danh sách công việc ({uncompletedSubtasksCount})
+        Danh sách công việc
       </div>
       <div className="py-2 space-y-4">
         <div className="space-y-2">
@@ -508,10 +433,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     <AccordionItem 
                       value={`item-${index}`} 
                       key={field.id} 
-                      className={cn(
-                        "border rounded-md border-l-4",
-                        // getSubtaskBorderColor(index) // Simplified for now
-                      )}
+                      className="border rounded-md"
                     >
                         <div className="flex items-center w-full p-1 pr-2">
                           <FormField
@@ -612,25 +534,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                                     </FormItem>
                                 )}
                             />
-                            {taskType === 'deadline' && (
-                              <div className="space-y-2">
-                                <FormLabel>Ngày (DD-MM-YYYY)</FormLabel>
-                                <FormField
-                                  control={form.control}
-                                  name={`subtasks.${index}.startDate`}
-                                  render={({ field }) => (
-                                    <FormControl>
-                                      <DateSegmentInput
-                                        value={field.value ?? ''}
-                                        onChange={field.onChange}
-                                        className="bg-primary/5"
-                                      />
-                                    </FormControl>
-                                  )}
-                                />
-                                <FormMessage />
-                              </div>
-                            )}
                           </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -658,75 +561,124 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="pb-0">
           <DialogTitle>{taskToEdit ? 'Chỉnh sửa lộ trình' : (taskType === 'idea' ? 'Thêm ý tưởng mới' : 'Tạo lộ trình mới')}</DialogTitle>
-          {taskToEdit ? null : taskType === 'recurring' ? null : null}
         </DialogHeader>
 
         <Form {...form}>
-          <div className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 overflow-y-auto custom-scrollbar -mr-6 pr-6 space-y-4">
             {taskType === 'deadline' ? (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-                <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
-                  <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Lộ trình</TabsTrigger>
-                  <TabsTrigger
-                    value="subtasks"
-                    disabled={isTaskTabInvalid}
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground"
-                  >
-                    Công việc
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="task" className="mt-0 py-4 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tên lộ trình</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Tên lộ trình" {...field} autoFocus className="bg-primary/5"/>
-                          </FormControl>
+              <div className="py-4 space-y-4">
+                 <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tên lộ trình</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Tên lộ trình" {...field} autoFocus className="bg-primary/5"/>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                          <FormLabel>Ngày bắt đầu (DD-MM-YYYY)</FormLabel>
+                          <FormField
+                              control={form.control}
+                              name="startDate"
+                              render={({ field }) => (
+                              <FormControl>
+                                  <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5"/>
+                              </FormControl>
+                              )}
+                          />
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <FormLabel>Ngày bắt đầu (DD-MM-YYYY)</FormLabel>
-                            <FormField
-                                control={form.control}
-                                name="startDate"
-                                render={({ field }) => (
-                                <FormControl>
-                                    <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5"/>
-                                </FormControl>
-                                )}
-                            />
-                            <FormMessage />
-                        </div>
-                        <div className="space-y-2">
-                            <FormLabel>Ngày kết thúc (DD-MM-YYYY)</FormLabel>
-                            <FormField
-                                control={form.control}
-                                name="endDate"
-                                render={({ field }) => (
-                                <FormControl>
-                                    <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5"/>
-                                </FormControl>
-                                )}
-                            />
-                            <FormMessage />
-                        </div>
+                      </div>
+                      <div className="space-y-2">
+                          <FormLabel>Ngày kết thúc (DD-MM-YYYY)</FormLabel>
+                          <FormField
+                              control={form.control}
+                              name="endDate"
+                              render={({ field }) => (
+                              <FormControl>
+                                  <DateSegmentInput value={field.value ?? ''} onChange={field.onChange} className="bg-primary/5"/>
+                              </FormControl>
+                              )}
+                          />
+                          <FormMessage />
+                      </div>
+                  </div>
+                  {form.formState.errors.startDate && <FormMessage>{form.formState.errors.startDate.message}</FormMessage>}
+                  {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
+                  {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
+                  
+                  {dateInterval.length > 0 && <Separator />}
+
+                  {dateInterval.map(day => (
+                    <div key={day.toISOString()} className="space-y-3 pt-2">
+                      <h3 className="font-semibold text-foreground">
+                        {format(day, 'eeee, dd/MM/yyyy', { locale: vi })}
+                      </h3>
+                      <div className="pl-4 border-l-2 border-primary/20 space-y-2">
+                          {fields.map((field, index) => {
+                             const subtaskDate = parseDate(form.getValues(`subtasks.${index}.startDate`));
+                             if (!subtaskDate || !isSameDay(subtaskDate, day)) {
+                               return null;
+                             }
+
+                            return (
+                              <div key={field.id} className="flex items-center gap-2 p-2 rounded-md bg-primary/5">
+                                <FormField
+                                  control={form.control}
+                                  name={`subtasks.${index}.title`}
+                                  render={({ field: { ref, ...fieldProps } }) => (
+                                    <FormItem className="flex-grow">
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Nhập tên công việc" 
+                                          {...fieldProps}
+                                          ref={(el) => {
+                                            ref(el);
+                                            subtaskTitleRefs.current[index] = el;
+                                          }}
+                                          className="border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8" 
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => subtaskAttachmentRefs.current[index]?.click()}>
+                                  <Paperclip className="h-4 w-4"/>
+                                </Button>
+                                <Input
+                                    type="file"
+                                    className="hidden"
+                                    ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
+                                    onChange={(e) => handleFileChange(e, index)}
+                                />
+                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => remove(index)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            );
+                          })}
+                         <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="mt-2"
+                            onClick={() => addEmptySubtask(true, day)}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Thêm Công việc
+                          </Button>
+                      </div>
                     </div>
-                     {form.formState.errors.startDate && <FormMessage>{form.formState.errors.startDate.message}</FormMessage>}
-                     {form.formState.errors.endDate && <FormMessage>{form.formState.errors.endDate.message}</FormMessage>}
-                     {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
-                </TabsContent>
-                <TabsContent value="subtasks" className="mt-0 space-y-2">
-                  {renderSubtasks()}
-                </TabsContent>
-              </Tabs>
-            ) : taskType === 'recurring' ? ( // Recurring Task View
+                  ))}
+                   {form.formState.errors.subtasks && <FormMessage>{form.formState.errors.subtasks.root?.message || form.formState.errors.subtasks.message}</FormMessage>}
+              </div>
+            ) : taskType === 'recurring' ? ( 
               <div className="py-4 space-y-4">
                     <FormField
                       control={form.control}
@@ -772,11 +724,11 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                         )}
                     />
                     {form.formState.errors.root && <FormMessage>{form.formState.errors.root.message}</FormMessage>}
-                  {renderSubtasks()}
+                  {renderRecurringSubtasks()}
               </div>
             ) : ( // Idea Task View
               <div className="py-4 space-y-4">
-                <form onSubmit={handleIdeaSubmit} className="space-y-4">
+                <div className="space-y-4">
                   <FormField
                     control={form.control}
                     name="title"
@@ -801,7 +753,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                       </FormItem>
                     )}
                   />
-                </form>
+                </div>
                 
                 {ideas.length > 0 && (
                   <>
@@ -828,49 +780,30 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                 )}
               </div>
             )}
-          </div>
-          
-          <DialogFooter className="pt-4 mt-auto">
-            {taskType === 'deadline' ? (
-              activeTab === 'task' ? (
-                <>
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
-                  <Button type="button" onClick={triggerValidationAndSwitchTab} className={cn(!isTaskTabInvalid && "bg-primary hover:bg-primary/90 text-primary-foreground")} disabled={isTaskTabInvalid}>Tiếp tục <ArrowRightCircle className="ml-2 h-4 w-4" /></Button>
-                </>
-              ) : (
-                <>
-                    <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}><ArrowLeft className="mr-2 h-4 w-4" />Quay lại</Button>
-                    <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>
-                        {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo lộ trình</>}
-                    </Button>
-                </>
-              )
-            ) : taskType === 'idea' ? (
+            <DialogFooter className="pt-4 mt-auto sticky bottom-0 bg-background pb-6">
+               {taskType === 'idea' ? (
+                   <>
+                      <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                          <X className="mr-2 h-4 w-4" />
+                          {ideas.length > 0 ? 'Đóng' : 'Hủy'}
+                      </Button>
+                      <Button type="button" disabled={!form.getValues('title')} onClick={handleIdeaSubmit}>
+                          <Save className="mr-2 h-4 w-4" />
+                          Lưu ý tưởng
+                      </Button>
+                  </>
+              ) : ( 
                  <>
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                        <X className="mr-2 h-4 w-4" />
-                        {ideas.length > 0 ? 'Đóng' : 'Hủy'}
-                    </Button>
-                    <Button type="button" disabled={!form.getValues('title')} onClick={handleIdeaSubmit}>
-                        <Save className="mr-2 h-4 w-4" />
-                        Lưu ý tưởng
-                    </Button>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
+                  <Button type="submit" disabled={!form.formState.isValid}>
+                      {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo lộ trình</>}
+                  </Button>
                 </>
-            ) : ( // Recurring task footer
-               <>
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
-                <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>
-                    {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo lộ trình</>}
-                </Button>
-              </>
-            )}
-          </DialogFooter>
+              )}
+            </DialogFooter>
+          </form>
         </Form>
       </DialogContent>
     </Dialog>
   );
 }
-
-    
-
-    

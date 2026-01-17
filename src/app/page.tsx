@@ -180,7 +180,7 @@ function TaskKanban() {
     // For deadline tasks, check if any subtask is active today
     return task.subtasks.some(st => 
         st.isManuallyStarted ||
-        (st.startDate && st.endDate && isWithinInterval(today, {start: startOfDay(st.startDate), end: startOfDay(st.endDate)}))
+        (st.startDate && isSameDay(today, startOfDay(st.startDate)))
     );
   }, []);
 
@@ -202,9 +202,8 @@ function TaskKanban() {
         return isSameDay(task.createdAt, day);
       }
       return task.subtasks.some(st => {
-        if (!st.startDate || !st.endDate) return false;
-        const subtaskInterval = { start: startOfDay(st.startDate), end: startOfDay(st.endDate) };
-        return isWithinInterval(day, subtaskInterval);
+        if (!st.startDate) return false;
+         return isSameDay(day, startOfDay(st.startDate));
       });
     }).sort((a, b) => {
         if (a.status === 'Done' && b.status !== 'Done') return 1;
@@ -301,10 +300,7 @@ function TaskKanban() {
                 isActiveToday = task.recurringDays?.includes(dayOfWeek) ?? false;
             } else { // 'deadline' task
                 isActiveToday = !!st.isManuallyStarted || 
-                                (!!st.startDate && !!st.endDate && isWithinInterval(today, {
-                                    start: startOfDay(st.startDate),
-                                    end: startOfDay(st.endDate)
-                                }));
+                                (!!st.startDate && isSameDay(today, startOfDay(st.startDate)));
             }
 
             if (isActiveToday) {
@@ -341,8 +337,8 @@ function TaskKanban() {
             }
         } else { // 'deadline' task
             task.subtasks.forEach(subtask => {
-                if (subtask.startDate && subtask.endDate) {
-                    const subtaskInterval = { start: startOfDay(subtask.startDate), end: startOfDay(subtask.endDate) };
+                if (subtask.startDate) {
+                    const subtaskInterval = { start: startOfDay(subtask.startDate), end: startOfDay(subtask.startDate) };
                     // Check if the subtask's date range overlaps with the current week
                     if (areIntervalsOverlapping(weekInterval, subtaskInterval)) {
                         total++;

@@ -13,7 +13,6 @@ export interface Subtask {
   completed: boolean;
   isManuallyStarted?: boolean; // Added to track manually started tasks
   startDate?: Date;
-  endDate?: Date;
   attachments?: Attachment[];
 }
 
