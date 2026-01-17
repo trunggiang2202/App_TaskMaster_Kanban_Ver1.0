@@ -63,7 +63,7 @@ const subtaskSchema = z.object({
 });
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Nhiệm vụ phải có tên.'),
+  title: z.string().min(1, 'Lộ trình phải có tên.'),
   description: z.string().optional(),
   taskType: z.custom<TaskType>(),
   recurringDays: z.array(z.number()).optional(),
@@ -150,7 +150,7 @@ const taskSchema = z.object({
     }
     return true;
 }, {
-    message: "Deadline của công việc con phải nằm trong khoảng thời gian của nhiệm vụ cha.",
+    message: "Deadline của công việc con phải nằm trong khoảng thời gian của lộ trình cha.",
     path: ["subtasks"],
 }).refine((data) => {
     if (data.taskType !== 'deadline' || !data.startDate || !data.startTime || !data.endDate || !data.endTime) return true;
@@ -172,7 +172,7 @@ const taskSchema = z.object({
     }
     return true;
 }, {
-    message: "Nhiệm vụ phải có ít nhất một công việc.",
+    message: "Lộ trình phải có ít nhất một công việc.",
     path: ["subtasks"],
 });
 
@@ -381,7 +381,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     if (data.taskType !== 'idea') {
       const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
       if ((data.subtasks || []).length > 0 && !hasTitledSubtask) {
-        form.setError("subtasks", { type: "manual", message: "Nhiệm vụ phải có ít nhất một công việc." });
+        form.setError("subtasks", { type: "manual", message: "Lộ trình phải có ít nhất một công việc." });
         return;
       }
     }
@@ -785,7 +785,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="pb-0">
-          <DialogTitle>{taskToEdit ? 'Chỉnh sửa nhiệm vụ' : (taskType === 'idea' ? 'Thêm ý tưởng mới' : 'Thêm nhiệm vụ mới')}</DialogTitle>
+          <DialogTitle>{taskToEdit ? 'Chỉnh sửa lộ trình' : (taskType === 'idea' ? 'Thêm ý tưởng mới' : 'Tạo lộ trình mới')}</DialogTitle>
           {taskToEdit ? null : taskType === 'recurring' ? null : null}
         </DialogHeader>
 
@@ -794,7 +794,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
             {taskType === 'deadline' ? (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
                 <TabsList className="grid w-full grid-cols-2 bg-primary/10 p-1">
-                  <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Nhiệm vụ</TabsTrigger>
+                  <TabsTrigger value="task" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Lộ trình</TabsTrigger>
                   <TabsTrigger
                     value="subtasks"
                     disabled={isTaskTabInvalid}
@@ -810,9 +810,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tên nhiệm vụ</FormLabel>
+                          <FormLabel>Tên lộ trình</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5"/>
+                            <Input placeholder="Tên lộ trình" {...field} autoFocus className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -825,7 +825,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                         <FormItem>
                           <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} className="bg-primary/5"/>
+                            <Textarea placeholder="Thêm chi tiết về lộ trình..." {...field} className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -910,9 +910,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tên nhiệm vụ</FormLabel>
+                          <FormLabel>Tên lộ trình</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tên nhiệm vụ" {...field} autoFocus className="bg-primary/5"/>
+                            <Input placeholder="Tên lộ trình" {...field} autoFocus className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -925,7 +925,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                         <FormItem>
                           <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Thêm chi tiết về nhiệm vụ..." {...field} className="bg-primary/5"/>
+                            <Textarea placeholder="Thêm chi tiết về lộ trình..." {...field} className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1031,7 +1031,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                 <>
                     <Button type="button" variant="outline" onClick={() => { setActiveTab('task'); }}><ArrowLeft className="mr-2 h-4 w-4" />Quay lại</Button>
                     <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>
-                        {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo nhiệm vụ</>}
+                        {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo lộ trình</>}
                     </Button>
                 </>
               )
@@ -1050,7 +1050,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                <>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
                 <Button type="button" disabled={!form.formState.isValid} onClick={form.handleSubmit(handleSubmit)}>
-                    {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo nhiệm vụ</>}
+                    {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo lộ trình</>}
                 </Button>
               </>
             )}

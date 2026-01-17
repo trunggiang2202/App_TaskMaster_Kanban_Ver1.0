@@ -320,7 +320,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Hành động này sẽ xóa nhiệm vụ <span className="font-bold">{task.title}</span> vĩnh viễn.
+                        Hành động này sẽ xóa lộ trình <span className="font-bold">{task.title}</span> vĩnh viễn.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -340,7 +340,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
             <div className="p-4 rounded-md border bg-primary/10">
                 <h2 className="text-lg font-semibold mb-2">Mô tả</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                    {task.description || 'Không có mô tả cho nhiệm vụ này.'}
+                    {task.description || 'Không có mô tả cho lộ trình này.'}
                 </p>
                 {task.taskType === 'recurring' && (
                   <div className="flex items-center gap-2 mt-4 text-sm font-medium text-primary">
@@ -351,7 +351,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                  {task.taskType === 'idea' && (
                   <div className="flex items-center gap-2 mt-4 text-sm font-medium text-amber-600">
                       <Zap className="h-4 w-4" />
-                      Đây là một nhiệm vụ ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
+                      Đây là một lộ trình ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
                   </div>
                 )}
             </div>
@@ -426,8 +426,6 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
     </>
   );
 }
-
-    
 
     
 

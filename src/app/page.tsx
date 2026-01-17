@@ -55,9 +55,9 @@ const FilterSelect = ({ value, onValueChange }: { value: AllTasksFilterType, onV
     </SelectTrigger>
     <SelectContent>
       <SelectItem value="all">Tất cả</SelectItem>
-      <SelectItem value="deadline">Nhiệm vụ có Deadline</SelectItem>
-      <SelectItem value="recurring">Nhiệm vụ lặp lại</SelectItem>
-      <SelectItem value="idea">Nhiệm vụ ý tưởng</SelectItem>
+      <SelectItem value="deadline">Lộ trình có Deadline</SelectItem>
+      <SelectItem value="recurring">Lộ trình lặp lại</SelectItem>
+      <SelectItem value="idea">Lộ trình ý tưởng</SelectItem>
     </SelectContent>
   </Select>
 );
@@ -445,10 +445,10 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
         <SidebarMenu className="px-2 grid grid-cols-5 gap-2">
-            <IconButton tooltipText="Nhiệm vụ có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
+            <IconButton tooltipText="Lộ trình có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
                 <Clock className="h-4 w-4" />
             </IconButton>
-            <IconButton tooltipText="Nhiệm vụ lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
+            <IconButton tooltipText="Lộ trình lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
                 <Repeat className="h-4 w-4" />
             </IconButton>
              <IconButton tooltipText="Ý tưởng" onClick={() => handleOpenNewTaskDialog('idea')}>
@@ -523,8 +523,8 @@ function TaskKanban() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                 <ListChecks className="w-16 h-16 mb-4" />
-                <h2 className="text-xl font-semibold">Chọn một nhiệm vụ</h2>
-                <p>Chọn một nhiệm vụ từ danh sách bên trái để xem chi tiết.</p>
+                <h2 className="text-xl font-semibold">Chọn một lộ trình</h2>
+                <p>Chọn một lộ trình từ danh sách bên trái để xem chi tiết.</p>
               </div>
             )}
           </main>

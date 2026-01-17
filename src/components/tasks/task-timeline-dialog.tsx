@@ -154,7 +154,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                 ))
               ) : (
                 <div className="flex items-center justify-center h-full py-10">
-                  <p className="text-sm text-muted-foreground">Nhiệm vụ này không có công việc nào có deadline cụ thể.</p>
+                  <p className="text-sm text-muted-foreground">Lộ trình này không có công việc nào có deadline cụ thể.</p>
                 </div>
               )}
             </div>

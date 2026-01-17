@@ -60,7 +60,7 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Chọn loại nhiệm vụ</DialogTitle>
+          <DialogTitle>Chọn loại lộ trình</DialogTitle>
         </DialogHeader>
         <Separator />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
@@ -73,7 +73,7 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
         </div>
          <div className="pt-2">
             <TypeButton type="idea" selectedType={selectedType} onSelect={handleSelect} icon={Zap}>
-                Nhiệm vụ ý tưởng
+                Lộ trình ý tưởng
             </TypeButton>
         </div>
       </DialogContent>

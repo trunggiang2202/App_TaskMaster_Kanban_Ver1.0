@@ -216,22 +216,22 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
   const getEmptyMessage = () => {
     switch (activeFilter) {
         case 'today':
-            return 'Không có nhiệm vụ nào cho hôm nay';
+            return 'Không có lộ trình nào cho hôm nay';
         case 'week':
-            return 'Không có nhiệm vụ cho ngày này';
+            return 'Không có lộ trình cho ngày này';
         case 'all':
             if (allTasksFilter === 'deadline') {
-                return "Không có nhiệm vụ 'Deadline' nào";
+                return "Không có lộ trình 'Deadline' nào";
             }
             if (allTasksFilter === 'recurring') {
-                return "Không có nhiệm vụ 'Lặp lại' nào";
+                return "Không có lộ trình 'Lặp lại' nào";
             }
             if (allTasksFilter === 'idea') {
-                return "Không có 'Nhiệm vụ ý tưởng' nào";
+                return "Không có 'Lộ trình ý tưởng' nào";
             }
-            return 'Không có nhiệm vụ nào';
+            return 'Không có lộ trình nào';
         default:
-            return 'Không có nhiệm vụ nào';
+            return 'Không có lộ trình nào';
     }
   };
 
