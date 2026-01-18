@@ -41,7 +41,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
     return (
         <div className="flex items-center gap-2 text-xs text-sidebar-foreground/70">
             <Zap size={12} className="text-amber-500" />
-            <span>Ý tưởng - {formatDistanceToNowStrict(new Date(task.createdAt), { addSuffix: true, locale: vi })}</span>
+            <span>Nháp - {formatDistanceToNowStrict(new Date(task.createdAt), { addSuffix: true, locale: vi })}</span>
         </div>
     )
   }
@@ -104,7 +104,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                 return "Không có mục tiêu 'Lặp lại' nào";
             }
             if (allTasksFilter === 'idea') {
-                return "Không có 'Mục tiêu ý tưởng' nào";
+                return "Không có 'Mục tiêu nháp' nào";
             }
             return 'Không có mục tiêu nào';
         default:

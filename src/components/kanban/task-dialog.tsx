@@ -558,7 +558,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="pb-0">
-          <DialogTitle>{taskToEdit ? 'Chỉnh sửa mục tiêu' : (taskType === 'idea' ? 'Thêm ý tưởng mới' : 'Tạo mục tiêu mới')}</DialogTitle>
+          <DialogTitle>{taskToEdit ? 'Chỉnh sửa mục tiêu' : (taskType === 'idea' ? 'Thêm nháp mới' : 'Tạo mục tiêu mới')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -732,10 +732,10 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tên ý tưởng</FormLabel>
+                        <FormLabel>Tên nháp</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Nhập ý tưởng của bạn..." 
+                            placeholder="Nhập nháp của bạn..." 
                             {...field} 
                             autoFocus 
                             className="bg-primary/5"
@@ -757,7 +757,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                   <>
                     <Separator />
                     <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-muted-foreground">Ý tưởng đã lưu ({ideas.length})</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground">Nháp đã lưu ({ideas.length})</h3>
                         <div className="space-y-2 rounded-md border p-3 bg-muted/30">
                         {ideas.map((idea) => (
                             <div key={idea.id} className="flex items-center justify-between p-2 bg-primary/5 rounded-md transition-colors">
@@ -787,7 +787,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                       </Button>
                       <Button type="button" disabled={!form.getValues('title')} onClick={handleIdeaSubmit}>
                           <Save className="mr-2 h-4 w-4" />
-                          Lưu ý tưởng
+                          Lưu nháp
                       </Button>
                   </>
               ) : ( 

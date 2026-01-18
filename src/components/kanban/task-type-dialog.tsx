@@ -73,7 +73,7 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
         </div>
          <div className="pt-2">
             <TypeButton type="idea" selectedType={selectedType} onSelect={handleSelect} icon={Zap}>
-                Mục tiêu ý tưởng
+                Mục tiêu nháp
             </TypeButton>
         </div>
       </DialogContent>

@@ -57,7 +57,7 @@ const FilterSelect = ({ value, onValueChange }: { value: AllTasksFilterType, onV
       <SelectItem value="all">Tất cả</SelectItem>
       <SelectItem value="deadline">Mục tiêu có Deadline</SelectItem>
       <SelectItem value="recurring">Mục tiêu lặp lại</SelectItem>
-      <SelectItem value="idea">Mục tiêu ý tưởng</SelectItem>
+      <SelectItem value="idea">Mục tiêu nháp</SelectItem>
     </SelectContent>
   </Select>
 );
@@ -447,7 +447,7 @@ function TaskKanban() {
             <IconButton tooltipText="Mục tiêu lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
                 <Repeat className="h-4 w-4" />
             </IconButton>
-             <IconButton tooltipText="Ý tưởng" onClick={() => handleOpenNewTaskDialog('idea')}>
+             <IconButton tooltipText="Nháp" onClick={() => handleOpenNewTaskDialog('idea')}>
                 <Zap className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
