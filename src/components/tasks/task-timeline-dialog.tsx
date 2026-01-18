@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { format, eachDayOfInterval, isSameDay, startOfDay, isBefore, isAfter } from 'date-fns';
+import { format, eachDayOfInterval, isSameDay, startOfDay, isBefore, isAfter, endOfDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -35,7 +35,7 @@ const SubtaskBadge: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
         }
 
         if (!subtask.startDate) {
-          return 'in-progress';
+          return 'in-progress'; // Should not happen in timeline view
         }
         
         const subtaskDay = startOfDay(subtask.startDate);
@@ -123,7 +123,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg h-[70vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Lộ trình: {task?.title}</DialogTitle>
+          <DialogTitle>Mục tiêu: {task?.title}</DialogTitle>
            {timelineData.length > 0 && (
             <DialogDescription>
               Tổng số ngày: {timelineData.length}
@@ -163,7 +163,7 @@ export function TaskTimelineDialog({ isOpen, onOpenChange, task }: TaskTimelineD
                 ))
               ) : (
                 <div className="flex items-center justify-center h-full py-10">
-                  <p className="text-sm text-muted-foreground">Lộ trình này không có công việc nào có deadline cụ thể.</p>
+                  <p className="text-sm text-muted-foreground">Mục tiêu này không có công việc nào có deadline cụ thể.</p>
                 </div>
               )}
             </div>

@@ -60,7 +60,7 @@ const subtaskSchema = z.object({
 });
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Lộ trình phải có tên.'),
+  title: z.string().min(1, 'Mục tiêu phải có tên.'),
   taskType: z.custom<TaskType>(),
   recurringDays: z.array(z.number()).optional(),
   startDate: z.string().optional(),
@@ -121,7 +121,7 @@ const taskSchema = z.object({
     }
     return true;
 }, {
-    message: "Ngày của công việc con phải nằm trong khoảng thời gian của lộ trình cha.",
+    message: "Ngày của công việc con phải nằm trong khoảng thời gian của mục tiêu cha.",
     path: ["subtasks"],
 }).refine((data) => {
     if (data.taskType !== 'deadline' || !data.startDate || !data.endDate) return true;
@@ -143,7 +143,7 @@ const taskSchema = z.object({
     }
     return true;
 }, {
-    message: "Lộ trình phải có ít nhất một công việc.",
+    message: "Mục tiêu phải có ít nhất một công việc.",
     path: ["subtasks"],
 });
 
@@ -187,7 +187,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
   const dateInterval = useMemo(() => {
     const start = parseDate(startDate);
     const end = parseDate(endDate);
-    if (start && end && isAfter(end, start) || isSameDay(end, start)) {
+    if (start && end && (isAfter(end, start) || isSameDay(end, start))) {
       return eachDayOfInterval({ start, end });
     }
     return [];
@@ -329,7 +329,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     if (data.taskType !== 'idea') {
       const hasTitledSubtask = (data.subtasks || []).some(st => st.title && st.title.trim() !== '');
       if ((data.subtasks || []).length > 0 && !hasTitledSubtask) {
-        form.setError("subtasks", { type: "manual", message: "Lộ trình phải có ít nhất một công việc." });
+        form.setError("subtasks", { type: "manual", message: "Mục tiêu phải có ít nhất một công việc." });
         return;
       }
     }
@@ -560,7 +560,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
         <DialogHeader className="pb-0">
-          <DialogTitle>{taskToEdit ? 'Chỉnh sửa lộ trình' : (taskType === 'idea' ? 'Thêm ý tưởng mới' : 'Tạo lộ trình mới')}</DialogTitle>
+          <DialogTitle>{taskToEdit ? 'Chỉnh sửa mục tiêu' : (taskType === 'idea' ? 'Thêm ý tưởng mới' : 'Tạo mục tiêu mới')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -572,9 +572,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tên lộ trình</FormLabel>
+                        <FormLabel>Tên mục tiêu</FormLabel>
                         <FormControl>
-                          <Input placeholder="Tên lộ trình" {...field} autoFocus className="bg-primary/5"/>
+                          <Input placeholder="Tên mục tiêu" {...field} autoFocus className="bg-primary/5"/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -685,9 +685,9 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tên lộ trình</FormLabel>
+                          <FormLabel>Tên mục tiêu</FormLabel>
                           <FormControl>
-                            <Input placeholder="Tên lộ trình" {...field} autoFocus className="bg-primary/5"/>
+                            <Input placeholder="Tên mục tiêu" {...field} autoFocus className="bg-primary/5"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -796,7 +796,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                  <>
                   <Button type="button" variant="outline" onClick={() => onOpenChange(false)}><X className="mr-2 h-4 w-4" />Hủy</Button>
                   <Button type="submit" disabled={!form.formState.isValid}>
-                      {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo lộ trình</>}
+                      {taskToEdit ? <><Save className="mr-2 h-4 w-4" />Lưu thay đổi</> : <><PlusCircle className="mr-2 h-4 w-4" />Tạo mục tiêu</>}
                   </Button>
                 </>
               )}

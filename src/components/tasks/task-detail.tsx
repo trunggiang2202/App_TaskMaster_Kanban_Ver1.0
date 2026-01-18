@@ -233,7 +233,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Hành động này sẽ xóa lộ trình <span className="font-bold">{task.title}</span> vĩnh viễn.
+                        Hành động này sẽ xóa mục tiêu <span className="font-bold">{task.title}</span> vĩnh viễn.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -260,7 +260,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                     ) : (
                     <div className="flex items-center gap-2 text-sm font-medium text-amber-600">
                         <Zap className="h-4 w-4" />
-                        Đây là một lộ trình ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
+                        Đây là một mục tiêu ý tưởng. Hãy phát triển nó thành một kế hoạch cụ thể!
                     </div>
                     )}
                 </div>

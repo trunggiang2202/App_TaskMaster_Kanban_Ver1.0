@@ -93,22 +93,22 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
   const getEmptyMessage = () => {
     switch (activeFilter) {
         case 'today':
-            return 'Không có lộ trình nào cho hôm nay';
+            return 'Không có mục tiêu nào cho hôm nay';
         case 'week':
-            return 'Không có lộ trình cho ngày này';
+            return 'Không có mục tiêu cho ngày này';
         case 'all':
             if (allTasksFilter === 'deadline') {
-                return "Không có lộ trình 'Deadline' nào";
+                return "Không có mục tiêu 'Deadline' nào";
             }
             if (allTasksFilter === 'recurring') {
-                return "Không có lộ trình 'Lặp lại' nào";
+                return "Không có mục tiêu 'Lặp lại' nào";
             }
             if (allTasksFilter === 'idea') {
-                return "Không có 'Lộ trình ý tưởng' nào";
+                return "Không có 'Mục tiêu ý tưởng' nào";
             }
-            return 'Không có lộ trình nào';
+            return 'Không có mục tiêu nào';
         default:
-            return 'Không có lộ trình nào';
+            return 'Không có mục tiêu nào';
     }
   };
 
@@ -152,7 +152,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="top">
-                        <p>Xem lộ trình</p>
+                        <p>Xem mục tiêu</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
