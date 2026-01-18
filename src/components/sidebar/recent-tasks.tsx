@@ -5,7 +5,7 @@ import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar, Repeat, Lightbulb, GanttChartSquare } from 'lucide-react';
-import { startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict, endOfDay } from 'date-fns';
+import { startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict, endOfDay, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -54,6 +54,8 @@ function TaskStatusInfo({ task }: { task: Task }) {
   const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
   const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
   
+  const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) : null;
+
   return (
     <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
         <div className={cn("flex items-center gap-2", isStarted && "text-emerald-500")}>
@@ -71,7 +73,11 @@ function TaskStatusInfo({ task }: { task: Task }) {
         <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
             <Calendar size={12} />
             <span>Kết thúc: {formattedEndDate}</span>
-            {isOverdue && <span>(Đã quá hạn)</span>}
+            {isOverdue ? (
+                <span>(Đã quá hạn)</span>
+            ) : remainingDays !== null && remainingDays >= 0 ? (
+                <span className='text-blue-500'>(Còn {remainingDays} ngày)</span>
+            ) : null}
         </div>
         )}
     </div>
