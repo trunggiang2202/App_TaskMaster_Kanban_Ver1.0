@@ -98,7 +98,7 @@ export function RecentTasks({ tasks: recentTasks, selectedTaskId, onSelectTask, 
             return 'Không có mục tiêu cho ngày này';
         case 'all':
             if (allTasksFilter === 'deadline') {
-                return "Không có mục tiêu 'Deadline' nào";
+                return "Không có mục tiêu 'theo ngày' nào";
             }
             if (allTasksFilter === 'recurring') {
                 return "Không có mục tiêu 'Lặp lại' nào";

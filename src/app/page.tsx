@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, TrendingUp, Pencil, Clock, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical, Zap } from 'lucide-react';
+import { Plus, TrendingUp, Pencil, Calendar, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical, Zap } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, areIntervalsOverlapping } from 'date-fns';
@@ -55,7 +55,7 @@ const FilterSelect = ({ value, onValueChange }: { value: AllTasksFilterType, onV
     </SelectTrigger>
     <SelectContent>
       <SelectItem value="all">Tất cả</SelectItem>
-      <SelectItem value="deadline">Mục tiêu có Deadline</SelectItem>
+      <SelectItem value="deadline">Mục tiêu theo ngày</SelectItem>
       <SelectItem value="recurring">Mục tiêu lặp lại</SelectItem>
       <SelectItem value="idea">Mục tiêu nháp</SelectItem>
     </SelectContent>
@@ -441,8 +441,8 @@ function TaskKanban() {
         </SidebarHeader>
         <SidebarContent>
         <SidebarMenu className="px-2 grid grid-cols-5 gap-2">
-            <IconButton tooltipText="Mục tiêu có Deadline" onClick={() => handleOpenNewTaskDialog('deadline')}>
-                <Clock className="h-4 w-4" />
+            <IconButton tooltipText="Mục tiêu theo ngày" onClick={() => handleOpenNewTaskDialog('deadline')}>
+                <Calendar className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Mục tiêu lặp lại" onClick={() => handleOpenNewTaskDialog('recurring')}>
                 <Repeat className="h-4 w-4" />

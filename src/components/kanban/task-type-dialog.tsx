@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Clock, Repeat, Zap } from 'lucide-react';
+import { Calendar, Repeat, Zap } from 'lucide-react';
 import type { TaskType } from '@/lib/types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -64,8 +64,8 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
         </DialogHeader>
         <Separator />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-            <TypeButton type="deadline" selectedType={selectedType} onSelect={handleSelect} icon={Clock}>
-                Có deadline
+            <TypeButton type="deadline" selectedType={selectedType} onSelect={handleSelect} icon={Calendar}>
+                Theo ngày
             </TypeButton>
             <TypeButton type="recurring" selectedType={selectedType} onSelect={handleSelect} icon={Repeat}>
                 Lặp lại
