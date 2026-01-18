@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -29,15 +28,25 @@ type SubtaskTimelineStatus = 'upcoming' | 'in-progress' | 'done' | 'overdue';
 const SubtaskBadge: React.FC<{ subtask: Subtask }> = ({ subtask }) => {
     const getStatusForSubtask = (subtask: Subtask): SubtaskTimelineStatus => {
         const now = new Date();
+        const today = startOfDay(now);
+
         if (subtask.completed) {
           return 'done';
         }
-        if (subtask.startDate && isBefore(now, subtask.startDate)) {
+
+        if (!subtask.startDate) {
+          return 'in-progress';
+        }
+        
+        const subtaskDay = startOfDay(subtask.startDate);
+
+        if (isAfter(today, subtaskDay)) {
+            return 'overdue';
+        }
+        if (isBefore(today, subtaskDay)) {
            return 'upcoming';
         }
-        if (subtask.endDate && isAfter(now, subtask.endDate)) {
-          return 'overdue';
-        }
+        
         return 'in-progress';
     };
     

@@ -5,7 +5,7 @@ import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar, Repeat, Zap, GanttChartSquare } from 'lucide-react';
-import { isToday, startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict } from 'date-fns';
+import { startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict, endOfDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -47,8 +47,8 @@ function TaskStatusInfo({ task }: { task: Task }) {
   }
 
   const now = new Date();
-  const isOverdue = task.status !== 'Done' && task.endDate && isAfter(now, task.endDate);
-  const isUpcoming = task.startDate && isBefore(now, task.startDate);
+  const isOverdue = task.status !== 'Done' && task.endDate && isAfter(now, endOfDay(task.endDate));
+  const isUpcoming = task.startDate && isBefore(now, startOfDay(task.startDate));
   const isStarted = !isUpcoming && !isOverdue && task.status !== 'Done';
   
   const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
