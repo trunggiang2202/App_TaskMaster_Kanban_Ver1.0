@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle, Save, PlusCircle, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle, Save, PlusCircle, ArrowLeft, Lightbulb } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
 import { isAfter, addDays, startOfDay, getDay, isWithinInterval, eachDayOfInterval, format, isSameDay } from 'date-fns';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -423,7 +423,6 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
         <div className="space-y-2">
             <Accordion type="multiple" className="w-full space-y-2">
               {fields.map((field, index) => {
-                  const subtaskAttachments = form.watch(`subtasks.${index}.attachments`) || [];
                   const subtaskTitle = form.watch(`subtasks.${index}.title`);
                   const hasTitle = subtaskTitle && subtaskTitle.trim() !== '';
 
@@ -453,6 +452,15 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                                 <FormMessage className="pl-3" />
                               </FormItem>
                             )}
+                            />
+                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => subtaskAttachmentRefs.current[index]?.click()}>
+                               <Paperclip className="h-4 w-4"/>
+                            </Button>
+                            <Input
+                                type="file"
+                                className="hidden"
+                                ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
+                                onChange={(e) => handleFileChange(e, index)}
                             />
                             <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
                             </AccordionTrigger>
@@ -486,53 +494,33 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                             )}
                         </div>
                         <AccordionContent className="px-3 pb-3">
-                          <div className="space-y-4 p-4 rounded-md border bg-background">
-                            <FormField
-                                control={form.control}
-                                name={`subtasks.${index}.attachments`}
-                                render={() => (
-                                    <FormItem>
-                                        <Button type="button" size="sm" onClick={() => subtaskAttachmentRefs.current[index]?.click()} className="bg-primary/10 hover:bg-primary/20 text-foreground">
-                                            <Paperclip className="mr-2 h-4 w-4" />
-                                            Đính kèm tệp
-                                        </Button>
-                                        <FormControl>
-                                            <Input
-                                                type="file"
-                                                className="hidden"
-                                                ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
-                                                onChange={(e) => handleFileChange(e, index)}
-                                            />
-                                        </FormControl>
-                                        <div className="mt-2 grid grid-cols-3 gap-2">
-                                            {subtaskAttachments.map((attachment, attachmentIndex) => (
-                                                <div key={attachmentIndex} className="relative group">
-                                                  {attachment.type === 'image' ? (
-                                                    <Image src={attachment.url} alt={attachment.name} width={100} height={100} className="w-full h-24 object-cover rounded-md" />
-                                                  ) : (
-                                                    <div className="w-full h-24 bg-muted rounded-md flex items-center justify-center p-2">
-                                                      <p className="text-xs text-center text-muted-foreground truncate">{attachment.name}</p>
-                                                    </div>
-                                                  )}
-                                                  <Button 
-                                                      type="button" 
-                                                      variant="destructive" 
-                                                      size="icon" 
-                                                      className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" 
-                                                      onClick={() => {
-                                                          const current = form.getValues(`subtasks.${index}.attachments`) || [];
-                                                          form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex), { shouldValidate: true });
-                                                      }}>
-                                                      <X className="h-4 w-4" />
-                                                  </Button>
-                                                </div>
-                                            ))}
+                           {form.watch(`subtasks.${index}.attachments`) && form.watch(`subtasks.${index}.attachments`)!.length > 0 && (
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
+                                    {form.watch(`subtasks.${index}.attachments`)!.map((attachment, attachmentIndex) => (
+                                        <div key={attachmentIndex} className="relative group">
+                                            {attachment.type === 'image' ? (
+                                            <Image src={attachment.url} alt={attachment.name} width={100} height={100} className="w-full h-16 object-cover rounded-md" />
+                                            ) : (
+                                            <div className="w-full h-16 bg-muted rounded-md flex items-center justify-center p-2">
+                                                <Paperclip className="h-4 w-4 text-muted-foreground shrink-0 mr-1" />
+                                                <p className="text-xs text-center text-muted-foreground truncate">{attachment.name}</p>
+                                            </div>
+                                            )}
+                                            <Button 
+                                                type="button" 
+                                                variant="destructive" 
+                                                size="icon" 
+                                                className="absolute -top-1.5 -right-1.5 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full" 
+                                                onClick={() => {
+                                                    const current = form.getValues(`subtasks.${index}.attachments`) || [];
+                                                    form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex), { shouldValidate: true });
+                                                }}>
+                                                <X className="h-3 w-3" />
+                                            </Button>
                                         </div>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                          </div>
+                                    ))}
+                                </div>
+                            )}
                         </AccordionContent>
                       </AccordionItem>
                   )
@@ -625,39 +613,68 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                              }
 
                             return (
-                              <div key={field.id} className="flex items-center gap-2 p-2 rounded-md">
-                                <FormField
-                                  control={form.control}
-                                  name={`subtasks.${index}.title`}
-                                  render={({ field: { ref, ...fieldProps } }) => (
-                                    <FormItem className="flex-grow">
-                                      <FormControl>
-                                        <Input 
-                                          placeholder="Nhập tên công việc" 
-                                          {...fieldProps}
-                                          ref={(el) => {
-                                            ref(el);
-                                            subtaskTitleRefs.current[index] = el;
-                                          }}
-                                          className="bg-primary/5 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8" 
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => subtaskAttachmentRefs.current[index]?.click()}>
-                                  <Paperclip className="h-4 w-4"/>
-                                </Button>
-                                <Input
-                                    type="file"
-                                    className="hidden"
-                                    ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
-                                    onChange={(e) => handleFileChange(e, index)}
-                                />
-                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => remove(index)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                               <div key={field.id} className="space-y-3 p-2 rounded-md bg-primary/5">
+                                <div className="flex items-center gap-2">
+                                  <FormField
+                                    control={form.control}
+                                    name={`subtasks.${index}.title`}
+                                    render={({ field: { ref, ...fieldProps } }) => (
+                                      <FormItem className="flex-grow">
+                                        <FormControl>
+                                          <Input 
+                                            placeholder="Nhập tên công việc" 
+                                            {...fieldProps}
+                                            ref={(el) => {
+                                              ref(el);
+                                              subtaskTitleRefs.current[index] = el;
+                                            }}
+                                            className="border-none bg-background shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8" 
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => subtaskAttachmentRefs.current[index]?.click()}>
+                                    <Paperclip className="h-4 w-4"/>
+                                  </Button>
+                                  <Input
+                                      type="file"
+                                      className="hidden"
+                                      ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
+                                      onChange={(e) => handleFileChange(e, index)}
+                                  />
+                                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => remove(index)}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                {form.watch(`subtasks.${index}.attachments`) && form.watch(`subtasks.${index}.attachments`)!.length > 0 && (
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pl-1">
+                                        {form.watch(`subtasks.${index}.attachments`)!.map((attachment, attachmentIndex) => (
+                                            <div key={attachmentIndex} className="relative group">
+                                                {attachment.type === 'image' ? (
+                                                <Image src={attachment.url} alt={attachment.name} width={100} height={100} className="w-full h-16 object-cover rounded-md" />
+                                                ) : (
+                                                <div className="w-full h-16 bg-muted rounded-md flex items-center justify-center p-2">
+                                                    <Paperclip className="h-4 w-4 text-muted-foreground shrink-0 mr-1" />
+                                                    <p className="text-xs text-center text-muted-foreground truncate">{attachment.name}</p>
+                                                </div>
+                                                )}
+                                                <Button 
+                                                    type="button" 
+                                                    variant="destructive" 
+                                                    size="icon" 
+                                                    className="absolute -top-1.5 -right-1.5 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full" 
+                                                    onClick={() => {
+                                                        const current = form.getValues(`subtasks.${index}.attachments`) || [];
+                                                        form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex), { shouldValidate: true });
+                                                    }}>
+                                                    <X className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                               </div>
                             );
                           })}
