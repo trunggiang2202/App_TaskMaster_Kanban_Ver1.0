@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
@@ -449,7 +447,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                                       ref(el);
                                       subtaskTitleRefs.current[index] = el;
                                     }}
-                                    className="border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0" 
+                                    className="bg-primary/5 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0" 
                                   />
                                 </FormControl>
                                 <FormMessage className="pl-3" />
@@ -627,7 +625,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                              }
 
                             return (
-                              <div key={field.id} className="flex items-center gap-2 p-2 rounded-md bg-primary/5">
+                              <div key={field.id} className="flex items-center gap-2 p-2 rounded-md">
                                 <FormField
                                   control={form.control}
                                   name={`subtasks.${index}.title`}
@@ -641,7 +639,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                                             ref(el);
                                             subtaskTitleRefs.current[index] = el;
                                           }}
-                                          className="border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8" 
+                                          className="bg-primary/5 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8" 
                                         />
                                       </FormControl>
                                       <FormMessage />
