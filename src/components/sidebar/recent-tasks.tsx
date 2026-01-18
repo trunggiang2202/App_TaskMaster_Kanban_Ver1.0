@@ -4,7 +4,7 @@ import * as React from 'react';
 import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
-import { Clock, CheckCircle2, Calendar, Repeat, Zap, GanttChartSquare } from 'lucide-react';
+import { Clock, CheckCircle2, Calendar, Repeat, Lightbulb, GanttChartSquare } from 'lucide-react';
 import { startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict, endOfDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
@@ -40,7 +40,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
   if (task.taskType === 'idea') {
     return (
         <div className="flex items-center gap-2 text-xs text-sidebar-foreground/70">
-            <Zap size={12} className="text-amber-500" />
+            <Lightbulb size={12} className="text-amber-500" />
             <span>Nháp - {formatDistanceToNowStrict(new Date(task.createdAt), { addSuffix: true, locale: vi })}</span>
         </div>
     )

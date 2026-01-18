@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { TaskDialog } from '@/components/kanban/task-dialog';
-import { Plus, TrendingUp, Pencil, Calendar, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical, Zap } from 'lucide-react';
+import { Plus, TrendingUp, Pencil, Calendar, Repeat, GanttChartSquare, Activity, ListFilter, ArrowUpDown, GripVertical, Lightbulb } from 'lucide-react';
 import { RecentTasks } from '@/components/sidebar/recent-tasks';
 import { Separator } from '@/components/ui/separator';
 import { isAfter, isBefore, startOfDay, subWeeks, addWeeks, getDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, areIntervalsOverlapping } from 'date-fns';
@@ -448,7 +448,7 @@ function TaskKanban() {
                 <Repeat className="h-4 w-4" />
             </IconButton>
              <IconButton tooltipText="Nháp" onClick={() => handleOpenNewTaskDialog('idea')}>
-                <Zap className="h-4 w-4" />
+                <Lightbulb className="h-4 w-4" />
             </IconButton>
             <IconButton tooltipText="Thống kê" onClick={() => setIsStatsDialogOpen(true)}>
                 <TrendingUp className="h-4 w-4" />

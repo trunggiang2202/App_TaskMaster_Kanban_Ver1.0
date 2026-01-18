@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Calendar, Repeat, Zap } from 'lucide-react';
+import { Calendar, Repeat, Lightbulb } from 'lucide-react';
 import type { TaskType } from '@/lib/types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -72,7 +72,7 @@ export function TaskTypeDialog({ isOpen, onOpenChange, onSelectType }: TaskTypeD
             </TypeButton>
         </div>
          <div className="pt-2">
-            <TypeButton type="idea" selectedType={selectedType} onSelect={handleSelect} icon={Zap}>
+            <TypeButton type="idea" selectedType={selectedType} onSelect={handleSelect} icon={Lightbulb}>
                 Mục tiêu nháp
             </TypeButton>
         </div>

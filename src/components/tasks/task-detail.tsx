@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { isAfter, isBefore, getDay, isSameDay, startOfDay, endOfDay } from 'date-fns';
-import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, Eye, Repeat, Zap } from 'lucide-react';
+import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, Eye, Repeat, Lightbulb } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -259,7 +259,7 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                     </div>
                     ) : (
                     <div className="flex items-center gap-2 text-sm font-medium text-amber-600">
-                        <Zap className="h-4 w-4" />
+                        <Lightbulb className="h-4 w-4" />
                         Đây là một mục tiêu nháp. Hãy phát triển nó thành một kế hoạch cụ thể!
                     </div>
                     )}
