@@ -267,7 +267,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
 
     }
-  }, [isOpen, taskToEdit, initialTaskType, taskToConvert, form, replace]);
+  }, [isOpen, taskToEdit, initialTaskType, taskToConvert]);
 
   const addEmptySubtask = (shouldFocus = true, date?: Date) => {
     const newSubtask: Partial<Subtask> & { title: string } = { 
@@ -665,7 +665,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                           })}
                          <Button
                             type="button"
-                            variant="outline"
+                            variant="default"
                             size="sm"
                             className="mt-2"
                             onClick={() => addEmptySubtask(true, day)}
