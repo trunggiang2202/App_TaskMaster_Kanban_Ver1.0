@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { isAfter, isBefore, getDay, isSameDay, startOfDay, endOfDay } from 'date-fns';
-import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, Eye, Repeat, Lightbulb } from 'lucide-react';
+import { Edit, Trash2, Circle, Check, LoaderCircle, AlertTriangle, Clock, Repeat, Lightbulb } from 'lucide-react';
 import { SubtaskDetailDialog } from './subtask-detail-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -30,14 +30,13 @@ interface SubtaskItemProps {
     taskType: Task['taskType'];
     recurringDays?: number[];
     onToggle: (subtaskId: string, forceStart?: boolean) => void;
-    onTitleClick: () => void;
     isClickable: boolean;
     isInProgress: boolean;
     isOverdue: boolean;
     isManuallyStarted: boolean;
 }
 
-const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringDays, onToggle, onTitleClick, isClickable, isInProgress, isOverdue, isManuallyStarted }) => {
+const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringDays, onToggle, isClickable, isInProgress, isOverdue, isManuallyStarted }) => {
     const canComplete = taskType === 'recurring' ? (recurringDays?.includes(getDay(new Date()))) : (isClickable && !!subtask.startDate);
 
     const handleToggle = (e: React.MouseEvent, forceStart: boolean) => {
@@ -91,21 +90,11 @@ const SubtaskItem: React.FC<SubtaskItemProps> = ({ subtask, taskType, recurringD
                         iconElement
                     )}
                  </TooltipProvider>
-                <div className="flex-1 cursor-pointer" onClick={onTitleClick}>
+                <div className="flex-1">
                     <span className={`text-sm ${subtask.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                         {subtask.title}
                     </span>
                 </div>
-                {(subtask.attachments?.length ?? 0) > 0 && (
-                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity"
-                        onClick={onTitleClick}
-                    >
-                        <Eye className="h-4 w-4 text-foreground" />
-                    </Button>
-                )}
             </div>
         </div>
     )
@@ -149,8 +138,10 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
   const subtaskProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : (task.status === 'Done' ? 100 : 0);
 
   const handleSubtaskClick = (subtask: Subtask) => {
-    setSelectedSubtask(subtask);
-    setIsSubtaskDetailOpen(true);
+    if ((subtask.attachments?.length ?? 0) > 0) {
+      setSelectedSubtask(subtask);
+      setIsSubtaskDetailOpen(true);
+    }
   };
   
   const categorizedSubtasks = React.useMemo<CategorizedSubtasks>(() => {
@@ -296,8 +287,10 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                                 key={st.id} 
                                 className={cn(
                                     "bg-background shadow-sm transition-colors group",
-                                    getSubtaskStyling(st, column.title)
+                                    getSubtaskStyling(st, column.title),
+                                    (st.attachments?.length ?? 0) > 0 && "cursor-pointer"
                                 )}
+                                onClick={() => handleSubtaskClick(st)}
                             >
                               <CardContent className="p-3">
                                 <SubtaskItem 
@@ -305,7 +298,6 @@ export default function TaskDetail({ task, onEditTask }: TaskDetailProps) {
                                     taskType={task.taskType}
                                     recurringDays={task.recurringDays}
                                     onToggle={(subtaskId, forceStart) => toggleSubtask(task.id, subtaskId, forceStart)}
-                                    onTitleClick={() => handleSubtaskClick(st)}
                                     isClickable={column.isClickable}
                                     isInProgress={isInProgress}
                                     isOverdue={isOverdue}
