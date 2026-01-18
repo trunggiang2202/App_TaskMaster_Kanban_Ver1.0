@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
@@ -265,7 +266,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       }
 
     }
-  }, [isOpen, taskToEdit, initialTaskType, taskToConvert]);
+  }, [isOpen, taskToEdit, initialTaskType, taskToConvert, form, replace, append]);
 
   const addEmptySubtask = (shouldFocus = true, date?: Date) => {
     const newSubtask: Partial<Subtask> & { title: string } = { 
@@ -613,7 +614,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                              }
 
                             return (
-                               <div key={field.id} className="space-y-3 p-2 rounded-md bg-primary/5">
+                               <div key={field.id} className="space-y-3 p-2 rounded-md">
                                 <div className="flex items-center gap-2">
                                   <FormField
                                     control={form.control}
@@ -628,7 +629,7 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
                                               ref(el);
                                               subtaskTitleRefs.current[index] = el;
                                             }}
-                                            className="border-none bg-background shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8" 
+                                            className="border-none bg-primary/5 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 h-8" 
                                           />
                                         </FormControl>
                                         <FormMessage />
