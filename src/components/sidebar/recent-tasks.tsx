@@ -15,10 +15,14 @@ function TaskStatusInfo({ task }: { task: Task }) {
   
   if (task.status === 'Done' && task.taskType !== 'idea') {
     if (task.taskType === 'deadline') {
-        const totalSubtasks = task.subtasks.length;
-        const completedSubtasks = task.subtasks.filter(st => st.completed).length;
         const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
         const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
+        const totalDays = task.startDate && task.endDate ? differenceInDays(endOfDay(task.endDate), startOfDay(task.startDate)) + 1 : 0;
+        const completedDays = new Set(
+            task.subtasks
+                .filter(st => st.completed && st.startDate)
+                .map(st => startOfDay(st.startDate).toISOString())
+        ).size;
         
         return (
            <div className="space-y-1.5 text-xs text-emerald-500">
@@ -32,7 +36,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
                 </div>
                 <div className="flex items-center gap-2">
                     <CheckCircle2 size={12} />
-                    <span>Hoàn thành: {completedSubtasks}/{totalSubtasks}</span>
+                    <span>Hoàn thành trong {completedDays}/{totalDays} ngày</span>
                 </div>
             </div>
         );
@@ -79,8 +83,13 @@ function TaskStatusInfo({ task }: { task: Task }) {
   const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
   
   const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) : null;
-  const totalSubtasks = task.subtasks.length;
-  const completedSubtasks = task.subtasks.filter(st => st.completed).length;
+  const totalDays = task.startDate && task.endDate ? differenceInDays(endOfDay(task.endDate), startOfDay(task.startDate)) + 1 : 0;
+  const completedDays = new Set(
+      task.subtasks
+          .filter(st => st.completed && st.startDate)
+          .map(st => startOfDay(st.startDate).toISOString())
+  ).size;
+
 
   return (
     <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
@@ -101,7 +110,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
         </div>
         <div className="flex items-center gap-2">
             <CheckCircle2 size={12} />
-            <span>Hoàn thành: {completedSubtasks}/{totalSubtasks}</span>
+            <span>Hoàn thành trong {completedDays}/{totalDays} ngày</span>
         </div>
     </div>
   );
