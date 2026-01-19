@@ -5,7 +5,7 @@ import type { Task, TaskType } from '@/lib/types';
 import { SidebarGroup } from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle2, Calendar, Repeat, Lightbulb, GanttChartSquare } from 'lucide-react';
-import { startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict, endOfDay, differenceInDays } from 'date-fns';
+import { startOfDay, isBefore, isAfter, format, isWithinInterval, getDay, formatDistanceToNowStrict, endOfDay, differenceInDays, eachDayOfInterval, isSameDay } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAYS } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -13,16 +13,45 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 
 function TaskStatusInfo({ task }: { task: Task }) {
   
+  const calculateDaysCompleted = (task: Task): { completedDays: number; totalDays: number } => {
+    if (task.taskType !== 'deadline' || !task.startDate || !task.endDate) {
+        return { completedDays: 0, totalDays: 0 };
+    }
+
+    const today = startOfDay(new Date());
+    const interval = { start: startOfDay(task.startDate), end: startOfDay(task.endDate) };
+
+    if (isBefore(interval.end, interval.start)) {
+        return { completedDays: 0, totalDays: 0 };
+    }
+
+    const allDaysInTask = eachDayOfInterval(interval);
+    const totalDays = allDaysInTask.length;
+
+    const completedDays = allDaysInTask.filter(day => {
+        if (isAfter(day, today)) {
+            return false;
+        }
+        
+        const subtasksForDay = task.subtasks.filter(st => 
+            st.startDate && isSameDay(day, startOfDay(st.startDate))
+        );
+
+        if (subtasksForDay.length === 0) {
+            return true;
+        }
+
+        return subtasksForDay.every(st => st.completed);
+    }).length;
+
+    return { completedDays, totalDays };
+  };
+
   if (task.status === 'Done' && task.taskType !== 'idea') {
     if (task.taskType === 'deadline') {
         const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
         const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
-        const totalDays = task.startDate && task.endDate ? differenceInDays(endOfDay(task.endDate), startOfDay(task.startDate)) + 1 : 0;
-        const completedDays = new Set(
-            task.subtasks
-                .filter(st => st.completed && st.startDate)
-                .map(st => startOfDay(st.startDate).toISOString())
-        ).size;
+        const { completedDays, totalDays } = calculateDaysCompleted(task);
         
         return (
            <div className="space-y-1.5 text-xs text-emerald-500">
@@ -83,12 +112,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
   const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
   
   const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) : null;
-  const totalDays = task.startDate && task.endDate ? differenceInDays(endOfDay(task.endDate), startOfDay(task.startDate)) + 1 : 0;
-  const completedDays = new Set(
-      task.subtasks
-          .filter(st => st.completed && st.startDate)
-          .map(st => startOfDay(st.startDate).toISOString())
-  ).size;
+  const { completedDays, totalDays } = calculateDaysCompleted(task);
 
 
   return (
