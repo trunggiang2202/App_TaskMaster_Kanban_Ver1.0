@@ -70,9 +70,9 @@ function TaskStatusInfo({ task }: { task: Task }) {
                     <Calendar size={12} />
                     <span>Kết thúc: {formattedEndDate}</span>
                 </div>
-                <div className="flex items-center gap-2 text-emerald-500">
+                <div className="flex items-center gap-2">
                     <CheckCircle2 size={12} />
-                    <span>Đã hoàn thành <span className="font-bold">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
+                    <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
                 </div>
             </div>
         );
@@ -143,7 +143,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
         <div className="flex items-center gap-2">
             <CheckCircle2 size={12} />
              {isStarted ? (
-                 <span>Đã đến ngày thứ <span className="font-bold text-emerald-500">{currentDayIndex}</span> trong tổng {totalDays} ngày</span>
+                 <span>Đã đến ngày <span className="font-bold text-emerald-500">thứ {currentDayIndex}</span> trong tổng {totalDays} ngày</span>
             ) : (
                  <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
             )}
