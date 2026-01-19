@@ -140,14 +140,18 @@ function TaskStatusInfo({ task }: { task: Task }) {
                 <span className='text-blue-500'>(Còn {remainingDays} ngày)</span>
             ) : null}
         </div>
-        <div className="flex items-center gap-2">
-            <CheckCircle2 size={12} />
-             {isStarted ? (
-                 <span>Đã đến ngày <span className="font-bold text-emerald-500">thứ {currentDayIndex}</span> trong tổng {totalDays} ngày</span>
-            ) : (
-                 <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
-            )}
-        </div>
+        {isStarted && (
+            <div className="flex items-center gap-2">
+                <CheckCircle2 size={12} />
+                <span>Đã đến ngày <span className="font-bold text-emerald-500">thứ {currentDayIndex}</span> trong tổng {totalDays} ngày</span>
+            </div>
+        )}
+        {isOverdue && (
+             <div className="flex items-center gap-2">
+                <CheckCircle2 size={12} />
+                <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
+            </div>
+        )}
     </div>
   );
 }
