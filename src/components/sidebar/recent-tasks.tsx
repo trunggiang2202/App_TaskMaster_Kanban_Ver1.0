@@ -14,6 +14,30 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 function TaskStatusInfo({ task }: { task: Task }) {
   
   if (task.status === 'Done' && task.taskType !== 'idea') {
+    if (task.taskType === 'deadline') {
+        const totalSubtasks = task.subtasks.length;
+        const completedSubtasks = task.subtasks.filter(st => st.completed).length;
+        const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
+        const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
+        
+        return (
+           <div className="space-y-1.5 text-xs text-emerald-500">
+                <div className="flex items-center gap-2">
+                    <Calendar size={12} />
+                    <span>Bắt đầu: {formattedStartDate}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Calendar size={12} />
+                    <span>Kết thúc: {formattedEndDate}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <CheckCircle2 size={12} />
+                    <span>Hoàn thành: {completedSubtasks}/{totalSubtasks}</span>
+                </div>
+            </div>
+        );
+    }
+    
     return (
       <div className="flex items-center gap-2 text-emerald-500 text-xs">
           <CheckCircle2 size={12} />
@@ -55,6 +79,8 @@ function TaskStatusInfo({ task }: { task: Task }) {
   const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
   
   const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) : null;
+  const totalSubtasks = task.subtasks.length;
+  const completedSubtasks = task.subtasks.filter(st => st.completed).length;
 
   return (
     <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
@@ -64,12 +90,6 @@ function TaskStatusInfo({ task }: { task: Task }) {
         {isUpcoming && <span>(Chưa bắt đầu)</span>}
         {isStarted && <span>(Đã bắt đầu)</span>}
         </div>
-        {task.status === 'Done' ? (
-        <div className="flex items-center gap-2 text-emerald-500">
-            <CheckCircle2 size={12} />
-            <span>Đã hoàn thành</span>
-        </div>
-        ) : (
         <div className={cn("flex items-center gap-2", isOverdue && "text-destructive")}>
             <Calendar size={12} />
             <span>Kết thúc: {formattedEndDate}</span>
@@ -79,7 +99,10 @@ function TaskStatusInfo({ task }: { task: Task }) {
                 <span className='text-blue-500'>(Còn {remainingDays} ngày)</span>
             ) : null}
         </div>
-        )}
+        <div className="flex items-center gap-2">
+            <CheckCircle2 size={12} />
+            <span>Hoàn thành: {completedSubtasks}/{totalSubtasks}</span>
+        </div>
     </div>
   );
 }
