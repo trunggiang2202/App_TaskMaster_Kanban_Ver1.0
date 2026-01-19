@@ -65,7 +65,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
                 </div>
                 <div className="flex items-center gap-2">
                     <CheckCircle2 size={12} />
-                    <span>Hoàn thành trong {completedDays}/{totalDays} ngày</span>
+                    <span>Đã hoàn thành {completedDays} ngày trong tổng {totalDays} ngày</span>
                 </div>
             </div>
         );
@@ -134,7 +134,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
         </div>
         <div className="flex items-center gap-2">
             <CheckCircle2 size={12} />
-            <span>Hoàn thành trong {completedDays}/{totalDays} ngày</span>
+            <span>Đã hoàn thành {completedDays} ngày trong tổng {totalDays} ngày</span>
         </div>
     </div>
   );
