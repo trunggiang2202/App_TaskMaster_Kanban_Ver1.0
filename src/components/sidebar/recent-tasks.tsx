@@ -54,7 +54,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
         const { completedDays, totalDays } = calculateDaysCompleted(task);
         
         return (
-           <div className="space-y-1.5 text-xs text-emerald-500">
+           <div className="space-y-1.5 text-xs text-sidebar-foreground/70">
                 <div className="flex items-center gap-2">
                     <Calendar size={12} />
                     <span>Bắt đầu: {formattedStartDate}</span>
@@ -63,7 +63,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
                     <Calendar size={12} />
                     <span>Kết thúc: {formattedEndDate}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-emerald-500">
                     <CheckCircle2 size={12} />
                     <span>Đã hoàn thành <span className="font-bold">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
                 </div>
@@ -111,7 +111,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
   const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
   const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
   
-  const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) + 1 : null;
+  const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) : null;
   const { completedDays, totalDays } = calculateDaysCompleted(task);
 
 
