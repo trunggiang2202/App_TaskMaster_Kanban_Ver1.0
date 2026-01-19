@@ -136,7 +136,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
             <span>Kết thúc: {formattedEndDate}</span>
             {isOverdue ? (
                 <span>(Đã quá hạn)</span>
-            ) : remainingDays !== null && remainingDays >= 0 ? (
+            ) : isStarted && remainingDays !== null && remainingDays >= 0 ? (
                 <span className='text-blue-500'>(Còn {remainingDays} ngày)</span>
             ) : null}
         </div>
@@ -146,7 +146,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
                 <span>Đã đến ngày <span className="font-bold text-emerald-500">thứ {currentDayIndex}</span> trong tổng {totalDays} ngày</span>
             </div>
         )}
-        {isOverdue && (
+        {(isOverdue || (task.status === 'Done' && task.taskType === 'deadline')) && (
              <div className="flex items-center gap-2">
                 <CheckCircle2 size={12} />
                 <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
