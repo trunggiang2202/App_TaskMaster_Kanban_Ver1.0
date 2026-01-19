@@ -31,8 +31,10 @@ function TaskStatusInfo({ task }: { task: Task }) {
 
     let completedDays = 0;
     
+    // Loop until today or task end, whichever is earlier
     const loopUntil = isAfter(today, taskEnd) ? taskEnd : today;
 
+    // If task hasn't started, completed days are 0
     if (isBefore(loopUntil, taskStart)) {
         return { completedDays: 0, totalDays };
     }
@@ -44,10 +46,12 @@ function TaskStatusInfo({ task }: { task: Task }) {
             st.startDate && isSameDay(day, startOfDay(st.startDate))
         );
 
+        // If a day in the past has no subtasks, count it as completed (a day off).
         if (subtasksForDay.length === 0) {
-            return true; // Count days with no subtasks as completed if they are in the past
+            return true;
         }
 
+        // If there are subtasks, all of them must be completed.
         return subtasksForDay.every(st => st.completed);
     }).length;
 
@@ -143,7 +147,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
         {isStarted && (
             <div className="flex items-center gap-2">
                 <CheckCircle2 size={12} />
-                <span>Đã đến ngày <span className="font-bold text-emerald-500">thứ {currentDayIndex}</span> trong tổng {totalDays} ngày</span>
+                <span>Ngày <span className="font-bold text-emerald-500">thứ {currentDayIndex}</span> trong tổng {totalDays} ngày</span>
             </div>
         )}
         {(isOverdue || (task.status === 'Done' && task.taskType === 'deadline')) && (
