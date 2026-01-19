@@ -20,11 +20,11 @@ function TaskStatusInfo({ task }: { task: Task }) {
 
     const today = startOfDay(new Date());
     const interval = { start: startOfDay(task.startDate), end: startOfDay(task.endDate) };
-
+    
     if (isBefore(interval.end, interval.start)) {
         return { completedDays: 0, totalDays: 0 };
     }
-
+    
     const allDaysInTask = eachDayOfInterval(interval);
     const totalDays = allDaysInTask.length;
 
@@ -38,7 +38,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
         );
 
         if (subtasksForDay.length === 0) {
-            return true;
+            return true; // Count days with no subtasks as completed if they are in the past
         }
 
         return subtasksForDay.every(st => st.completed);
@@ -65,7 +65,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
                 </div>
                 <div className="flex items-center gap-2">
                     <CheckCircle2 size={12} />
-                    <span>Đã hoàn thành {completedDays} ngày trong tổng {totalDays} ngày</span>
+                    <span>Đã hoàn thành <span className="font-bold">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
                 </div>
             </div>
         );
@@ -111,7 +111,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
   const formattedStartDate = task.startDate ? format(task.startDate, 'dd/MM/yyyy', { locale: vi }) : '';
   const formattedEndDate = task.endDate ? format(task.endDate, 'dd/MM/yyyy', { locale: vi }) : '';
   
-  const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) : null;
+  const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) + 1 : null;
   const { completedDays, totalDays } = calculateDaysCompleted(task);
 
 
@@ -134,7 +134,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
         </div>
         <div className="flex items-center gap-2">
             <CheckCircle2 size={12} />
-            <span>Đã hoàn thành {completedDays} ngày trong tổng {totalDays} ngày</span>
+            <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
         </div>
     </div>
   );
