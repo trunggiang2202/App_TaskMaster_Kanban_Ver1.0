@@ -19,20 +19,27 @@ function TaskStatusInfo({ task }: { task: Task }) {
     }
 
     const today = startOfDay(new Date());
-    const interval = { start: startOfDay(task.startDate), end: startOfDay(task.endDate) };
+    const taskStart = startOfDay(task.startDate);
+    const taskEnd = startOfDay(task.endDate);
     
-    if (isBefore(interval.end, interval.start)) {
+    if (isBefore(taskEnd, taskStart)) {
         return { completedDays: 0, totalDays: 0 };
     }
     
-    const allDaysInTask = eachDayOfInterval(interval);
+    const allDaysInTask = eachDayOfInterval({ start: taskStart, end: taskEnd });
     const totalDays = allDaysInTask.length;
 
-    const completedDays = allDaysInTask.filter(day => {
-        if (isAfter(day, today)) {
-            return false;
-        }
-        
+    let completedDays = 0;
+    
+    const loopUntil = isAfter(today, taskEnd) ? taskEnd : today;
+
+    if (isBefore(loopUntil, taskStart)) {
+        return { completedDays: 0, totalDays };
+    }
+
+    const daysToConsider = eachDayOfInterval({ start: taskStart, end: loopUntil });
+
+    completedDays = daysToConsider.filter(day => {
         const subtasksForDay = task.subtasks.filter(st => 
             st.startDate && isSameDay(day, startOfDay(st.startDate))
         );
@@ -113,6 +120,7 @@ function TaskStatusInfo({ task }: { task: Task }) {
   
   const remainingDays = task.endDate ? differenceInDays(endOfDay(task.endDate), now) : null;
   const { completedDays, totalDays } = calculateDaysCompleted(task);
+  const currentDayIndex = task.startDate ? differenceInDays(startOfDay(now), startOfDay(task.startDate)) + 1 : 0;
 
 
   return (
@@ -134,7 +142,11 @@ function TaskStatusInfo({ task }: { task: Task }) {
         </div>
         <div className="flex items-center gap-2">
             <CheckCircle2 size={12} />
-            <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
+             {isStarted ? (
+                 <span>Đã đến ngày thứ <span className="font-bold text-emerald-500">{currentDayIndex}</span> trong tổng {totalDays} ngày</span>
+            ) : (
+                 <span>Đã hoàn thành <span className="font-bold text-emerald-500">{completedDays} ngày</span> trong tổng {totalDays} ngày</span>
+            )}
         </div>
     </div>
   );
