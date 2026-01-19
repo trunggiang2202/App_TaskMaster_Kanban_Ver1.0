@@ -20,7 +20,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Plus, Trash2, Paperclip, X, Zap, ArrowRightCircle, Save, PlusCircle, ArrowLeft, Lightbulb } from 'lucide-react';
 import type { Task, Subtask, TaskType } from '@/lib/types';
 import { isAfter, addDays, startOfDay, getDay, isWithinInterval, eachDayOfInterval, format, isSameDay } from 'date-fns';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn, WEEKDAY_ABBREVIATIONS, WEEKDAY_INDICES, parseDate } from '@/lib/utils';
@@ -422,111 +421,68 @@ export function TaskDialog({ isOpen, onOpenChange, taskToEdit, initialTaskType, 
       </div>
       <div className="py-2 space-y-4">
         <div className="space-y-2">
-            <Accordion type="multiple" className="w-full space-y-2">
+            <div className="w-full space-y-2">
               {fields.map((field, index) => {
                   const subtaskTitle = form.watch(`subtasks.${index}.title`);
                   const hasTitle = subtaskTitle && subtaskTitle.trim() !== '';
 
                   return (
-                    <AccordionItem 
-                      value={`item-${index}`} 
+                    <div 
                       key={field.id} 
-                      className="border rounded-md"
+                      className="border rounded-md flex items-center w-full p-1 pr-2"
                     >
-                        <div className="flex items-center w-full p-1 pr-2">
-                          <FormField
-                            control={form.control}
-                            name={`subtasks.${index}.title`}
-                            render={({ field: { ref, ...fieldProps } }) => (
-                              <FormItem className="flex-grow">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Nhập tên công việc" 
-                                    {...fieldProps}
-                                    ref={(el) => {
-                                      ref(el);
-                                      subtaskTitleRefs.current[index] = el;
-                                    }}
-                                    className="bg-primary/5 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0" 
-                                  />
-                                </FormControl>
-                                <FormMessage className="pl-3" />
-                              </FormItem>
-                            )}
-                            />
-                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => subtaskAttachmentRefs.current[index]?.click()}>
-                               <Paperclip className="h-4 w-4"/>
-                            </Button>
-                            <Input
-                                type="file"
-                                className="hidden"
-                                ref={(el) => { subtaskAttachmentRefs.current[index] = el; }}
-                                onChange={(e) => handleFileChange(e, index)}
-                            />
-                            <AccordionTrigger className="p-2 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                            </AccordionTrigger>
+                        <FormField
+                          control={form.control}
+                          name={`subtasks.${index}.title`}
+                          render={({ field: { ref, ...fieldProps } }) => (
+                            <FormItem className="flex-grow">
+                              <FormControl>
+                                <Input 
+                                  placeholder="Nhập tên công việc" 
+                                  {...fieldProps}
+                                  ref={(el) => {
+                                    ref(el);
+                                    subtaskTitleRefs.current[index] = el;
+                                  }}
+                                  className="bg-primary/5 border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0" 
+                                />
+                              </FormControl>
+                              <FormMessage className="pl-3" />
+                            </FormItem>
+                          )}
+                          />
 
-                            {hasTitle ? (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full">
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Hành động này sẽ xóa công việc <span className="font-bold">{subtaskTitle}</span> vĩnh viễn.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Hủy</AlertDialogCancel>
-                                    <AlertDialogAction variant="destructive" onClick={() => remove(index)}>
-                                      Xóa
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            ) : (
-                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full" onClick={() => remove(index)}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            )}
-                        </div>
-                        <AccordionContent className="px-3 pb-3">
-                           {form.watch(`subtasks.${index}.attachments`) && form.watch(`subtasks.${index}.attachments`)!.length > 0 && (
-                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
-                                    {form.watch(`subtasks.${index}.attachments`)!.map((attachment, attachmentIndex) => (
-                                        <div key={attachmentIndex} className="relative group">
-                                            {attachment.type === 'image' ? (
-                                            <Image src={attachment.url} alt={attachment.name} width={100} height={100} className="w-full h-16 object-cover rounded-md" />
-                                            ) : (
-                                            <div className="w-full h-16 bg-muted rounded-md flex items-center justify-center p-2">
-                                                <Paperclip className="h-4 w-4 text-muted-foreground shrink-0 mr-1" />
-                                                <p className="text-xs text-center text-muted-foreground truncate">{attachment.name}</p>
-                                            </div>
-                                            )}
-                                            <Button 
-                                                type="button" 
-                                                variant="destructive" 
-                                                size="icon" 
-                                                className="absolute -top-1.5 -right-1.5 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity rounded-full" 
-                                                onClick={() => {
-                                                    const current = form.getValues(`subtasks.${index}.attachments`) || [];
-                                                    form.setValue(`subtasks.${index}.attachments`, current.filter((_, i) => i !== attachmentIndex), { shouldValidate: true });
-                                                }}>
-                                                <X className="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </AccordionContent>
-                      </AccordionItem>
+                          {hasTitle ? (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full">
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Bạn có chắc chắn không?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Hành động này sẽ xóa công việc <span className="font-bold">{subtaskTitle}</span> vĩnh viễn.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                                  <AlertDialogAction variant="destructive" onClick={() => remove(index)}>
+                                    Xóa
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          ) : (
+                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 transition-transform hover:scale-125 hover:bg-transparent border border-transparent hover:border-destructive/50 rounded-full" onClick={() => remove(index)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          )}
+                      </div>
                   )
                 })}
-            </Accordion>
+            </div>
           <Button
             type="button"
             variant="default"
